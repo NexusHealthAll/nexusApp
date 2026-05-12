@@ -106,47 +106,49 @@ export function DashboardOverview() {
   return (
     <div className="space-y-6">
       {/* Welcome Section */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col space-y-3 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
         <div>
-          <h1 className="text-3xl font-bold text-neutral-900">Welcome back, whiteghost</h1>
-          <p className="text-neutral-600 mt-1">Here's what's happening at Nexus Care today.</p>
+          <h1 className="text-xl font-bold text-neutral-900 lg:text-3xl">Welcome back, whiteghost</h1>
+          <p className="text-sm text-neutral-600 lg:text-base lg:mt-1">Here's what's happening at Nexus Care today.</p>
         </div>
-        <div className="flex space-x-3">
-          <Button variant="outline">
-            <Activity className="mr-2 h-4 w-4" />
-            View Reports
+        <div className="flex space-x-2 lg:space-x-3">
+          <Button variant="outline" size="sm" className="text-xs lg:text-sm">
+            <Activity className="mr-1 h-3 w-3 lg:mr-2 lg:h-4 lg:w-4" />
+            <span className="hidden sm:inline">View Reports</span>
+            <span className="sm:hidden">Reports</span>
           </Button>
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            Quick Schedule
+          <Button size="sm" className="text-xs lg:text-sm">
+            <Plus className="mr-1 h-3 w-3 lg:mr-2 lg:h-4 lg:w-4" />
+            <span className="hidden sm:inline">Quick Schedule</span>
+            <span className="sm:hidden">Schedule</span>
           </Button>
         </div>
       </div>
 
       {/* Main Stats Grid */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-6">
         {summaryCards.map((stat) => (
           <Card key={stat.title} variant="elevated" className="hover:shadow-strong transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-neutral-600">
+              <CardTitle className="text-xs font-medium text-neutral-600 lg:text-sm">
                 {stat.title}
               </CardTitle>
-              <stat.icon className="h-5 w-5 text-neutral-400" />
+              <stat.icon className="h-4 w-4 text-neutral-400 lg:h-5 lg:w-5" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-neutral-900 mb-1">{stat.value}</div>
+              <div className="text-lg font-bold text-neutral-900 mb-1 lg:text-3xl">{stat.value}</div>
               <div className="flex items-center space-x-1">
                 {stat.changeType === 'positive' ? (
-                  <ArrowUpRight className="h-3 w-3 text-success-600" />
+                  <ArrowUpRight className="h-2 w-2 text-success-600 lg:h-3 lg:w-3" />
                 ) : (
-                  <ArrowDownRight className="h-3 w-3 text-error-600" />
+                  <ArrowDownRight className="h-2 w-2 text-error-600 lg:h-3 lg:w-3" />
                 )}
                 <span className={`text-xs font-medium ${
                   stat.changeType === 'positive' ? 'text-success-600' : 'text-error-600'
                 }`}>
                   {stat.change}
                 </span>
-                <span className="text-xs text-neutral-500">{stat.description}</span>
+                <span className="text-xs text-neutral-500 hidden sm:inline">{stat.description}</span>
               </div>
             </CardContent>
           </Card>
@@ -154,17 +156,17 @@ export function DashboardOverview() {
       </div>
 
       {/* Status Cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-3 gap-2 lg:gap-4">
         {statusCards.map((card) => (
           <Card key={card.title} className={`${card.bgColor} border-0`}>
-            <CardContent className="p-4">
-              <div className="flex items-center space-x-3">
-                <div className={`p-2 rounded-lg bg-white`}>
-                  <card.icon className={`h-5 w-5 ${card.color}`} />
+            <CardContent className="p-3 lg:p-4">
+              <div className="flex flex-col items-center space-y-2 lg:flex-row lg:items-center lg:space-y-0 lg:space-x-3">
+                <div className={`p-1.5 rounded-lg bg-white lg:p-2`}>
+                  <card.icon className={`h-4 w-4 ${card.color} lg:h-5 lg:w-5`} />
                 </div>
-                <div>
-                  <p className="text-sm font-medium text-neutral-600">{card.title}</p>
-                  <p className={`text-2xl font-bold ${card.color}`}>{card.value}</p>
+                <div className="text-center lg:text-left">
+                  <p className="text-xs font-medium text-neutral-600 lg:text-sm">{card.title}</p>
+                  <p className={`text-lg font-bold ${card.color} lg:text-2xl`}>{card.value}</p>
                 </div>
               </div>
             </CardContent>
