@@ -91,6 +91,8 @@ export const theme = {
       border: "#d9ecf8",
       accentStart: "#0d9488",
       accentEnd: "#0369a1",
+      textPrimary: "#071E27",
+      textSecondary: "#3F4940",
     },
   },
   typography: {

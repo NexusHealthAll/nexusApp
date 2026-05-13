@@ -1,20 +1,21 @@
-@import 'tailwindcss/base';
-@import 'tailwindcss/components';
-@import 'tailwindcss/utilities';
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 
-/* Import Inter font from Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 @layer base {
   * {
     @apply border-neutral-200;
   }
-  
+
   body {
     @apply bg-neutral-50 text-neutral-900;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    font-feature-settings:
+      "rlig" 1,
+      "calt" 1;
   }
-  
+
   html {
     scroll-behavior: smooth;
   }
@@ -24,21 +25,21 @@
   /* Custom scrollbar styles */
   .scrollbar-thin {
     scrollbar-width: thin;
-    scrollbar-color: theme('colors.neutral.300') theme('colors.neutral.100');
+    scrollbar-color: theme("colors.neutral.300") theme("colors.neutral.100");
   }
-  
+
   .scrollbar-thin::-webkit-scrollbar {
     width: 6px;
   }
-  
+
   .scrollbar-thin::-webkit-scrollbar-track {
     @apply bg-neutral-100;
   }
-  
+
   .scrollbar-thin::-webkit-scrollbar-thumb {
     @apply bg-neutral-300 rounded-full;
   }
-  
+
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
     @apply bg-neutral-400;
   }

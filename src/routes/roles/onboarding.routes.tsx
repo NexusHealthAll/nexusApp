@@ -1,13 +1,11 @@
 import { Navigate } from "react-router-dom";
 import type { ReactElement } from "react";
 import type { RouteObject } from "react-router-dom";
-import {
-  AccreditationGrantedStep,
-  HospitalRegistrationStep,
-  LegalVerificationStep,
-  OnboardingStatusStep,
-  VerificationPendingStep,
-} from "@/features/onboarding/components/OnboardingFlow";
+import { HospitalRegistrationStep } from "@/features/onboarding/components/HospitalRegistrationStep";
+import { LegalVerificationStep } from "@/features/onboarding/components/LegalVerificationStep";
+import { OnboardingStatusStep } from "@/features/onboarding/components/OnboardingStatusStep";
+import { VerificationPendingStep } from "@/features/onboarding/components/VerificationPendingStep";
+import { AccreditationGrantedStep } from "@/features/onboarding/components/AccreditationGrantedStep";
 import type { AppProfile } from "@/types";
 
 type OnboardingSlug =
@@ -27,7 +25,6 @@ const profileOnboardingSteps: Record<AppProfile, OnboardingStepConfig[]> = {
     { slug: "registration", element: <HospitalRegistrationStep /> },
     { slug: "legal-verification", element: <LegalVerificationStep /> },
     { slug: "onboarding-status", element: <OnboardingStatusStep /> },
-    { slug: "verification-pending", element: <VerificationPendingStep /> },
     { slug: "accreditation-granted", element: <AccreditationGrantedStep /> },
   ],
   "medical-staff": [
