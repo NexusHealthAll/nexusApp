@@ -1,7 +1,7 @@
 import type { RouteObject } from "react-router-dom";
-import { PatientList } from "@/features/patients/components/PatientList";
-import { DoctorList } from "@/features/doctors/components/DoctorList";
-import { AppointmentList } from "@/features/appointments/components/AppointmentList";
+import { PatientList } from "@/features/patient/components/PatientList";
+import { DoctorList } from "@/features/hospital/components/DoctorList";
+import { AppointmentList } from "@/features/hospital/components/AppointmentList";
 
 function MedicalStaffDashboard() {
   return (

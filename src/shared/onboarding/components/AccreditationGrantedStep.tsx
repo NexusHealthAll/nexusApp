@@ -8,7 +8,7 @@ import {
   Wallet,
 } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
-import { useRoleBasePath } from "@/features/onboarding/hooks/useRoleBasePath";
+import { useRoleBasePath } from "@/shared/onboarding/hooks/useRoleBasePath";
 import { OnboardingNavbar } from "./OnboardingNavbar";
 import { StepTracker } from "@/shared/components/ui/StepTracker";
 

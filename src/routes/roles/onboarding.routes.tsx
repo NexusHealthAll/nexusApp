@@ -1,11 +1,11 @@
 import { Navigate } from "react-router-dom";
 import type { ReactElement } from "react";
 import type { RouteObject } from "react-router-dom";
-import { HospitalRegistrationStep } from "@/features/onboarding/components/HospitalRegistrationStep";
-import { LegalVerificationStep } from "@/features/onboarding/components/LegalVerificationStep";
-import { OnboardingStatusStep } from "@/features/onboarding/components/OnboardingStatusStep";
-import { VerificationPendingStep } from "@/features/onboarding/components/VerificationPendingStep";
-import { AccreditationGrantedStep } from "@/features/onboarding/components/AccreditationGrantedStep";
+import { HospitalRegistrationStep } from "@/shared/onboarding/components/HospitalRegistrationStep";
+import { LegalVerificationStep } from "@/shared/onboarding/components/LegalVerificationStep";
+import { OnboardingStatusStep } from "@/shared/onboarding/components/OnboardingStatusStep";
+import { VerificationPendingStep } from "@/shared/onboarding/components/VerificationPendingStep";
+import { AccreditationGrantedStep } from "@/shared/onboarding/components/AccreditationGrantedStep";
 import type { AppProfile } from "@/types";
 
 type OnboardingSlug =

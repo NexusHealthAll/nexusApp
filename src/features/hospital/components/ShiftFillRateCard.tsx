@@ -1,4 +1,4 @@
-import { TrendingDown, TrendingUp, Hourglass } from "lucide-react";
+import { TrendingUp } from "lucide-react";
 import CashIcon from "@/shared/assets/svgs/cashIcon.svg?react";
 import GradientLoader from "@/shared/assets/svgs/gradientLoader.svg?react";
 
