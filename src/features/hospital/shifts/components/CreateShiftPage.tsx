@@ -52,7 +52,7 @@ export function CreateShiftPage() {
           data={formData}
           onUpdate={updateForm}
           onNext={() => setStep(2)}
-          onBack={() => navigate(PATHS.hospital.dashboard)}
+          onBack={() => navigate(PATHS.hospital.shifts)}
         />
       )}
       {step === 2 && (
@@ -83,7 +83,7 @@ export function CreateShiftPage() {
         <ShiftPreview
           data={formData}
           onBack={() => setStep(4)}
-          onBroadcast={() => navigate(PATHS.hospital.dashboard)}
+          onBroadcast={() => navigate(PATHS.hospital.shifts)}
         />
       )}
     </div>

@@ -26,7 +26,7 @@ interface NavigationItem {
 const profileNavigationItems: Record<AppProfile, NavigationItem[]> = {
   hospital: [
     { name: "Clinical Dashboard", href: "/dashboard", icon: LayoutDashboard },
-    { name: "Shift Schedule", href: "/appointments", icon: CalendarClock },
+    { name: "Shift Schedule", href: "/shifts", icon: CalendarClock },
     { name: "Staff Rosters", href: "/doctors", icon: ClipboardList },
     { name: "Secure Messaging", href: "/analytics", icon: MessageSquare },
     { name: "Settings", href: "/settings", icon: Settings },

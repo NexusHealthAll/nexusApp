@@ -24,6 +24,7 @@ interface RolePathGroup {
   readonly analytics: string;
   readonly settings: string;
   readonly help: string;
+  readonly shifts: string;
   readonly shiftCreate: string;
   readonly onboarding: OnboardingPaths;
 }
@@ -39,6 +40,7 @@ function buildRolePaths(base: string): RolePathGroup {
     analytics: `${base}/analytics`,
     settings: `${base}/settings`,
     help: `${base}/help`,
+    shifts: `${base}/shifts`,
     shiftCreate: `${base}/shifts/create`,
     onboarding: {
       root: ob,
