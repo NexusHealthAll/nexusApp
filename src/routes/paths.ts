@@ -60,4 +60,4 @@ export const PATHS = {
 } as const;
 
 /** App-level default landing route. */
-export const DEFAULT_REDIRECT = PATHS.patient.dashboard;
+export const DEFAULT_REDIRECT = PATHS.medicalStaff.dashboard;

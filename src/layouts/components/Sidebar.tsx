@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { ComponentType } from "react";
 import {
   CalendarClock,
@@ -16,6 +16,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/shared/utils/cn";
 import { AppProfile } from "@/types";
+import { NexusCareLogo } from "@/shared/components/ui/NexusCareLogo";
+import { authUtils } from "@/features/auth/utils/authUtils";
 
 interface NavigationItem {
   name: string;
@@ -39,10 +41,10 @@ const profileNavigationItems: Record<AppProfile, NavigationItem[]> = {
     { name: "Settings", href: "/settings", icon: Settings },
   ],
   "medical-staff": [
-    { name: "Staff Dashboard", href: "/dashboard", icon: LayoutDashboard },
-    { name: "Schedule", href: "/appointments", icon: Calendar },
-    { name: "Patient List", href: "/patients", icon: Users },
-    { name: "Clinical Team", href: "/doctors", icon: UserCheck },
+    { name: "Clinical Dashboard", href: "/dashboard", icon: Stethoscope },
+    { name: "Today's Schedule", href: "/appointments", icon: Calendar },
+    { name: "My Patients", href: "/patients", icon: Users },
+    { name: "Clinical Analytics", href: "/analytics", icon: LayoutDashboard },
     { name: "Settings", href: "/settings", icon: Settings },
   ],
 };
@@ -86,10 +88,17 @@ interface SidebarProps {
 }
 
 export function Sidebar({ isOpen, onClose, profile }: SidebarProps) {
+  const navigate = useNavigate();
   const styles = profileStyles[profile];
   const navigationItems = profileNavigationItems[profile];
   const bottomNavigationItems = profileBottomNavigationItems[profile];
   const basePath = profileBasePath[profile];
+
+  const handleLogout = () => {
+    authUtils.clearAuth();
+    navigate('/auth/login');
+    onClose(); // Close sidebar after logout
+  };
 
   return (
     <aside
@@ -99,23 +108,14 @@ export function Sidebar({ isOpen, onClose, profile }: SidebarProps) {
       )}
     >
       {/* Logo */}
-      <div className="flex h-16 items-center justify-between px-6 border-b border-neutral-200">
-        <div className="flex items-center space-x-3">
-          {/* Nexus Care Logo */}
-          <img
-            src="/nexus-care-logo.png"
-            alt="Nexus Care Logo"
-            className="h-10 w-10 object-contain"
-          />
-          <span className={cn("text-xl font-bold", styles.brandText)}>
-            Nexus Care
-          </span>
-        </div>
+      <div className="flex h-16 items-center justify-center px-6 border-b border-neutral-200">
+        {/* Nexus Care Logo */}
+        <NexusCareLogo size="md" />
 
         {/* Close button for mobile */}
         <button
           onClick={onClose}
-          className="lg:hidden p-2 rounded-md text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100"
+          className="lg:hidden absolute right-6 top-4 p-2 rounded-md text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100"
         >
           <X className="h-5 w-5" />
         </button>
@@ -179,7 +179,7 @@ export function Sidebar({ isOpen, onClose, profile }: SidebarProps) {
           {/* Logout Button */}
           <li>
             <button
-              onClick={onClose}
+              onClick={handleLogout}
               className="flex w-full items-center space-x-3 rounded-lg px-3 py-2 text-sm font-medium text-neutral-600 transition-colors hover:bg-neutral-50 hover:text-neutral-900"
             >
               <LogOut className="h-5 w-5" />

@@ -10,6 +10,9 @@ import {
 } from "./roles/hospital.routes";
 import { medicalStaffPageRoutes } from "./roles/medical-staff.routes";
 import { patientPageRoutes } from "./roles/patient.routes";
+import { authRoutes } from "./auth.routes";
+import { adminRoutes } from "./admin.routes";
+import { ProtectedRoute } from "@/features/auth/components";
 
 function buildRoleTree(
   basePath: string,
@@ -17,19 +20,22 @@ function buildRoleTree(
   pageRoutes: RouteObject[],
   standaloneRoutes: RouteObject[] = [],
 ): RouteObject {
+  const requiredRole = profile === 'medical-staff' ? 'medical-staff' : 'hospital-admin';
+  
   return {
     path: `${basePath}/*`,
+    element: (
+      <ProtectedRoute requiredRole={requiredRole}>
+        <RoleLayout profile={profile} />
+      </ProtectedRoute>
+    ),
     children: [
       { index: true, element: <Navigate to="dashboard" replace /> },
 
       ...buildOnboardingRoutes(profile),
       ...standaloneRoutes,
 
-      {
-        element: <RoleLayout profile={profile} />,
-
-        children: pageRoutes,
-      },
+      ...pageRoutes,
 
       { path: "*", element: <Navigate to="dashboard" replace /> },
     ],
@@ -37,7 +43,8 @@ function buildRoleTree(
 }
 
 export const appRoutes: RouteObject[] = [
-  { path: "/", element: <Navigate to={DEFAULT_REDIRECT} replace /> },
+  ...authRoutes,
+  ...adminRoutes,
 
   buildRoleTree(
     "/hospital",
@@ -48,5 +55,5 @@ export const appRoutes: RouteObject[] = [
   buildRoleTree("/medical-staff", "medical-staff", medicalStaffPageRoutes),
   buildRoleTree("/patient", "patient", patientPageRoutes),
 
-  { path: "*", element: <Navigate to={DEFAULT_REDIRECT} replace /> },
+  { path: "*", element: <Navigate to="/auth/login" replace /> },
 ];
