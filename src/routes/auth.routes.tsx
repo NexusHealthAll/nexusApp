@@ -9,10 +9,9 @@ import {
   ProfessionalProfile,
   PayoutSetup,
 } from "@/features/onboarding/components";
-import { WaitlistFlowPage } from "@/features/waitlist/components/WaitlistFlowPage";
 import { WaitlistLandingStep } from "@/features/waitlist/components/WaitlistLandingStep";
 import { WaitlistSuccessStep } from "@/features/waitlist/components/WaitlistSuccessStep";
-import { PATHS } from "./paths";
+import { LandingPage } from "@/pages/landing";
 
 export const authRoutes: RouteObject[] = [
   {
@@ -42,27 +41,22 @@ export const authRoutes: RouteObject[] = [
   },
   {
     path: "/",
-    element: (
-      <Navigate to={PATHS.medicalStaff.onboarding.registration} replace />
-    ),
+    element: <LandingPage />,
+    children: [
+      { index: true, element: <WaitlistLandingStep /> },
+      { path: "success", element: <WaitlistSuccessStep /> },
+    ],
   },
   {
     path: "/waitlist",
-    element: <WaitlistFlowPage />,
     children: [
-      { index: true, element: <Navigate to="landing" replace /> },
-      { path: "landing", element: <WaitlistLandingStep /> },
-      { path: "join", element: <Navigate to="/waitlist/landing" replace /> },
-      {
-        path: "form/hospital",
-        element: <Navigate to="/waitlist/landing" replace />,
-      },
-      {
-        path: "form/health-worker",
-        element: <Navigate to="/waitlist/landing" replace />,
-      },
-      { path: "success", element: <WaitlistSuccessStep /> },
-      { path: "*", element: <Navigate to="landing" replace /> },
+      { index: true, element: <Navigate to="/" replace /> },
+      { path: "landing", element: <Navigate to="/" replace /> },
+      { path: "join", element: <Navigate to="/" replace /> },
+      { path: "form/hospital", element: <Navigate to="/" replace /> },
+      { path: "form/health-worker", element: <Navigate to="/" replace /> },
+      { path: "success", element: <Navigate to="/success" replace /> },
+      { path: "*", element: <Navigate to="/" replace /> },
     ],
   },
 ];

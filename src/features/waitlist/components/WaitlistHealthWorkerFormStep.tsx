@@ -106,7 +106,7 @@ export function WaitlistHealthWorkerFormStep() {
         licenseNumber: state.healthWorkerForm.licenseNumber.trim(),
       });
 
-      navigate("/waitlist/success");
+      navigate("/success");
     } catch (error) {
       if (
         error instanceof WaitlistSubmissionError &&

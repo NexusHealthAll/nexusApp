@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowLeft, Building2, Stethoscope } from "lucide-react";
+import { ArrowLeft, Building2, CheckCircle2, Stethoscope } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/shared/components/ui/Button";
 import { Modal } from "@/shared/components/ui/Modal";
@@ -21,6 +21,7 @@ const roleCards: Array<{
   description: string;
   image: string;
   badge: string;
+  ctaLabel: string;
   icon: typeof Building2;
 }> = [
   {
@@ -30,6 +31,7 @@ const roleCards: Array<{
       "Join as a facility admin to secure verified clinicians and streamline staffing coverage.",
     image: "/waitlist/hospitals.jpg",
     badge: "Institutional Excellence",
+    ctaLabel: "Join as Hospital",
     icon: Building2,
   },
   {
@@ -39,6 +41,7 @@ const roleCards: Array<{
       "Join as a clinician to discover high-priority shifts and get AI-assisted documentation tools.",
     image: "/waitlist/health-workers.jpg",
     badge: "Clinician Empowerment",
+    ctaLabel: "Join as Health Worker",
     icon: Stethoscope,
   },
 ];
@@ -65,7 +68,9 @@ export function WaitlistJoinModalFlow() {
     setModalStep(role === "hospital" ? "hospital-form" : "health-worker-form");
   };
 
-  const handleHospitalSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleHospitalSubmit = async (
+    event: React.FormEvent<HTMLFormElement>,
+  ) => {
     event.preventDefault();
 
     const errors = validateHospitalForm(state.hospitalForm);
@@ -91,7 +96,7 @@ export function WaitlistJoinModalFlow() {
       });
 
       closeJoinModal();
-      navigate("/waitlist/success");
+      navigate("/success");
     } catch (error) {
       if (error instanceof WaitlistSubmissionError) {
         if (error.code === "duplicate") {
@@ -140,7 +145,7 @@ export function WaitlistJoinModalFlow() {
       });
 
       closeJoinModal();
-      navigate("/waitlist/success");
+      navigate("/success");
     } catch (error) {
       if (error instanceof WaitlistSubmissionError) {
         if (error.code === "duplicate") {
@@ -174,6 +179,7 @@ export function WaitlistJoinModalFlow() {
             : "Health Worker Registration"
       }
       className={cn(
+        "max-h-[calc(100dvh-2rem)] overflow-y-auto",
         modalStep === "role" ? "max-w-4xl" : "max-w-2xl",
         modalStep === "role"
           ? "border-neutral-200 bg-white"
@@ -194,7 +200,7 @@ export function WaitlistJoinModalFlow() {
                 className={cn(
                   "group relative overflow-hidden rounded-2xl border text-left shadow-strong transition-all",
                   isSelected
-                    ? "border-onboarding-primaryBlue ring-2 ring-onboarding-primaryBlue/40"
+                    ? "border-3 shadow-2xl drop-shadow-2xl"
                     : "border-neutral-200 hover:border-secondary-300",
                 )}
               >
@@ -204,6 +210,14 @@ export function WaitlistJoinModalFlow() {
                   className="h-[22rem] w-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#06345c]/90 via-[#06345c]/40 to-transparent" />
+                {isSelected && (
+                  <div className="absolute inset-0 bg-[#06345c]/40 transition-opacity" />
+                )}
+                {isSelected && (
+                  <div className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full bg-onboarding-primaryGreen shadow-lg">
+                    <CheckCircle2 className="h-5 w-5 text-white" />
+                  </div>
+                )}
                 <div className="absolute bottom-7 left-7 right-7 text-white">
                   <p className="text-xs uppercase tracking-[0.2em] text-white/70">
                     {card.badge}
@@ -214,7 +228,7 @@ export function WaitlistJoinModalFlow() {
                   </p>
                   <div className="mt-6 inline-flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-semibold text-onboarding-primaryBlue">
                     <Icon className="h-4 w-4" />
-                    {isSelected ? "Selected" : "Select"}
+                    {card.ctaLabel}
                   </div>
                 </div>
               </button>
@@ -243,7 +257,9 @@ export function WaitlistJoinModalFlow() {
           <input
             type="email"
             value={state.hospitalForm.email}
-            onChange={(event) => updateHospitalForm({ email: event.target.value })}
+            onChange={(event) =>
+              updateHospitalForm({ email: event.target.value })
+            }
             className="h-12 w-full rounded-xl border border-white/55 bg-[linear-gradient(180deg,_rgba(255,255,255,0.95),_rgba(238,245,251,0.88))] px-4 text-sm text-neutral-900 outline-none backdrop-blur transition focus:border-onboarding-primaryBlue"
             placeholder="Work email"
           />
@@ -267,7 +283,9 @@ export function WaitlistJoinModalFlow() {
           />
           <select
             value={state.hospitalForm.location}
-            onChange={(event) => updateHospitalForm({ location: event.target.value })}
+            onChange={(event) =>
+              updateHospitalForm({ location: event.target.value })
+            }
             className="h-12 w-full rounded-xl border border-white/55 bg-[linear-gradient(180deg,_rgba(255,255,255,0.95),_rgba(238,245,251,0.88))] px-4 text-sm text-neutral-900 outline-none backdrop-blur transition focus:border-onboarding-primaryBlue"
           >
             <option value="">Select location</option>
@@ -298,7 +316,11 @@ export function WaitlistJoinModalFlow() {
           </Button>
         </form>
       ) : (
-        <form className="space-y-4" onSubmit={handleHealthWorkerSubmit} noValidate>
+        <form
+          className="space-y-4"
+          onSubmit={handleHealthWorkerSubmit}
+          noValidate
+        >
           <button
             type="button"
             onClick={() => setModalStep("role")}

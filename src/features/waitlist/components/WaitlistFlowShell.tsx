@@ -16,11 +16,7 @@ export function WaitlistFlowShell() {
     <div className="min-h-screen bg-white text-onboarding-textPrimary">
       <header className="sticky top-0 z-20 border-b border-neutral-200/80 bg-white/90 backdrop-blur">
         <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
-          <Link
-            aria-label="NexusCare home"
-            className="shrink-0"
-            to="/waitlist/landing"
-          >
+          <Link aria-label="NexusCare home" className="shrink-0" to="/">
             <NexusCareLogo size="md" />
           </Link>
 
@@ -31,7 +27,7 @@ export function WaitlistFlowShell() {
             {waitlistNavItems.map((item) => (
               <Link
                 key={item}
-                to="/waitlist/landing"
+                to="/"
                 className="text-sm font-medium text-neutral-600 transition-colors hover:text-onboarding-primaryBlue"
               >
                 {item}
@@ -74,7 +70,7 @@ export function WaitlistFlowShell() {
                 {section.links.map((link) => (
                   <li key={link}>
                     <Link
-                      to="/waitlist/landing"
+                      to="/"
                       className="transition-colors hover:text-onboarding-primaryBlue"
                     >
                       {link}

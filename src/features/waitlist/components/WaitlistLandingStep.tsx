@@ -1,6 +1,5 @@
 import {
   Activity,
-  ArrowRight,
   Brain,
   CalendarClock,
   ClipboardCheck,
@@ -10,13 +9,77 @@ import {
   Wallet,
   Zap,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/shared/components/ui/Button";
 import {
-  waitlistInsights,
   waitlistPartners,
-  waitlistSteps,
 } from "../constants/waitlistContent";
+import { DirectionalStepper } from "./DirectionalStepper";
+import { FaqAccordion } from "./FaqAccordion";
+import { ProblemCard } from "./ProblemCard";
 import { useWaitlistFlow } from "./waitlistFlowContext";
+
+const staffingProblems = [
+  {
+    title: "Last-minute shift cancellations",
+    description:
+      "Unexpected call-outs leave critical units under-covered, forcing hospitals to scramble for replacements during peak demand.",
+    imageSrc: "/waitlist/hospital-form.jpg",
+    imageAlt: "Hospital unit managing a sudden staffing gap",
+  },
+  {
+    title: "Staff shortages and burnout",
+    description:
+      "Persistent vacancies and overtime pressure increase clinician fatigue, impacting team morale, retention, and continuity of care.",
+    imageSrc: "/waitlist/health-workers.jpg",
+    imageAlt: "Healthcare staff experiencing workload strain",
+  },
+  {
+    title: "Slow manual staffing process",
+    description:
+      "Phone calls, spreadsheets, and back-and-forth approvals delay shift fulfillment and make urgent staffing decisions harder.",
+    imageSrc: "/waitlist/landing.jpg",
+    imageAlt: "Manual staffing coordination and scheduling workflow",
+  },
+] as const;
+
+const hospitalFlowSteps = [
+  "Post an open shift",
+  "Verified healthcare workers apply or accept",
+  "Fill staffing gaps quickly",
+  "Approve completed shifts and payment",
+] as const;
+
+const healthWorkerFlowSteps = [
+  "Create and verify your profile",
+  "Browse available hospital shifts",
+  "Accept shifts that fit your schedule",
+  "Complete shifts and get paid",
+] as const;
+
+const faqItems = [
+  {
+    question: "Is Nexus only for hospitals?",
+    answer: "No. Clinics and healthcare centers can also use Nexus.",
+  },
+  {
+    question: "Who can apply for shifts?",
+    answer:
+      "Verified healthcare professionals such as nurses, doctors, and healthcare assistants.",
+  },
+  {
+    question: "How are workers verified?",
+    answer: "We verify identity and professional credentials before approval.",
+  },
+  {
+    question: "When do workers get paid?",
+    answer: "Payments are processed after shift completion and approval.",
+  },
+  {
+    question: "Can workers choose their schedules?",
+    answer: "Yes. Workers select shifts based on their availability.",
+  },
+] as const;
 
 const ecosystemColumns = [
   {
@@ -80,7 +143,13 @@ const ecosystemColumns = [
 ] as const;
 
 export function WaitlistLandingStep() {
+  const navigate = useNavigate();
   const { openJoinModal } = useWaitlistFlow();
+
+  const goToRoleLogin = (role: "hospital" | "health-worker") => {
+    localStorage.setItem("selectedRole", role);
+    navigate(`/auth/login?role=${role}`);
+  };
 
   return (
     <div className="bg-[#f4f6fa]">
@@ -92,28 +161,18 @@ export function WaitlistLandingStep() {
           </div>
 
           <h1 className="mt-6 text-4xl font-semibold tracking-tight text-neutral-950 sm:text-5xl lg:text-6xl">
-            The{" "}
-            <span className="text-onboarding-primaryBlue">Digital Pulse</span>{" "}
-            of Modern Healthcare.
+            <span className="text-onboarding-primaryBlue">
+              Healthcare staffing,
+            </span>{" "}
+            <span className="text-onboarding-primaryGreen">on demand.</span>
           </h1>
 
           <p className="mx-auto mt-5 max-w-2xl text-sm leading-7 text-neutral-600 sm:text-base">
-            Empowering healthcare facilities with AI-driven documentation and a
-            high-fidelity marketplace for elite clinical talent. Experience the
-            future of medical workflows.
+            Hospitals post open shifts. Verified healthcare professionals accept
+            shifts and get paid after completion.
           </p>
 
-          <div className="mt-8">
-            <Button
-              type="button"
-              onClick={openJoinModal}
-              className="rounded-xl bg-gradient-to-r from-onboarding-primaryGreen to-onboarding-primaryBlue px-7 py-3 text-sm font-semibold text-white"
-            >
-              Join Waitlist <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </div>
-
-          <div className="mx-auto mt-12 max-w-5xl overflow-hidden rounded-2xl border border-neutral-200 bg-[#0a2f4a] shadow-strong">
+          <div className="mx-auto mt-12 max-w-6xl overflow-hidden rounded-2xl border border-neutral-200 bg-[#0a2f4a] shadow-strong">
             <img
               src="/waitlist/landing.jpg"
               alt="Clinical workflow dashboard"
@@ -123,46 +182,7 @@ export function WaitlistLandingStep() {
         </div>
       </section>
 
-      <section className="border-y border-neutral-200 bg-[#eef0f5] px-4 py-6 sm:px-6 lg:px-8">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-7 gap-y-3 text-xs font-semibold uppercase tracking-[0.15em] text-neutral-500 sm:text-sm">
-          <span className="text-onboarding-primaryBlue">Partnered with</span>
-          {waitlistPartners.map((partner) => (
-            <span key={partner}>{partner}</span>
-          ))}
-        </div>
-      </section>
-
-      <section className="px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
-        <div className="mx-auto max-w-6xl">
-          <div className="text-center">
-            <h2 className="text-4xl font-semibold text-onboarding-primaryGreen">
-              Precision Workflow
-            </h2>
-            <p className="mx-auto mt-4 max-w-2xl text-sm text-neutral-600 sm:text-base">
-              A seamless 3-step transition from registration to your first
-              clinical payout.
-            </p>
-          </div>
-
-          <div className="mt-12 grid gap-6 border-t border-neutral-200 pt-8 md:grid-cols-3">
-            {waitlistSteps.map((step) => (
-              <article key={step.id} className="text-center">
-                <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-onboarding-primaryBlue to-onboarding-primaryGreen text-sm font-semibold text-white">
-                  {step.id}
-                </div>
-                <h3 className="mt-4 text-3xl font-semibold text-neutral-900">
-                  {step.title}
-                </h3>
-                <p className="mx-auto mt-3 max-w-sm text-sm leading-6 text-neutral-600">
-                  {step.description}
-                </p>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="px-4 pb-14 sm:px-6 lg:px-8 lg:pb-20">
+      <section className="px-4 pb-14 sm:px-6 lg:px-8 lg:pb-20 mx-auto">
         <div className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-2">
           <article className="relative overflow-hidden rounded-2xl shadow-strong">
             <img
@@ -180,9 +200,13 @@ export function WaitlistLandingStep() {
                 Eliminate staffing gaps with automated compliance and verified
                 talent pipelines.
               </p>
-              {/* <button className="text-sm bg-white text-onboarding-primaryBlue py-4 px-6 rounded-lg">
-                Partner with Us
-              </button> */}
+              <button
+                type="button"
+                onClick={() => goToRoleLogin("hospital")}
+                className="text-sm bg-white text-onboarding-primaryBlue py-4 px-6 rounded-lg mt-2"
+              >
+                Join as a Hospital
+              </button>
             </div>
           </article>
 
@@ -204,12 +228,85 @@ export function WaitlistLandingStep() {
                 The freedom to work anywhere, powered by AI documentation that
                 saves hours daily.
               </p>
-              {/* <button className="text-sm bg-white text-onboarding-primaryBlue py-4 px-6 rounded-lg">
-                Start practicing
-              </button> */}
+              <button
+                type="button"
+                onClick={() => goToRoleLogin("health-worker")}
+                className="text-sm bg-white text-onboarding-primaryBlue py-4 px-6 rounded-lg mt-2"
+              >
+                Join as a Health Worker
+              </button>
             </div>
           </article>
         </div>
+      </section>
+
+      <section className="border-y border-neutral-200 bg-[#eef0f5] px-4 py-6 sm:px-6 lg:px-8">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-7 gap-y-3 text-xs font-semibold uppercase tracking-[0.15em] text-neutral-500 sm:text-sm">
+          <span className="text-onboarding-primaryBlue">Partnered with</span>
+          {waitlistPartners.map((partner) => (
+            <span key={partner}>{partner}</span>
+          ))}
+        </div>
+      </section>
+
+      <section className="px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
+        <div className="mx-auto max-w-6xl">
+          <div className="text-center">
+            <h2 className="text-4xl font-semibold text-onboarding-primaryGreen">
+              Hospital struggles to fill shifts quickly
+            </h2>
+            <p className="mx-auto mt-4 max-w-2xl text-sm text-neutral-600 sm:text-base">
+              Staff shortages, emergency absences, and scheduling gaps affect
+              healthcare delivery every day. Nexus helps hospitals find
+              qualified healthcare workers fast.
+            </p>
+          </div>
+
+          <div className="mt-12 grid gap-6 border-t border-neutral-200 pt-8 md:grid-cols-3">
+            {staffingProblems.map((problem) => (
+              <ProblemCard
+                key={problem.title}
+                title={problem.title}
+                description={problem.description}
+                imageSrc={problem.imageSrc}
+                imageAlt={problem.imageAlt}
+              />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="px-4 py-5 sm:px-6 lg:px-8 lg:py-20">
+        <div className="mx-auto max-w-6xl">
+          <div className="text-center">
+            <h2 className="text-4xl font-semibold text-onboarding-primaryGreen">
+              How Nexus solves these staffing challenges
+            </h2>
+            <p className="mx-auto mt-4 max-w-2xl text-sm text-neutral-600 sm:text-base">
+              This step-by-step flow helps hospitals respond faster to
+              cancellations, reduce burnout from understaffing, and replace
+              slow manual coordination with a reliable digital workflow.
+            </p>
+          </div>
+
+          <div className="mt-12 grid gap-6 border-t border-neutral-200 pt-8 lg:grid-cols-2">
+            <DirectionalStepper
+              title="For Hospitals"
+              steps={[...hospitalFlowSteps]}
+            />
+            <DirectionalStepper
+              title="For Health Workers"
+              steps={[...healthWorkerFlowSteps]}
+            />
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <FaqAccordion
+          headline="Frequently asked questions"
+          items={[...faqItems]}
+        />
       </section>
 
       <section className="px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
@@ -260,49 +357,6 @@ export function WaitlistLandingStep() {
                 </div>
               </article>
             ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
-        <div className="mx-auto max-w-6xl">
-          <div className="text-center">
-            <h2 className="text-3xl font-semibold text-onboarding-primaryGreen sm:text-4xl">
-              Editorial Insights
-            </h2>
-            <p className="mt-3 text-sm leading-6 text-neutral-600 sm:text-base">
-              Stay updated with the latest in clinical tech.
-            </p>
-          </div>
-
-          <div className="mt-8 grid gap-6 lg:grid-cols-3">
-            {waitlistInsights.map((insight) => {
-              return (
-                <article
-                  key={insight.title}
-                  className="overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-soft"
-                >
-                  <div>
-                    <img
-                      src={insight.image}
-                      alt={insight.title}
-                      className="h-44 w-full object-cover center"
-                    />
-                  </div>
-                  <div className="p-5">
-                    <p className="text-xs uppercase tracking-[0.16em] text-neutral-400">
-                      {insight.category}
-                    </p>
-                    <h3 className="mt-3 text-2xl font-semibold text-neutral-900">
-                      {insight.title}
-                    </h3>
-                    <p className="mt-3 text-sm leading-6 text-neutral-600">
-                      {insight.description}
-                    </p>
-                  </div>
-                </article>
-              );
-            })}
           </div>
         </div>
       </section>

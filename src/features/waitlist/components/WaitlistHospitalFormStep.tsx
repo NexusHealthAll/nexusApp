@@ -106,7 +106,7 @@ export function WaitlistHospitalFormStep() {
         roleCategory: state.hospitalForm.roleCategory.trim(),
       });
 
-      navigate("/waitlist/success");
+      navigate("/success");
     } catch (error) {
       console.log(error);
       if (
