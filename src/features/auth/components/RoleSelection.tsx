@@ -76,6 +76,13 @@ export function RoleSelection() {
             </div>
           </div>
 
+          {/* Progress Bar */}
+          <div className="bg-white px-6 pb-2">
+            <div className="w-full bg-gray-200 rounded-full h-1">
+              <div className="bg-gradient-to-r from-onboarding-primaryGreen to-onboarding-primaryBlue h-1 rounded-full w-3/4"></div>
+            </div>
+          </div>
+
           <CardContent className="px-6 py-8 flex-1 flex flex-col justify-center">
             {/* Title */}
             <div className="text-center mb-8">
