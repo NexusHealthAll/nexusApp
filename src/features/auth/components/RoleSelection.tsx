@@ -86,71 +86,96 @@ export function RoleSelection() {
           <CardContent className="px-6 py-8 flex-1 flex flex-col justify-center">
             {/* Title */}
             <div className="text-center mb-8">
-              <h1 className="text-2xl font-bold text-onboarding-textPrimary mb-2">
-                How will you use
+              <h1 className="text-2xl font-bold text-onboarding-textPrimary mb-4">
+                Choose Your Professional Role
               </h1>
-              <h2 className="text-2xl font-bold text-onboarding-textPrimary mb-4">
-                NexusCare?
-              </h2>
-              <p className="text-sm text-onboarding-textSecondary">
-                Select your primary professional role to customize your workspace.
+              <p className="text-sm text-onboarding-textSecondary px-4">
+                Select your medical specialization to view clinical opportunities tailored to your expertise.
               </p>
             </div>
 
-            {/* Role Cards */}
-            <div className="space-y-3 mb-8">
-              {/* Healthcare Worker Card */}
+            {/* Role Cards - Two Column Layout */}
+            <div className="grid grid-cols-2 gap-4 mb-8">
+              {/* Health Workers Card */}
               <div
                 onClick={() => handleRoleSelect('health-worker')}
-                className={`p-4 rounded-xl border cursor-pointer transition-all duration-200 ${
+                className={`p-6 rounded-xl border cursor-pointer transition-all duration-200 text-center ${
                   selectedRole === 'health-worker'
                     ? 'border-onboarding-primaryBlue bg-blue-50'
                     : 'border-gray-200 bg-white hover:border-gray-300'
                 }`}
               >
-                <div className="flex items-start space-x-3">
-                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                <div className="flex flex-col items-center">
+                  <div className={`w-12 h-12 rounded-lg flex items-center justify-center mb-4 ${
                     selectedRole === 'health-worker'
                       ? 'bg-blue-100'
                       : 'bg-blue-50'
                   }`}>
-                    <Stethoscope className="w-5 h-5 text-blue-600" />
+                    <Stethoscope className="w-6 h-6 text-blue-600" />
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-onboarding-textPrimary mb-1 text-base">
-                      Healthcare Worker
-                    </h3>
-                    <p className="text-sm text-onboarding-textSecondary leading-relaxed">
-                      For doctors, nurses, and specialists managing patient care and medical records.
-                    </p>
+                  <h3 className="font-semibold text-onboarding-textPrimary mb-2 text-base">
+                    Health Workers
+                  </h3>
+                  <p className="text-sm text-onboarding-textSecondary leading-relaxed mb-4">
+                    Medical professionals providing direct patient care, consultations, and clinical services.
+                  </p>
+                  
+                  {/* Feature List */}
+                  <div className="space-y-2 text-left w-full">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      <span className="text-xs text-onboarding-textSecondary">Direct patient consultations</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      <span className="text-xs text-onboarding-textSecondary">Clinical assessments</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      <span className="text-xs text-onboarding-textSecondary">Treatment planning</span>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Hospital Facility Card */}
+              {/* Hospital Administrator Card */}
               <div
                 onClick={() => handleRoleSelect('hospital')}
-                className={`p-4 rounded-xl border cursor-pointer transition-all duration-200 ${
+                className={`p-6 rounded-xl border cursor-pointer transition-all duration-200 text-center ${
                   selectedRole === 'hospital'
                     ? 'border-onboarding-primaryBlue bg-blue-50'
                     : 'border-gray-200 bg-white hover:border-gray-300'
                 }`}
               >
-                <div className="flex items-start space-x-3">
-                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                <div className="flex flex-col items-center">
+                  <div className={`w-12 h-12 rounded-lg flex items-center justify-center mb-4 ${
                     selectedRole === 'hospital'
                       ? 'bg-green-100'
                       : 'bg-green-50'
                   }`}>
-                    <Building2 className="w-5 h-5 text-green-600" />
+                    <Building2 className="w-6 h-6 text-green-600" />
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-onboarding-textPrimary mb-1 text-base">
-                      Hospital Facility
-                    </h3>
-                    <p className="text-sm text-onboarding-textSecondary leading-relaxed">
-                      For clinics and medical centers managing operations, staffing, and inventory.
-                    </p>
+                  <h3 className="font-semibold text-onboarding-textPrimary mb-2 text-base">
+                    Hospital Administrator
+                  </h3>
+                  <p className="text-sm text-onboarding-textSecondary leading-relaxed mb-4">
+                    Healthcare facility management, staff coordination, and operational oversight.
+                  </p>
+                  
+                  {/* Feature List */}
+                  <div className="space-y-2 text-left w-full">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      <span className="text-xs text-onboarding-textSecondary">Staff management</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      <span className="text-xs text-onboarding-textSecondary">Shift scheduling</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      <span className="text-xs text-onboarding-textSecondary">Resource allocation</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -181,7 +206,10 @@ export function RoleSelection() {
 
             {/* Terms */}
             <p className="text-xs text-onboarding-textSecondary text-center mt-6 leading-relaxed">
-              By continuing, you agree to our terms of service and clinical compliance guidelines.
+              Need help choosing your role?{' '}
+              <button className="text-secondary-600 hover:text-secondary-700 font-medium">
+                Contact Support
+              </button>
             </p>
           </CardContent>
         </Card>
