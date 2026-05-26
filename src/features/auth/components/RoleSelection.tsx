@@ -98,26 +98,26 @@ export function RoleSelection() {
             </div>
 
             {/* Role Cards */}
-            <div className="space-y-4 mb-8">
+            <div className="space-y-3 mb-8">
               {/* Healthcare Worker Card */}
               <div
                 onClick={() => handleRoleSelect('health-worker')}
-                className={`p-4 rounded-2xl border-2 cursor-pointer transition-all duration-200 ${
+                className={`p-4 rounded-xl border cursor-pointer transition-all duration-200 ${
                   selectedRole === 'health-worker'
                     ? 'border-onboarding-primaryBlue bg-blue-50'
                     : 'border-gray-200 bg-white hover:border-gray-300'
                 }`}
               >
-                <div className="flex items-start space-x-4">
-                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                <div className="flex items-start space-x-3">
+                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
                     selectedRole === 'health-worker'
-                      ? 'bg-onboarding-primaryBlue text-white'
-                      : 'bg-blue-100 text-blue-600'
+                      ? 'bg-blue-100'
+                      : 'bg-blue-50'
                   }`}>
-                    <Stethoscope className="w-6 h-6" />
+                    <Stethoscope className="w-5 h-5 text-blue-600" />
                   </div>
-                  <div className="flex-1">
-                    <h3 className="font-bold text-onboarding-textPrimary mb-1">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-onboarding-textPrimary mb-1 text-base">
                       Healthcare Worker
                     </h3>
                     <p className="text-sm text-onboarding-textSecondary leading-relaxed">
@@ -130,22 +130,22 @@ export function RoleSelection() {
               {/* Hospital Facility Card */}
               <div
                 onClick={() => handleRoleSelect('hospital')}
-                className={`p-4 rounded-2xl border-2 cursor-pointer transition-all duration-200 ${
+                className={`p-4 rounded-xl border cursor-pointer transition-all duration-200 ${
                   selectedRole === 'hospital'
                     ? 'border-onboarding-primaryBlue bg-blue-50'
                     : 'border-gray-200 bg-white hover:border-gray-300'
                 }`}
               >
-                <div className="flex items-start space-x-4">
-                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                <div className="flex items-start space-x-3">
+                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
                     selectedRole === 'hospital'
-                      ? 'bg-onboarding-primaryBlue text-white'
-                      : 'bg-green-100 text-green-600'
+                      ? 'bg-green-100'
+                      : 'bg-green-50'
                   }`}>
-                    <Building2 className="w-6 h-6" />
+                    <Building2 className="w-5 h-5 text-green-600" />
                   </div>
-                  <div className="flex-1">
-                    <h3 className="font-bold text-onboarding-textPrimary mb-1">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-onboarding-textPrimary mb-1 text-base">
                       Hospital Facility
                     </h3>
                     <p className="text-sm text-onboarding-textSecondary leading-relaxed">
@@ -160,10 +160,10 @@ export function RoleSelection() {
             <Button
               onClick={handleContinue}
               disabled={!selectedRole || isLoading}
-              className={`w-full font-semibold py-4 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl ${
+              className={`w-full font-medium py-4 rounded-xl transition-all duration-200 ${
                 selectedRole
-                  ? 'bg-gradient-to-r from-onboarding-primaryGreen to-onboarding-primaryBlue text-white hover:opacity-90'
-                  : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                  ? 'bg-gradient-to-r from-onboarding-primaryGreen to-onboarding-primaryBlue text-white hover:opacity-90 shadow-md'
+                  : 'bg-gray-100 text-gray-400 cursor-not-allowed'
               }`}
             >
               {isLoading ? (
