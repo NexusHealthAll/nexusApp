@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, CardContent } from '@/shared/components/ui/Card';
 import { Button } from '@/shared/components/ui/Button';
 import { NexusCareLogo } from '@/shared/components/ui/NexusCareLogo';
 import { Stethoscope, Building2, ArrowRight, Sparkles } from 'lucide-react';

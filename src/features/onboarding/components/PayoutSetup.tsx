@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/shared/components/ui/Card";
 import { Button } from "@/shared/components/ui/Button";
@@ -185,17 +185,20 @@ export function PayoutSetup() {
         {/* Header */}
         <div className="bg-white rounded-t-2xl px-6 py-4 border-b border-slate-100">
           <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center">
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => navigate(-1)}
+                className="rounded-full p-2 text-slate-600 hover:bg-slate-100"
+              >
+                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
               <NexusCareLogo size="md" />
             </div>
             <div className="flex items-center space-x-3">
               <Bell className="h-5 w-5 text-slate-400" />
-              <button
-                onClick={handleClose}
-                className="p-1 hover:bg-slate-100 rounded-full transition-colors"
-              >
-                <X className="h-5 w-5 text-slate-400" />
-              </button>
             </div>
           </div>
 
@@ -231,28 +234,11 @@ export function PayoutSetup() {
                 <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-neutral-500">
                   Select Bank
                 </label>
-                <div className="flex items-center gap-2.5 rounded-lg bg-onboarding-inputBackground px-3 py-2.5">
-                  <Building className="h-4 w-4 flex-shrink-0 text-secondary-600" />
-                  <select
-                    value={formData.bankCode}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        bankCode: e.target.value,
-                      }))
-                    }
-                    className={`flex-1 bg-transparent text-sm text-neutral-800 outline-none ${
-                      errors.bankCode ? "text-red-600" : ""
-                    }`}
-                  >
-                    <option value="">Choose your bank</option>
-                    {nigerianBanks.map((bank) => (
-                      <option key={bank.code} value={bank.code}>
-                        {bank.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                <BankDropdown
+                  value={formData.bankCode}
+                  onChange={(code) => setFormData((prev) => ({ ...prev, bankCode: code }))}
+                  error={!!errors.bankCode}
+                />
                 {errors.bankCode && (
                   <p className="text-sm text-red-600">{errors.bankCode}</p>
                 )}
@@ -362,6 +348,70 @@ export function PayoutSetup() {
           </CardContent>
         </Card>
       </div>
+    </div>
+  );
+}
+
+function BankDropdown({
+  value,
+  onChange,
+  error,
+}: {
+  value: string;
+  onChange: (code: string) => void;
+  error?: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    function handleOutside(e: MouseEvent) {
+      if (!containerRef.current) return;
+      if (!containerRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleOutside);
+    return () => document.removeEventListener("mousedown", handleOutside);
+  }, []);
+
+  const selected = nigerianBanks.find((b) => b.code === value);
+
+  return (
+    <div ref={containerRef} className="relative w-full">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className={`flex items-center gap-2.5 rounded-lg bg-onboarding-inputBackground px-3 py-2.5 w-full text-left ${
+          error ? "ring-1 ring-red-400" : ""
+        }`}
+      >
+        <Building className="h-4 w-4 flex-shrink-0 text-secondary-600" />
+        <span className={`flex-1 text-sm ${selected ? "text-neutral-800" : "text-neutral-400"}`}>
+          {selected ? selected.name : "Choose your bank"}
+        </span>
+        <svg className="h-4 w-4 text-neutral-500" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 011.08 1.04l-4.25 4.25a.75.75 0 01-1.06 0L5.21 8.27a.75.75 0 01.02-1.06z" />
+        </svg>
+      </button>
+
+      {open && (
+        <div className="absolute left-0 right-0 z-50 mt-2 max-h-56 w-full overflow-auto rounded-lg border border-slate-100 bg-white shadow-lg">
+          {nigerianBanks.map((bank) => (
+            <button
+              key={bank.code}
+              type="button"
+              onClick={() => {
+                onChange(bank.code);
+                setOpen(false);
+              }}
+              className="w-full text-left px-3 py-2 text-sm hover:bg-slate-50"
+            >
+              {bank.name}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

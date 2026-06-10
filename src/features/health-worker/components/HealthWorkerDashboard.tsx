@@ -1,985 +1,1871 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useRef, useState } from "react";
+import type { ComponentType, ReactNode } from "react";
 import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/shared/components/ui/Card";
-import { Button } from "@/shared/components/ui/Button";
-import { AITranscriberView } from "./AITranscriberView";
-import { HandoverView } from "./HandoverView";
-import { ClockInVerification } from "./ClockInVerification";
-import { authUtils } from "@/features/auth/components";
-import {
-  Clock,
-  Star,
-  MapPin,
-  Calendar,
-  DollarSign,
   Activity,
-  Users,
-  Pause,
-  Timer,
-  Plus,
-  AlertCircle,
+  AlertTriangle,
+  ArrowLeft,
+  Bell,
+  BriefcaseMedical,
+  Calendar,
+  Check,
+  ChevronRight,
+  Clock,
+  CreditCard,
+  Download,
+  FileText,
+  Home,
   LogOut,
+  MapPin,
+  MessageSquare,
+  Mic,
+  MicOff,
+  Navigation,
+  Search,
+  Settings,
+  ShieldCheck,
+  Star,
+  Stethoscope,
+  User,
+  Video,
+  Wallet,
 } from "lucide-react";
+import { Button } from "@/shared/components/ui/Button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/Card";
+import { cn } from "@/shared/utils/cn";
+import { authUtils } from "@/features/auth/utils/authUtils";
+import {
+  AvailableShift,
+  ActiveShift,
+  DashboardStats,
+  HealthWorkerProfile,
+  HealthWorkerService,
+  ShiftEarnings,
+  ShiftHistoryItem,
+} from "../services/healthWorkerService";
+
+type MainTab = "home" | "marketplace" | "schedule" | "earnings" | "profile";
+type ScheduleTab = "upcoming" | "active" | "completed";
+type FlowView =
+  | "main"
+  | "notifications"
+  | "shift-detail"
+  | "shift-confirmed"
+  | "shift-entry"
+  | "active-shift"
+  | "waiting-room"
+  | "consultation"
+  | "clinical-review"
+  | "handover";
 
 interface HealthWorkerDashboardProps {
   workerId?: string;
 }
 
-// Mock data matching Figma design
-const mockHealthWorkerData = {
-  profile: {
-    name: "Dr. Abode",
-    rating: 4.9,
-    totalEarnings: 385000, // ₦385k
-    currentStatus: "available", // available, on-shift, off-duty
-    specialization: "Emergency Doctor",
-  },
-  currentShift: {
-    isActive: false,
-    hospital: "LUTH - Emergency Dept",
-    startTime: null,
-    duration: "00:00:00",
-    hourlyRate: 8000,
-    location: "Lagos Island",
-  },
-  availableShifts: [
-    {
-      id: "1",
-      hospital: "LUTH - Emergency Dept",
-      department: "Emergency Medicine",
-      date: "Today",
-      time: "2:00 PM - 10:00 PM",
-      duration: "8 hours",
-      hourlyRate: 8000,
-      location: "Lagos Island",
-      urgency: "high",
-      description: "Emergency department coverage needed",
-    },
-    {
-      id: "2",
-      hospital: "General Nurse",
-      department: "General Medicine",
-      date: "Tomorrow",
-      time: "6:00 AM - 2:00 PM",
-      duration: "8 hours",
-      hourlyRate: 6000,
-      location: "Victoria Island",
-      urgency: "medium",
-    },
-    {
-      id: "3",
-      hospital: "GP Consultation",
-      department: "General Practice",
-      date: "Oct 28",
-      time: "9:00 AM - 5:00 PM",
-      duration: "8 hours",
-      hourlyRate: 6000,
-      location: "Ikeja",
-      urgency: "low",
-    },
-  ],
-  recentShifts: [
-    {
-      hospital: "Lagos University Teaching Hospital",
-      date: "Oct 25",
-      duration: "8 hours",
-      earnings: 64000,
-      rating: 5.0,
-    },
-    {
-      hospital: "Emergency Hospital",
-      date: "Oct 23",
-      duration: "6 hours",
-      earnings: 48000,
-      rating: 4.8,
-    },
-  ],
-  weeklyStats: {
-    hoursWorked: 34.5,
-    earnings: 428500,
-    shiftsCompleted: 5,
-    averageRating: 4.9,
-  },
+interface PatientQueueItem {
+  id: string;
+  name: string;
+  room: string;
+  age: number;
+  status: "medication" | "stable" | "monitoring" | "waiting";
+  note: string;
+}
+
+const fallbackStats: DashboardStats = {
+  rating: 4.9,
+  totalEarnings: "₦385k",
+  hoursWorked: "34.5h",
+  weeklyEarnings: "₦429k",
 };
 
-export function HealthWorkerDashboard({
-  workerId: _workerId,
-}: HealthWorkerDashboardProps) {
-  const navigate = useNavigate();
-  const [shiftStatus, setShiftStatus] = useState<
-    "available" | "on-shift" | "off-duty"
-  >("available");
-  const [activeShift, setActiveShift] = useState<any>(null);
-  const [currentView, setCurrentView] = useState<
-    | "dashboard"
-    | "clock-in-verification"
-    | "active-shift"
-    | "transcriber"
-    | "handover"
-  >("dashboard");
-  const [currentPatientId, setCurrentPatientId] = useState<string | null>(null);
-  const [shiftTimer, setShiftTimer] = useState(0);
-  const [selectedShift, setSelectedShift] = useState<any>(null);
+const fallbackEarnings: ShiftEarnings = {
+  weeklyHours: 32.5,
+  weeklyEarnings: 428500,
+  monthlyEarnings: 684200,
+  totalEarnings: 248500,
+  averageHourlyRate: 7500,
+};
 
-  // Live shift timer effect
-  useEffect(() => {
-    let interval: ReturnType<typeof setInterval> | undefined;
-    if (currentView === "active-shift" && activeShift) {
-      interval = setInterval(() => {
-        setShiftTimer((prev) => prev + 1);
-      }, 1000);
-    }
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [currentView, activeShift]);
+const patientQueue: PatientQueueItem[] = [
+  {
+    id: "P-5821",
+    name: "Smith, John",
+    room: "Room 302",
+    age: 54,
+    status: "medication",
+    note: "Overdue 15m",
+  },
+  {
+    id: "P-1184",
+    name: "Lee, David",
+    room: "Room 304",
+    age: 45,
+    status: "stable",
+    note: "Pre-op",
+  },
+  {
+    id: "P-9021",
+    name: "Obi, Chinelo",
+    room: "Room 310",
+    age: 68,
+    status: "monitoring",
+    note: "Continuous monitoring",
+  },
+];
 
-  const formatShiftTime = (seconds: number) => {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
-    return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
-  };
+const notifications = [
+  {
+    title: "New Shift Offer: ICU",
+    body: "Lagos University Teaching Hospital is requesting specialized nurse support.",
+    meta: "2m ago",
+    kind: "shift",
+  },
+  {
+    title: "Payment Confirmed",
+    body: "Your earnings for the week have been transferred.",
+    meta: "1h ago",
+    kind: "payment",
+  },
+  {
+    title: "Compliance Update",
+    body: "Your medical license documentation expires in 14 days.",
+    meta: "4h ago",
+    kind: "alert",
+  },
+];
 
-  const handleClockIn = (shift: any) => {
-    setSelectedShift(shift);
-    setCurrentView("clock-in-verification");
-  };
+function getStoredWorkerId(fallback?: string): string {
+  const user = authUtils.getCurrentUser();
+  return user?.id || fallback || "HW001";
+}
 
-  const handleConfirmClockIn = () => {
-    const shiftWithStartTime = {
-      ...selectedShift,
-      startTime: new Date().toISOString(),
-    };
-    setActiveShift(shiftWithStartTime);
-    setShiftStatus("on-shift");
-    setCurrentView("active-shift");
-    setShiftTimer(0); // Reset timer when starting new shift
-  };
+function formatCurrency(amount: number): string {
+  return `₦${amount.toLocaleString("en-NG")}`;
+}
 
-  const handleCancelClockIn = () => {
-    setSelectedShift(null);
-    setCurrentView("dashboard");
-  };
+function getShiftPayout(shift: AvailableShift): string {
+  const hours = Number.parseInt(shift.duration, 10) || 12;
+  return formatCurrency(shift.hourlyRate * hours);
+}
 
-  const handleClockOut = () => {
-    setCurrentView("handover");
-  };
+function Shell({
+  children,
+  activeTab,
+  onTabChange,
+  showTabs = true,
+}: {
+  children: ReactNode;
+  activeTab: MainTab;
+  onTabChange: (tab: MainTab) => void;
+  showTabs?: boolean;
+}) {
+  const tabs = [
+    { id: "home" as const, label: "Home", icon: Home },
+    { id: "marketplace" as const, label: "Marketplace", icon: BriefcaseMedical },
+    { id: "schedule" as const, label: "Schedule", icon: Calendar },
+    { id: "earnings" as const, label: "Earnings", icon: Wallet },
+    { id: "profile" as const, label: "Profile", icon: User },
+  ];
 
-  const handleRecordNewPatient = () => {
-    const newPatientId = `P${Date.now().toString().slice(-4)}`;
-    setCurrentPatientId(newPatientId);
-    setCurrentView("transcriber");
-  };
-
-  const handleCompleteConsultation = () => {
-    setCurrentView("active-shift");
-    setCurrentPatientId(null);
-  };
-
-  const handleCompleteHandover = () => {
-    setActiveShift(null);
-    setShiftStatus("available");
-    setCurrentView("dashboard");
-    setCurrentPatientId(null);
-  };
-
-  const handleCancelHandover = () => {
-    setCurrentView("active-shift");
-  };
-
-  const handlePauseShift = () => {
-    // Handle shift pause logic
-    console.log("Shift paused/resumed");
-  };
-
-  const handleSaveNotes = (notes: any) => {
-    console.log("Notes saved:", notes);
-  };
-
-  const toggleDutyStatus = () => {
-    setShiftStatus(shiftStatus === "off-duty" ? "available" : "off-duty");
-  };
-
-  const handleLogout = () => {
-    authUtils.clearAuth();
-    navigate("/auth/login");
-  };
-
-  const getUrgencyColor = (urgency: string) => {
-    switch (urgency) {
-      case "high":
-        return "bg-rose-50 text-rose-700 border-rose-200";
-      case "medium":
-        return "bg-amber-50 text-amber-700 border-amber-200";
-      case "low":
-        return "bg-emerald-50 text-emerald-700 border-emerald-200";
-      default:
-        return "bg-slate-50 text-slate-700 border-slate-200";
-    }
-  };
-
-  // Render different views based on current state
-  if (currentView === "clock-in-verification" && selectedShift) {
-    return (
-      <ClockInVerification
-        shiftData={selectedShift}
-        onConfirmClockIn={handleConfirmClockIn}
-        onCancel={handleCancelClockIn}
-      />
-    );
-  }
-
-  if (currentView === "active-shift" && activeShift) {
-    return (
-      <div className="min-h-screen bg-[#F3FAFF]">
-        {/* Active Shift Header - Hospital Color Scheme */}
-        <div className="bg-white border-b border-onboarding-inputBackground px-4 py-3 sm:px-6 sm:py-4">
-          <div className="space-y-3 sm:space-y-0 sm:flex sm:items-center sm:justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-onboarding-primaryGreen/10 flex items-center justify-center">
-                <Timer className="h-5 w-5 sm:h-6 sm:w-6 text-onboarding-primaryGreen" />
-              </div>
-              <div>
-                <h1 className="text-base sm:text-xl font-semibold text-onboarding-textPrimary">
-                  Active Shift
-                </h1>
-                <p className="text-xs sm:text-sm text-onboarding-textSecondary">
-                  {activeShift.hospital}
-                </p>
-              </div>
-            </div>
-
-            {/* Mobile Timer and Controls */}
-            <div className="flex items-center justify-between sm:justify-end sm:space-x-6">
-              <div className="text-center">
-                <p className="text-xl sm:text-3xl font-bold text-onboarding-primaryGreen">
-                  {formatShiftTime(shiftTimer)}
-                </p>
-                <p className="text-xs text-onboarding-textSecondary">
-                  Live Timer
-                </p>
-              </div>
-              <div className="flex space-x-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handlePauseShift}
-                  className="px-2 sm:px-3 border-onboarding-inputBackground text-onboarding-textSecondary hover:text-onboarding-textPrimary"
-                >
-                  <Pause className="h-4 w-4 sm:mr-2" />
-                  <span className="hidden sm:inline">Pause</span>
-                </Button>
-                <Button
-                  variant="danger"
-                  size="sm"
-                  onClick={handleClockOut}
-                  className="px-2 sm:px-3 bg-red-600 hover:bg-red-700 text-white"
-                >
-                  <span className="hidden sm:inline">End Shift</span>
-                  <span className="sm:hidden">End</span>
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="p-4 space-y-4 sm:p-6 sm:space-y-6">
-          {/* Primary Action Button - Mobile Perfect */}
-          <div className="text-center">
-            <Button
-              size="lg"
-              onClick={handleRecordNewPatient}
-              className="w-full sm:w-auto bg-gradient-to-r from-onboarding-primaryGreen to-onboarding-primaryBlue hover:opacity-90 text-white px-6 py-4 text-base font-semibold transition-all shadow-lg"
-            >
-              <Plus className="h-5 w-5 mr-2" />
-              RECORD NEW PATIENT
-            </Button>
-          </div>
-
-          {/* Today's Patients Queue - Mobile First Design */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center justify-between text-base sm:text-lg">
-                <span>Today's Patients</span>
-                <div className="flex items-center space-x-2 text-xs sm:text-sm">
-                  <span className="text-neutral-500">12 seen</span>
-                  <span className="px-2 py-0.5 bg-success-100 text-success-800 rounded-full text-xs font-medium">
-                    5 Active
-                  </span>
-                </div>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {/* Mobile Card Layout */}
-              <div className="space-y-2 sm:hidden">
-                {[
-                  {
-                    id: "#2361",
-                    time: "2:15 PM",
-                    complaint: "Fever, cough",
-                    priority: "Medium",
-                    status: "completed",
-                    duration: "18m",
-                  },
-                  {
-                    id: "#2362",
-                    time: "2:45 PM",
-                    complaint: "Abdominal pain",
-                    priority: "High",
-                    status: "completed",
-                    duration: "25m",
-                  },
-                  {
-                    id: "#2363",
-                    time: "3:20 PM",
-                    complaint: "Headache, dizziness",
-                    priority: "Low",
-                    status: "completed",
-                    duration: "12m",
-                  },
-                  {
-                    id: "#2364",
-                    time: "3:55 PM",
-                    complaint: "Chest pain",
-                    priority: "High",
-                    status: "in-progress",
-                    duration: "15m",
-                  },
-                  {
-                    id: "#2365",
-                    time: "4:10 PM",
-                    complaint: "Back pain",
-                    priority: "Medium",
-                    status: "waiting",
-                    duration: "-",
-                  },
-                  {
-                    id: "#2366",
-                    time: "4:25 PM",
-                    complaint: "Skin rash",
-                    priority: "Low",
-                    status: "waiting",
-                    duration: "-",
-                  },
-                ].map((patient) => (
-                  <div
-                    key={patient.id}
-                    className="bg-neutral-50 rounded-lg p-3 space-y-2"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <span className="font-semibold text-neutral-900 text-sm">
-                          {patient.id}
-                        </span>
-                        <span className="text-xs text-neutral-600">
-                          {patient.time}
-                        </span>
-                      </div>
-                      <span
-                        className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                          patient.priority === "High"
-                            ? "bg-error-100 text-error-800"
-                            : patient.priority === "Medium"
-                              ? "bg-warning-100 text-warning-800"
-                              : "bg-neutral-100 text-neutral-800"
-                        }`}
-                      >
-                        {patient.priority}
-                      </span>
-                    </div>
-                    <p className="text-xs text-neutral-800">
-                      {patient.complaint}
-                    </p>
-                    <div className="flex items-center justify-between">
-                      <span
-                        className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                          patient.status === "completed"
-                            ? "bg-success-100 text-success-800"
-                            : patient.status === "in-progress"
-                              ? "bg-primary-100 text-primary-800"
-                              : "bg-neutral-100 text-neutral-800"
-                        }`}
-                      >
-                        {patient.status === "completed"
-                          ? "Done"
-                          : patient.status === "in-progress"
-                            ? "Active"
-                            : "Waiting"}
-                      </span>
-                      {patient.status === "in-progress" ? (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="px-3 py-1 text-xs"
-                        >
-                          Continue
-                        </Button>
-                      ) : patient.status === "waiting" ? (
-                        <Button size="sm" className="px-3 py-1 text-xs">
-                          Start
-                        </Button>
-                      ) : (
-                        <span className="text-xs text-neutral-500">
-                          {patient.duration}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Desktop Table View */}
-              <div className="hidden sm:block overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-neutral-200">
-                      <th className="text-left py-3 px-4 font-semibold text-neutral-700">
-                        Patient ID
-                      </th>
-                      <th className="text-left py-3 px-4 font-semibold text-neutral-700">
-                        Time
-                      </th>
-                      <th className="text-left py-3 px-4 font-semibold text-neutral-700">
-                        Chief Complaint
-                      </th>
-                      <th className="text-left py-3 px-4 font-semibold text-neutral-700">
-                        Priority
-                      </th>
-                      <th className="text-left py-3 px-4 font-semibold text-neutral-700">
-                        Status
-                      </th>
-                      <th className="text-left py-3 px-4 font-semibold text-neutral-700">
-                        Action
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {[
-                      {
-                        id: "#2361",
-                        time: "2:15 PM",
-                        complaint: "Fever, cough",
-                        priority: "Medium",
-                        status: "completed",
-                        duration: "18m",
-                      },
-                      {
-                        id: "#2362",
-                        time: "2:45 PM",
-                        complaint: "Abdominal pain",
-                        priority: "High",
-                        status: "completed",
-                        duration: "25m",
-                      },
-                      {
-                        id: "#2363",
-                        time: "3:20 PM",
-                        complaint: "Headache, dizziness",
-                        priority: "Low",
-                        status: "completed",
-                        duration: "12m",
-                      },
-                      {
-                        id: "#2364",
-                        time: "3:55 PM",
-                        complaint: "Chest pain",
-                        priority: "High",
-                        status: "in-progress",
-                        duration: "15m",
-                      },
-                      {
-                        id: "#2365",
-                        time: "4:10 PM",
-                        complaint: "Back pain",
-                        priority: "Medium",
-                        status: "waiting",
-                        duration: "-",
-                      },
-                      {
-                        id: "#2366",
-                        time: "4:25 PM",
-                        complaint: "Skin rash",
-                        priority: "Low",
-                        status: "waiting",
-                        duration: "-",
-                      },
-                    ].map((patient) => (
-                      <tr
-                        key={patient.id}
-                        className="border-b border-neutral-100 hover:bg-neutral-50"
-                      >
-                        <td className="py-3 px-4 font-semibold text-neutral-900">
-                          {patient.id}
-                        </td>
-                        <td className="py-3 px-4 text-neutral-600">
-                          {patient.time}
-                        </td>
-                        <td className="py-3 px-4 text-neutral-800">
-                          {patient.complaint}
-                        </td>
-                        <td className="py-3 px-4">
-                          <span
-                            className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              patient.priority === "High"
-                                ? "bg-error-100 text-error-800"
-                                : patient.priority === "Medium"
-                                  ? "bg-warning-100 text-warning-800"
-                                  : "bg-neutral-100 text-neutral-800"
-                            }`}
-                          >
-                            {patient.priority}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4">
-                          <span
-                            className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              patient.status === "completed"
-                                ? "bg-success-100 text-success-800"
-                                : patient.status === "in-progress"
-                                  ? "bg-primary-100 text-primary-800"
-                                  : "bg-neutral-100 text-neutral-800"
-                            }`}
-                          >
-                            {patient.status === "completed"
-                              ? "Completed"
-                              : patient.status === "in-progress"
-                                ? "In Progress"
-                                : "Waiting"}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4">
-                          {patient.status === "in-progress" ? (
-                            <Button size="sm" variant="outline">
-                              Continue
-                            </Button>
-                          ) : patient.status === "waiting" ? (
-                            <Button size="sm">Start</Button>
-                          ) : (
-                            <span className="text-sm text-neutral-500">
-                              {patient.duration}
-                            </span>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Shift Statistics - Premium Design */}
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-6">
-            <Card className="bg-white border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
-              <CardContent className="p-4">
-                <div className="flex flex-col space-y-3">
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">
-                      Patients
-                    </p>
-                    <Users className="h-5 w-5 text-blue-500" />
-                  </div>
-                  <p className="text-2xl font-bold text-slate-900">12</p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="bg-white border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
-              <CardContent className="p-4">
-                <div className="flex flex-col space-y-3">
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">
-                      Avg Time
-                    </p>
-                    <Clock className="h-5 w-5 text-indigo-500" />
-                  </div>
-                  <p className="text-2xl font-bold text-slate-900">18m</p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="bg-white border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
-              <CardContent className="p-4">
-                <div className="flex flex-col space-y-3">
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">
-                      Waiting
-                    </p>
-                    <AlertCircle className="h-5 w-5 text-amber-500" />
-                  </div>
-                  <p className="text-2xl font-bold text-slate-900">2</p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="bg-white border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
-              <CardContent className="p-4">
-                <div className="flex flex-col space-y-3">
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">
-                      Earnings
-                    </p>
-                    <DollarSign className="h-5 w-5 text-emerald-500" />
-                  </div>
-                  <p className="text-2xl font-bold text-slate-900">
-                    ₦
-                    {(
-                      (shiftTimer / 3600) *
-                      activeShift.hourlyRate
-                    ).toLocaleString("en-NG", {
-                      minimumFractionDigits: 0,
-                      maximumFractionDigits: 0,
-                    })}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (currentView === "transcriber" && currentPatientId) {
-    return (
-      <AITranscriberView
-        patientId={currentPatientId}
-        onSaveNotes={handleSaveNotes}
-        onCompleteConsultation={handleCompleteConsultation}
-      />
-    );
-  }
-
-  if (currentView === "handover" && activeShift) {
-    return (
-      <HandoverView
-        shiftData={{
-          hospital: activeShift.hospital,
-          department: activeShift.department || "Emergency Medicine",
-          duration: "4:23",
-          patientsSeenToday: 12,
-        }}
-        onCompleteHandover={handleCompleteHandover}
-        onCancelHandover={handleCancelHandover}
-      />
-    );
-  }
-
-  // Main dashboard view
   return (
-    <div className="min-h-screen bg-[#F3FAFF]">
-      <div className="space-y-3 sm:space-y-6 px-4 sm:px-0 py-6">
-        {/* Header with Status Toggle - Mobile Optimized */}
-        <div className="flex flex-col space-y-3 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
-          <div>
-            <h1 className="text-lg sm:text-2xl lg:text-3xl font-bold text-onboarding-textPrimary">
-              Health Worker Dashboard
-            </h1>
-            <p className="text-sm text-onboarding-textSecondary">
-              Manage your shifts and earnings
-            </p>
-          </div>
-          <div className="flex items-center justify-between sm:justify-start space-x-4">
-            <span className="text-sm font-medium text-onboarding-textPrimary">
-              Status:
-            </span>
-            <div className="flex rounded-lg border border-onboarding-inputBackground p-0.5 bg-white">
-              <button
-                onClick={() => setShiftStatus("available")}
-                className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
-                  shiftStatus === "available"
-                    ? "bg-gradient-to-r from-onboarding-primaryGreen to-onboarding-primaryBlue text-white"
-                    : "text-onboarding-textSecondary hover:text-onboarding-textPrimary"
-                }`}
-              >
-                On Duty
-              </button>
-              <button
-                onClick={() => setShiftStatus("off-duty")}
-                className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
-                  shiftStatus === "off-duty"
-                    ? "bg-neutral-600 text-white"
-                    : "text-onboarding-textSecondary hover:text-onboarding-textPrimary"
-                }`}
-              >
-                Off Duty
-              </button>
+    <div className="min-h-screen bg-[#eef7fb] text-slate-950">
+      <div className="flex min-h-screen w-full bg-[#f6fbff] shadow-2xl">
+        {/** Desktop left sidebar (md+) */}
+        {showTabs && (
+          <aside className="hidden md:flex md:w-72 md:flex-col md:shrink-0 border-r border-slate-100 bg-white/95 p-4">
+            <div className="mb-4">
+              <p className="text-[10px] font-bold uppercase tracking-wide text-teal-700">NEXUSCARE</p>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleLogout}
-              className="flex items-center space-x-2 text-onboarding-textSecondary hover:text-onboarding-textPrimary border-onboarding-inputBackground hover:border-onboarding-primaryBlue bg-white"
-            >
-              <LogOut className="h-4 w-4" />
-              <span className="hidden sm:inline">Sign Out</span>
-            </Button>
-          </div>
-        </div>
-
-        {/* Profile Stats - Hospital Color Scheme */}
-        <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">
-          <Card className="bg-white border-onboarding-inputBackground shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex flex-col space-y-3">
-                <div className="flex items-center justify-between">
-                  <p className="text-xs font-medium text-onboarding-textSecondary uppercase tracking-wide">
-                    Rating
-                  </p>
-                  <Star className="h-5 w-5 text-amber-400 fill-amber-400" />
-                </div>
-                <p className="text-2xl sm:text-3xl font-bold text-onboarding-textPrimary">
-                  {mockHealthWorkerData.profile.rating}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white border-onboarding-inputBackground shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex flex-col space-y-3">
-                <div className="flex items-center justify-between">
-                  <p className="text-xs font-medium text-onboarding-textSecondary uppercase tracking-wide">
-                    Total Earnings
-                  </p>
-                  <DollarSign className="h-5 w-5 text-onboarding-primaryGreen" />
-                </div>
-                <p className="text-2xl sm:text-3xl font-bold text-onboarding-textPrimary">
-                  ₦
-                  {(mockHealthWorkerData.profile.totalEarnings / 1000).toFixed(
-                    0,
-                  )}
-                  k
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white border-onboarding-inputBackground shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex flex-col space-y-3">
-                <div className="flex items-center justify-between">
-                  <p className="text-xs font-medium text-onboarding-textSecondary uppercase tracking-wide">
-                    Hours Worked
-                  </p>
-                  <Clock className="h-5 w-5 text-onboarding-primaryBlue" />
-                </div>
-                <p className="text-2xl sm:text-3xl font-bold text-onboarding-textPrimary">
-                  {mockHealthWorkerData.weeklyStats.hoursWorked}h
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white border-onboarding-inputBackground shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex flex-col space-y-3">
-                <div className="flex items-center justify-between">
-                  <p className="text-xs font-medium text-onboarding-textSecondary uppercase tracking-wide">
-                    Weekly Earnings
-                  </p>
-                  <Activity className="h-5 w-5 text-secondary-600" />
-                </div>
-                <p className="text-2xl sm:text-3xl font-bold text-onboarding-textPrimary">
-                  ₦
-                  {(mockHealthWorkerData.weeklyStats.earnings / 1000).toFixed(
-                    0,
-                  )}
-                  k
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Off Duty Status - Hospital Color Scheme */}
-        {shiftStatus === "off-duty" && (
-          <Card className="bg-onboarding-inputBackground border-onboarding-inputBackground">
-            <CardContent className="p-4 sm:p-8 text-center">
-              <div className="mx-auto w-16 h-16 sm:w-24 sm:h-24 rounded-full bg-white flex items-center justify-center mb-3 sm:mb-4">
-                <Clock className="h-8 w-8 sm:h-12 sm:w-12 text-onboarding-textSecondary" />
-              </div>
-              <h3 className="text-base sm:text-xl font-semibold text-onboarding-textPrimary mb-2">
-                You are currently Off Duty
-              </h3>
-              <p className="text-sm text-onboarding-textSecondary mb-4">
-                You won't receive notifications while in this mode.
-              </p>
-              <Button
-                onClick={toggleDutyStatus}
-                className="w-full sm:w-auto bg-gradient-to-r from-onboarding-primaryGreen to-onboarding-primaryBlue text-white hover:opacity-90"
-              >
-                Go Online to See Shifts
-              </Button>
-              <p className="text-xs text-onboarding-textSecondary mt-2">
-                Last shift: Today, 8:43 AM
-              </p>
-            </CardContent>
-          </Card>
+            <nav className="flex flex-col gap-2 mt-2">
+              {tabs.map((tab) => {
+                const Icon = tab.icon;
+                const isActive = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => onTabChange(tab.id)}
+                    className={cn(
+                      "flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold",
+                      isActive ? "bg-blue-700 text-white" : "text-slate-700 hover:bg-slate-50",
+                    )}
+                  >
+                    <Icon className="h-5 w-5" />
+                    <span className="truncate">{tab.label}</span>
+                  </button>
+                );
+              })}
+            </nav>
+          </aside>
         )}
 
-        {/* Available Shifts - Hospital Color Scheme */}
-        <Card className="bg-white border-onboarding-inputBackground shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center justify-between text-base sm:text-lg text-onboarding-textPrimary">
-              <span>Available Shifts</span>
-              <span className="text-xs sm:text-sm font-normal text-onboarding-textSecondary">
-                {mockHealthWorkerData.availableShifts.length} shifts
+        <div className="flex-1 overflow-y-auto pb-24 px-4 md:px-8">
+          <div className="mx-auto w-full max-w-[430px] md:max-w-none">{children}</div>
+        </div>
+
+        {/** Mobile bottom nav (hidden on md+) */}
+        {showTabs && (
+          <nav className="fixed bottom-0 left-1/2 z-40 grid h-16 w-full max-w-[430px] -translate-x-1/2 grid-cols-5 border-t border-slate-200 bg-white/95 px-2 backdrop-blur md:hidden">
+            {tabs.map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => onTabChange(tab.id)}
+                  className={cn(
+                    "flex flex-col items-center justify-center gap-1 text-[10px] font-semibold",
+                    isActive ? "text-blue-700" : "text-slate-500",
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "rounded-xl p-1.5",
+                      isActive && "bg-blue-700 text-white",
+                    )}
+                  >
+                    <Icon className="h-4 w-4" />
+                  </span>
+                  {tab.label}
+                </button>
+              );
+            })}
+          </nav>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function Header({
+  title,
+  subtitle,
+  onBack,
+  onNotifications,
+}: {
+  title?: string;
+  subtitle?: string;
+  onBack?: () => void;
+  onNotifications?: () => void;
+}) {
+  return (
+    <header className="sticky top-0 z-30 border-b border-slate-100 bg-[#f6fbff]/95 px-5 py-4 backdrop-blur">
+      <div className="flex items-center justify-between">
+        <div className="flex min-w-0 items-center gap-3">
+          {onBack && (
+            <button
+              type="button"
+              onClick={onBack}
+              className="rounded-full p-1.5 text-blue-700 hover:bg-blue-50"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+          )}
+          <div className="min-w-0">
+            <p className="text-[10px] font-bold uppercase tracking-wide text-teal-700">
+              NexusCare
+            </p>
+            {title && (
+              <h1 className="truncate text-xl font-bold text-slate-950">
+                {title}
+              </h1>
+            )}
+            {subtitle && <p className="text-xs text-slate-500">{subtitle}</p>}
+          </div>
+        </div>
+        {onNotifications && (
+          <button
+            type="button"
+            onClick={onNotifications}
+            className="rounded-full p-2 text-blue-700 hover:bg-blue-50"
+          >
+            <Bell className="h-5 w-5" />
+          </button>
+        )}
+      </div>
+    </header>
+  );
+}
+
+function StatusBadge({ children, tone = "blue" }: { children: ReactNode; tone?: "blue" | "green" | "red" | "amber" }) {
+  const tones = {
+    blue: "bg-blue-50 text-blue-700",
+    green: "bg-emerald-50 text-emerald-700",
+    red: "bg-rose-50 text-rose-700",
+    amber: "bg-amber-50 text-amber-700",
+  };
+
+  return (
+    <span className={cn("rounded-full px-2.5 py-1 text-[10px] font-bold uppercase", tones[tone])}>
+      {children}
+    </span>
+  );
+}
+
+export function HealthWorkerDashboard({ workerId }: HealthWorkerDashboardProps) {
+  const resolvedWorkerId = useMemo(() => getStoredWorkerId(workerId), [workerId]);
+  const [activeTab, setActiveTab] = useState<MainTab>("home");
+  const [view, setView] = useState<FlowView>("main");
+  const [scheduleTab, setScheduleTab] = useState<ScheduleTab>("upcoming");
+  const [selectedShift, setSelectedShift] = useState<AvailableShift | null>(null);
+  const [activeShift, setActiveShift] = useState<ActiveShift | null>(null);
+  const [selectedPatient, setSelectedPatient] = useState<PatientQueueItem>(patientQueue[0]);
+  const [shiftSeconds, setShiftSeconds] = useState(14 * 60 + 30);
+  const [isLoading, setIsLoading] = useState(true);
+  const [profile, setProfile] = useState<HealthWorkerProfile | null>(null);
+  const [stats, setStats] = useState<DashboardStats>(fallbackStats);
+  const [earnings, setEarnings] = useState<ShiftEarnings>(fallbackEarnings);
+  const [shifts, setShifts] = useState<AvailableShift[]>([]);
+  const [history, setHistory] = useState<ShiftHistoryItem[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isBookingActive, setIsBookingActive] = useState(true);
+
+  // Media controls for consultation (defensive, non-blocking)
+  const audioTrackRef = useRef<MediaStreamTrack | null>(null);
+  const videoTrackRef = useRef<MediaStreamTrack | null>(null);
+  const [isMicOn, setIsMicOn] = useState(false);
+  const [isCamOn, setIsCamOn] = useState(false);
+
+  async function toggleMic() {
+    try {
+      if (isMicOn) {
+        audioTrackRef.current?.stop();
+        audioTrackRef.current = null;
+        setIsMicOn(false);
+        return;
+      }
+      if (!navigator?.mediaDevices?.getUserMedia) {
+        console.warn("Media devices not available");
+        return;
+      }
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const track = stream.getAudioTracks()[0];
+      if (track) {
+        audioTrackRef.current = track;
+        setIsMicOn(true);
+      }
+    } catch (err) {
+      console.error("toggleMic error:", err);
+    }
+  }
+
+  async function toggleCam() {
+    try {
+      if (isCamOn) {
+        videoTrackRef.current?.stop();
+        videoTrackRef.current = null;
+        setIsCamOn(false);
+        return;
+      }
+      if (!navigator?.mediaDevices?.getUserMedia) {
+        console.warn("Media devices not available");
+        return;
+      }
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      const track = stream.getVideoTracks()[0];
+      if (track) {
+        videoTrackRef.current = track;
+        setIsCamOn(true);
+      }
+    } catch (err) {
+      console.error("toggleCam error:", err);
+    }
+  }
+
+  // Cleanup media tracks when leaving consultation view or unmounting
+  useEffect(() => {
+    if (view !== "consultation") return;
+    return () => {
+      audioTrackRef.current?.stop();
+      videoTrackRef.current?.stop();
+      audioTrackRef.current = null;
+      videoTrackRef.current = null;
+      setIsMicOn(false);
+      setIsCamOn(false);
+    };
+  }, [view]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadFlowData() {
+      setIsLoading(true);
+      const [nextProfile, nextStats, nextEarnings, nextShifts, nextHistory] =
+        await Promise.all([
+          HealthWorkerService.getWorkerProfile(resolvedWorkerId),
+          HealthWorkerService.getDashboardStats(resolvedWorkerId),
+          HealthWorkerService.getEarnings(resolvedWorkerId),
+          HealthWorkerService.getAvailableShifts(resolvedWorkerId),
+          HealthWorkerService.getShiftHistory(resolvedWorkerId, 5),
+        ]);
+
+      if (!isMounted) return;
+      setProfile(nextProfile);
+      setStats(nextStats);
+      setEarnings(nextEarnings);
+      setShifts(nextShifts);
+      setHistory(nextHistory);
+      setIsBookingActive(nextProfile.currentStatus !== "off-duty");
+      setIsLoading(false);
+    }
+
+    loadFlowData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [resolvedWorkerId]);
+
+  useEffect(() => {
+    if (view !== "active-shift") return;
+    const timer = window.setInterval(() => {
+      setShiftSeconds((value) => value + 1);
+    }, 1000);
+    return () => window.clearInterval(timer);
+  }, [view]);
+
+  const filteredShifts = shifts.filter((shift) => {
+    const haystack = `${shift.hospital} ${shift.department} ${shift.location}`.toLowerCase();
+    return haystack.includes(searchTerm.toLowerCase());
+  });
+
+  const upcomingShift = shifts[0];
+
+  async function openShiftDetail(shift: AvailableShift) {
+    setSelectedShift(shift);
+    setView("shift-detail");
+  }
+
+  async function confirmInterest() {
+    if (!selectedShift) return;
+    await HealthWorkerService.acceptShift(selectedShift.id, resolvedWorkerId);
+    setView("shift-confirmed");
+  }
+
+  async function clockIn() {
+    const shift = selectedShift || upcomingShift;
+    if (!shift) return;
+    const nextActiveShift = await HealthWorkerService.clockIn(
+      shift.id,
+      resolvedWorkerId,
+    );
+    setActiveShift({
+      ...nextActiveShift,
+      hospital: shift.hospital,
+      department: shift.department,
+      hourlyRate: shift.hourlyRate,
+      location: shift.location,
+    });
+    setShiftSeconds(14 * 60 + 30);
+    setView("active-shift");
+    setScheduleTab("active");
+  }
+
+  async function completeClockOut() {
+    await HealthWorkerService.clockOut(activeShift?.id || "ACTIVE_LOCAL", resolvedWorkerId);
+    setActiveShift(null);
+    setActiveTab("earnings");
+    setView("main");
+  }
+
+  async function toggleBooking() {
+    const nextActive = !isBookingActive;
+    setIsBookingActive(nextActive);
+    await HealthWorkerService.updateDutyStatus(
+      resolvedWorkerId,
+      nextActive ? "available" : "off-duty",
+    );
+  }
+
+  function goTab(tab: MainTab) {
+    setActiveTab(tab);
+    setView("main");
+  }
+
+  function renderMainTab() {
+    switch (activeTab) {
+      case "marketplace":
+        return (
+          <MarketplaceScreen
+            shifts={filteredShifts}
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            onOpenShift={openShiftDetail}
+            isLoading={isLoading}
+          />
+        );
+      case "schedule":
+        return (
+          <ScheduleScreen
+            activeShift={activeShift}
+            scheduleTab={scheduleTab}
+            selectedShift={selectedShift || upcomingShift}
+            shifts={shifts}
+            history={history}
+            onScheduleTabChange={setScheduleTab}
+            onOpenShift={openShiftDetail}
+            onShiftEntry={(shift) => {
+              setSelectedShift(shift);
+              setView("shift-entry");
+            }}
+          />
+        );
+      case "earnings":
+        return <EarningsScreen earnings={earnings} history={history} />;
+      case "profile":
+        return (
+          <ProfileScreen
+            profile={profile}
+            isBookingActive={isBookingActive}
+            onToggleBooking={toggleBooking}
+            onLogout={() => {
+              authUtils.clearAuth();
+              window.location.href = "/auth/login";
+            }}
+          />
+        );
+      case "home":
+      default:
+        return (
+          <HomeScreen
+            profile={profile}
+            stats={stats}
+            upcomingShift={upcomingShift}
+            history={history}
+            isLoading={isLoading}
+            isBookingActive={isBookingActive}
+            onNotifications={() => setView("notifications")}
+            onMarketplace={() => goTab("marketplace")}
+            onOpenShift={(shift) => {
+              setSelectedShift(shift);
+              setView("shift-detail");
+            }}
+          />
+        );
+    }
+  }
+
+  if (view === "notifications") {
+    return (
+      <Shell activeTab={activeTab} onTabChange={goTab}>
+        <NotificationsScreen onBack={() => setView("main")} />
+      </Shell>
+    );
+  }
+
+  if (view === "shift-detail" && selectedShift) {
+    return (
+      <Shell activeTab={activeTab} onTabChange={goTab} showTabs={false}>
+        <ShiftDetailScreen
+          shift={selectedShift}
+          onBack={() => setView("main")}
+          onInterested={confirmInterest}
+        />
+      </Shell>
+    );
+  }
+
+  if (view === "shift-confirmed" && selectedShift) {
+    return (
+      <Shell activeTab={activeTab} onTabChange={goTab} showTabs={false}>
+        <ShiftConfirmedScreen
+          shift={selectedShift}
+          onActiveHub={() => {
+            setActiveTab("schedule");
+            setScheduleTab("upcoming");
+            setView("main");
+          }}
+          onDashboard={() => {
+            setActiveTab("home");
+            setView("main");
+          }}
+        />
+      </Shell>
+    );
+  }
+
+  if (view === "shift-entry" && (selectedShift || upcomingShift)) {
+    const shift = selectedShift || upcomingShift;
+    return (
+      <Shell activeTab={activeTab} onTabChange={goTab} showTabs={false}>
+        <ShiftEntryScreen
+          shift={shift}
+          onBack={() => setView("main")}
+          onClockIn={clockIn}
+        />
+      </Shell>
+    );
+  }
+
+  if (view === "active-shift" && activeShift) {
+    return (
+      <Shell activeTab={activeTab} onTabChange={goTab}>
+        <ActiveShiftScreen
+          activeShift={activeShift}
+          seconds={shiftSeconds}
+          selectedPatient={selectedPatient}
+          onPatientSelect={(patient) => {
+            setSelectedPatient(patient);
+            setView("waiting-room");
+          }}
+          onClockOut={() => setView("handover")}
+        />
+      </Shell>
+    );
+  }
+
+  if (view === "waiting-room") {
+    return (
+      <Shell activeTab={activeTab} onTabChange={goTab}>
+        <WaitingRoomScreen
+          patient={selectedPatient}
+          onBack={() => setView("active-shift")}
+          onStartConsultation={() => setView("consultation")}
+        />
+      </Shell>
+    );
+  }
+
+  if (view === "consultation") {
+    return (
+      <Shell activeTab={activeTab} onTabChange={goTab}>
+        <ConsultationScreen
+          patient={selectedPatient}
+          onBack={() => setView("waiting-room")}
+          onReview={() => setView("clinical-review")}
+          onToggleMic={toggleMic}
+          onToggleCam={toggleCam}
+          isMicOn={isMicOn}
+          isCamOn={isCamOn}
+        />
+      </Shell>
+    );
+  }
+
+  if (view === "clinical-review") {
+    return (
+      <Shell activeTab={activeTab} onTabChange={goTab}>
+        <ClinicalReviewScreen
+          patient={selectedPatient}
+          onBack={() => setView("consultation")}
+          onFinalize={() => setView("active-shift")}
+        />
+      </Shell>
+    );
+  }
+
+  if (view === "handover" && activeShift) {
+    return (
+      <Shell activeTab={activeTab} onTabChange={goTab}>
+        <HandoverScreen
+          activeShift={activeShift}
+          seconds={shiftSeconds}
+          onBack={() => setView("active-shift")}
+          onConfirm={completeClockOut}
+        />
+      </Shell>
+    );
+  }
+
+  return (
+    <Shell activeTab={activeTab} onTabChange={goTab}>
+      {renderMainTab()}
+    </Shell>
+  );
+}
+
+function HomeScreen({
+  profile,
+  stats,
+  upcomingShift,
+  history,
+  isLoading,
+  isBookingActive,
+  onNotifications,
+  onMarketplace,
+  onOpenShift,
+}: {
+  profile: HealthWorkerProfile | null;
+  stats: DashboardStats;
+  upcomingShift?: AvailableShift;
+  history: ShiftHistoryItem[];
+  isLoading: boolean;
+  isBookingActive: boolean;
+  onNotifications: () => void;
+  onMarketplace: () => void;
+  onOpenShift: (shift: AvailableShift) => void;
+}) {
+  return (
+    <>
+      <Header onNotifications={onNotifications} />
+      <main className="space-y-5 px-5 py-4">
+        <section className="flex items-start justify-between">
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">
+              Welcome back
+            </p>
+            <h1 className="mt-1 text-3xl font-bold leading-tight text-blue-800">
+              Good Morning,
+              <br />
+              {profile?.name?.split(" ")[1] || "Dr. Abiola"}
+            </h1>
+          </div>
+          <StatusBadge tone={isBookingActive ? "green" : "amber"}>
+            {isBookingActive ? "On duty" : "Off duty"}
+          </StatusBadge>
+        </section>
+
+        {upcomingShift && (
+          <section className="rounded-2xl bg-blue-700 p-4 text-white shadow-lg">
+            <div className="flex items-center justify-between">
+              <StatusBadge>Upcoming Shift</StatusBadge>
+              <Calendar className="h-5 w-5" />
+            </div>
+            <h2 className="mt-3 text-xl font-bold">{upcomingShift.department}</h2>
+            <p className="text-sm text-blue-100">{upcomingShift.hospital}</p>
+            <div className="mt-3 flex items-center gap-4 text-xs text-blue-50">
+              <span className="flex items-center gap-1">
+                <Calendar className="h-3.5 w-3.5" />
+                {upcomingShift.date}
               </span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {mockHealthWorkerData.availableShifts.map((shift) => (
+              <span className="flex items-center gap-1">
+                <Clock className="h-3.5 w-3.5" />
+                {upcomingShift.time}
+              </span>
+            </div>
+            <Button
+              type="button"
+              onClick={() => onOpenShift(upcomingShift)}
+              className="mt-4 w-full bg-white text-blue-800 hover:bg-blue-50"
+            >
+              View Details
+              <ChevronRight className="ml-2 h-4 w-4" />
+            </Button>
+          </section>
+        )}
+
+        <section className="grid grid-cols-2 gap-3">
+          <Metric label="Monthly Earnings" value={stats.totalEarnings} icon={Wallet} />
+          <Metric label="Weekly Hours" value={stats.hoursWorked} icon={Clock} />
+        </section>
+
+        <button
+          type="button"
+          onClick={onMarketplace}
+          className="flex w-full items-center justify-between rounded-2xl bg-white p-4 text-left shadow-sm"
+        >
+          <div className="flex items-center gap-3">
+            <span className="rounded-xl bg-blue-50 p-2 text-blue-700">
+              <BriefcaseMedical className="h-5 w-5" />
+            </span>
+            <div>
+              <p className="font-bold">Marketplace</p>
+              <p className="text-xs text-slate-500">Find new shifts near you</p>
+            </div>
+          </div>
+          <ChevronRight className="h-5 w-5 text-slate-400" />
+        </button>
+
+        <section>
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="font-bold">Recent Activity</h2>
+            <button type="button" className="text-xs font-bold text-blue-700">
+              View all
+            </button>
+          </div>
+          <div className="space-y-3">
+            {(isLoading ? [] : history).slice(0, 4).map((item) => (
               <div
-                key={shift.id}
-                className="p-3 sm:p-4 rounded-lg border border-onboarding-inputBackground hover:border-onboarding-primaryBlue transition-all bg-white"
+                key={item.id}
+                className="flex items-center justify-between rounded-xl bg-white p-3 shadow-sm"
               >
-                {/* Mobile Layout */}
-                <div className="block sm:hidden space-y-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-onboarding-textPrimary text-sm">
-                        {shift.hospital}
-                      </h4>
-                      <p className="text-xs text-onboarding-textSecondary">
-                        {shift.department}
-                      </p>
-                    </div>
-                    <div className="text-right ml-2">
-                      <p className="text-sm font-bold text-onboarding-primaryGreen">
-                        ₦{shift.hourlyRate.toLocaleString()}/hr
-                      </p>
-                      <span
-                        className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${getUrgencyColor(shift.urgency)}`}
-                      >
-                        {shift.urgency}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between text-xs text-onboarding-textSecondary">
-                    <div className="flex items-center space-x-3">
-                      <div className="flex items-center space-x-1">
-                        <Calendar className="h-3 w-3" />
-                        <span>{shift.date}</span>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <Clock className="h-3 w-3" />
-                        <span>{shift.time}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-1 text-xs text-onboarding-textSecondary">
-                      <MapPin className="h-3 w-3" />
-                      <span>{shift.location}</span>
-                    </div>
-                    <Button
-                      size="sm"
-                      onClick={() => handleClockIn(shift)}
-                      disabled={shiftStatus === "off-duty"}
-                      className="px-4 py-1.5 text-xs bg-gradient-to-r from-onboarding-primaryGreen to-onboarding-primaryBlue hover:opacity-90 text-white transition-all"
-                    >
-                      Accept
-                    </Button>
-                  </div>
+                <div className="border-l-4 border-emerald-500 pl-3">
+                  <p className="text-sm font-bold">{item.hospital}</p>
+                  <p className="text-[10px] uppercase text-slate-500">
+                    {item.department}
+                  </p>
                 </div>
+                <p className="text-sm font-bold">{formatCurrency(item.earnings)}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      </main>
+    </>
+  );
+}
 
-                {/* Desktop Layout */}
-                <div className="hidden sm:block">
-                  <div className="flex items-center justify-between mb-3">
-                    <div>
-                      <h4 className="font-semibold text-onboarding-textPrimary">
-                        {shift.hospital}
-                      </h4>
-                      <p className="text-sm text-onboarding-textSecondary">
-                        {shift.department}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-lg font-bold text-onboarding-primaryGreen">
-                        ₦{shift.hourlyRate.toLocaleString()}/hr
-                      </p>
-                      <span
-                        className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${getUrgencyColor(shift.urgency)}`}
-                      >
-                        {shift.urgency} priority
-                      </span>
-                    </div>
-                  </div>
+function Metric({
+  label,
+  value,
+  icon: Icon,
+}: {
+  label: string;
+  value: string;
+  icon: ComponentType<{ className?: string }>;
+}) {
+  return (
+    <div className="rounded-2xl bg-white p-4 shadow-sm">
+      <Icon className="h-5 w-5 text-blue-700" />
+      <p className="mt-3 text-xs text-slate-500">{label}</p>
+      <p className="text-xl font-bold">{value}</p>
+    </div>
+  );
+}
 
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4 text-sm text-onboarding-textSecondary">
-                      <div className="flex items-center space-x-1">
-                        <Calendar className="h-4 w-4" />
-                        <span>{shift.date}</span>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <Clock className="h-4 w-4" />
-                        <span>{shift.time}</span>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <MapPin className="h-4 w-4" />
-                        <span>{shift.location}</span>
-                      </div>
-                    </div>
+function MarketplaceScreen({
+  shifts,
+  searchTerm,
+  onSearchChange,
+  onOpenShift,
+  isLoading,
+}: {
+  shifts: AvailableShift[];
+  searchTerm: string;
+  onSearchChange: (value: string) => void;
+  onOpenShift: (shift: AvailableShift) => void;
+  isLoading: boolean;
+}) {
+  return (
+    <>
+      <Header title="Shift Marketplace" subtitle={`${shifts.length} shifts found`} />
+      <main className="space-y-4 px-5 py-4">
+        <label className="flex items-center gap-2 rounded-xl bg-slate-100 px-3 py-3 text-sm">
+          <Search className="h-4 w-4 text-slate-400" />
+          <input
+            value={searchTerm}
+            onChange={(event) => onSearchChange(event.target.value)}
+            className="min-w-0 flex-1 bg-transparent outline-none"
+            placeholder="Search role or facility..."
+          />
+        </label>
+        <div className="flex gap-2 overflow-x-auto pb-1">
+          {["Specialty", "5km", "Urgency", "Direct Deposit"].map((filter) => (
+            <button
+              type="button"
+              key={filter}
+              className="whitespace-nowrap rounded-full bg-white px-3 py-2 text-xs font-bold text-slate-600 shadow-sm"
+            >
+              {filter}
+            </button>
+          ))}
+        </div>
 
-                    <Button
-                      size="sm"
-                      onClick={() => handleClockIn(shift)}
-                      disabled={shiftStatus === "off-duty"}
-                      className="bg-gradient-to-r from-onboarding-primaryGreen to-onboarding-primaryBlue hover:opacity-90 text-white transition-all"
-                    >
-                      Accept Shift
-                    </Button>
-                  </div>
+        {isLoading && <p className="text-sm text-slate-500">Loading shifts...</p>}
+
+        <div className="space-y-4">
+          {shifts.map((shift) => (
+            <button
+              type="button"
+              key={shift.id}
+              onClick={() => onOpenShift(shift)}
+              className="w-full rounded-2xl bg-white p-4 text-left shadow-sm"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <StatusBadge tone={shift.urgency === "high" ? "red" : "green"}>
+                    {shift.urgency === "high" ? "Stat" : "Scheduled"}
+                  </StatusBadge>
+                  <h3 className="mt-2 font-bold">{shift.department}</h3>
+                  <p className="text-xs text-slate-500">{shift.hospital}</p>
                 </div>
+                <div className="text-right">
+                  <p className="font-bold text-blue-700">{getShiftPayout(shift)}</p>
+                  <p className="text-[10px] uppercase text-slate-400">per shift</p>
+                </div>
+              </div>
+              <div className="mt-3 flex items-center gap-4 text-xs text-slate-500">
+                <span className="flex items-center gap-1">
+                  <MapPin className="h-3.5 w-3.5" />
+                  {shift.location}
+                </span>
+                <span className="flex items-center gap-1">
+                  <Clock className="h-3.5 w-3.5" />
+                  {shift.duration}
+                </span>
+              </div>
+              <div className="mt-3 flex justify-end">
+                <span className="rounded-lg bg-blue-700 px-4 py-2 text-xs font-bold text-white">
+                  Apply
+                </span>
+              </div>
+            </button>
+          ))}
+        </div>
+      </main>
+    </>
+  );
+}
+
+function ShiftDetailScreen({
+  shift,
+  onBack,
+  onInterested,
+}: {
+  shift: AvailableShift;
+  onBack: () => void;
+  onInterested: () => void;
+}) {
+  return (
+    <>
+      <Header title="Shift Details" onBack={onBack} />
+      <main className="space-y-4 px-5 py-4">
+        <section className="rounded-3xl bg-white p-4 shadow-sm">
+          <div className="h-28 rounded-2xl bg-gradient-to-br from-cyan-50 to-blue-100" />
+          <div className="mt-4 flex items-start justify-between">
+            <div>
+              <h2 className="text-lg font-bold">{shift.hospital}</h2>
+              <p className="text-xs text-slate-500">{shift.location}</p>
+              <div className="mt-2 flex gap-2">
+                <StatusBadge tone="green">4.8</StatusBadge>
+                <StatusBadge>{shift.department}</StatusBadge>
+                <StatusBadge tone="red">Stat Need</StatusBadge>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="rounded-2xl bg-blue-700 p-4 text-white">
+          <p className="text-xs text-blue-100">Estimated Pay</p>
+          <p className="text-3xl font-bold">{getShiftPayout(shift)}</p>
+          <p className="text-xs text-blue-100">Direct deposit ready</p>
+        </section>
+
+        <section className="grid grid-cols-2 gap-3">
+          <InfoTile icon={Calendar} label="Date" value={shift.date} />
+          <InfoTile icon={Clock} label="Duration" value={shift.time} />
+        </section>
+
+        <Card>
+          <CardHeader className="p-4 pb-2">
+            <CardTitle className="text-base">Shift Overview</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3 p-4 pt-0 text-sm text-slate-600">
+            <p>
+              {shift.description ||
+                `${shift.hospital} is seeking a dedicated clinician for a critical daily shift with continuous monitoring and treatment support.`}
+            </p>
+            {["Ventilator management", "Hemodynamic monitoring", "Medication titration", "EHR documentation"].map((task) => (
+              <div key={task} className="rounded-xl bg-slate-50 px-3 py-2 font-medium text-slate-700">
+                <Check className="mr-2 inline h-4 w-4 text-emerald-600" />
+                {task}
               </div>
             ))}
           </CardContent>
         </Card>
 
-        {/* Recent Activity - Hospital Color Scheme */}
-        <Card className="sm:hidden bg-white border-onboarding-inputBackground shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base text-onboarding-textPrimary">
-              Recent Shifts
-            </CardTitle>
+        <section className="rounded-2xl bg-slate-900 p-4 text-white">
+          <div className="flex h-36 items-center justify-center rounded-xl bg-slate-800">
+            <Navigation className="h-10 w-10 text-cyan-300" />
+          </div>
+          <p className="mt-3 text-sm font-bold">Idi-Araba Complex</p>
+          <p className="text-xs text-slate-300">Gate 4 entrance, staff parking available</p>
+        </section>
+
+        <Card>
+          <CardHeader className="p-4 pb-2">
+            <CardTitle className="text-base">Requirements</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2">
-            {mockHealthWorkerData.recentShifts
-              .slice(0, 3)
-              .map((shift, index) => (
-                <div
-                  key={index}
-                  className="p-2 bg-onboarding-inputBackground rounded-lg"
-                >
-                  <div className="flex items-center justify-between mb-1">
-                    <h4 className="font-medium text-onboarding-textPrimary text-xs">
-                      {shift.hospital}
-                    </h4>
-                    <div className="flex items-center space-x-1">
-                      <Star className="h-3 w-3 text-warning-500 fill-warning-500" />
-                      <span className="text-xs font-medium text-onboarding-textPrimary">
-                        {shift.rating}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between text-xs text-onboarding-textSecondary">
-                    <span>{shift.date}</span>
-                    <span className="font-semibold text-onboarding-primaryGreen">
-                      ₦{shift.earnings.toLocaleString()}
-                    </span>
-                  </div>
-                </div>
-              ))}
+          <CardContent className="space-y-2 p-4 pt-0">
+            {(shift.requirements || ["Valid license", "ACLS certification", "2+ yrs ICU experience"]).map((item) => (
+              <p key={item} className="text-sm text-slate-700">
+                <ShieldCheck className="mr-2 inline h-4 w-4 text-blue-700" />
+                {item}
+              </p>
+            ))}
           </CardContent>
         </Card>
+
+        <div className="grid grid-cols-[1fr_2fr] gap-3 pb-4">
+          <Button type="button" variant="outline" onClick={onBack}>
+            Decline
+          </Button>
+          <Button type="button" onClick={onInterested} className="bg-blue-700">
+            I'm Interested
+          </Button>
+        </div>
+      </main>
+    </>
+  );
+}
+
+function InfoTile({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: ComponentType<{ className?: string }>;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="rounded-2xl bg-white p-4 shadow-sm">
+      <Icon className="h-5 w-5 text-blue-700" />
+      <p className="mt-2 text-xs text-slate-500">{label}</p>
+      <p className="text-sm font-bold">{value}</p>
+    </div>
+  );
+}
+
+function ShiftConfirmedScreen({
+  shift,
+  onActiveHub,
+  onDashboard,
+}: {
+  shift: AvailableShift;
+  onActiveHub: () => void;
+  onDashboard: () => void;
+}) {
+  return (
+    <main className="flex min-h-screen flex-col px-5 py-8">
+      <div className="mt-6 text-center">
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700">
+          <Check className="h-8 w-8" />
+        </div>
+        <h1 className="mt-5 text-2xl font-bold">Shift Confirmed</h1>
+        <p className="mt-2 text-sm text-slate-500">
+          Your request has been processed successfully. You're all set for your next shift.
+        </p>
+      </div>
+
+      <Card className="mt-8">
+        <CardContent className="space-y-4 p-4">
+          <InfoRow icon={BriefcaseMedical} label="Facility" value={shift.hospital} />
+          <InfoRow icon={Calendar} label="Date" value={shift.date} />
+          <InfoRow icon={Clock} label="Time" value={shift.time} />
+          <div className="flex h-32 items-center justify-center rounded-2xl bg-blue-50 text-blue-700">
+            <MapPin className="h-10 w-10" />
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="mt-auto space-y-3 pb-8">
+        <Button type="button" className="w-full bg-blue-700">
+          <Calendar className="mr-2 h-4 w-4" />
+          Add to Calendar
+        </Button>
+        <div className="grid grid-cols-2 gap-3">
+          <Button type="button" variant="outline" onClick={onActiveHub}>
+            Active Hub
+          </Button>
+          <Button type="button" variant="outline" onClick={onDashboard}>
+            Dashboard
+          </Button>
+        </div>
+      </div>
+    </main>
+  );
+}
+
+function InfoRow({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: ComponentType<{ className?: string }>;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="flex items-center gap-3">
+      <span className="rounded-xl bg-blue-50 p-2 text-blue-700">
+        <Icon className="h-5 w-5" />
+      </span>
+      <div>
+        <p className="text-xs text-slate-500">{label}</p>
+        <p className="font-bold">{value}</p>
       </div>
     </div>
+  );
+}
+
+function ScheduleScreen({
+  activeShift,
+  scheduleTab,
+  selectedShift,
+  shifts,
+  history,
+  onScheduleTabChange,
+  onOpenShift,
+  onShiftEntry,
+}: {
+  activeShift: ActiveShift | null;
+  scheduleTab: ScheduleTab;
+  selectedShift?: AvailableShift;
+  shifts: AvailableShift[];
+  history: ShiftHistoryItem[];
+  onScheduleTabChange: (tab: ScheduleTab) => void;
+  onOpenShift: (shift: AvailableShift) => void;
+  onShiftEntry: (shift: AvailableShift) => void;
+}) {
+  return (
+    <>
+      <Header title="September 2024" subtitle="Full calendar" />
+      <main className="space-y-4 px-5 py-4">
+        <div className="grid grid-cols-5 gap-2">
+          {["Mon 16", "Tue 17", "Wed 18", "Thu 19", "Fri 20"].map((day, index) => (
+            <button
+              type="button"
+              key={day}
+              className={cn(
+                "rounded-2xl p-3 text-xs font-bold",
+                index === 1 ? "bg-blue-700 text-white" : "bg-white text-slate-600",
+              )}
+            >
+              {day}
+            </button>
+          ))}
+        </div>
+        <div className="grid grid-cols-3 rounded-xl bg-white p-1">
+          {(["upcoming", "active", "completed"] as ScheduleTab[]).map((tab) => (
+            <button
+              type="button"
+              key={tab}
+              onClick={() => onScheduleTabChange(tab)}
+              className={cn(
+                "rounded-lg px-3 py-2 text-xs font-bold capitalize",
+                scheduleTab === tab ? "bg-blue-50 text-blue-700" : "text-slate-500",
+              )}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
+
+        {scheduleTab === "active" && activeShift && (
+          <Card>
+            <CardContent className="p-4">
+              <StatusBadge tone="green">Active now</StatusBadge>
+              <h3 className="mt-3 font-bold">{activeShift.hospital}</h3>
+              <p className="text-sm text-slate-500">{activeShift.department}</p>
+            </CardContent>
+          </Card>
+        )}
+
+        {scheduleTab === "completed" &&
+          history.map((item) => (
+            <Card key={item.id}>
+              <CardContent className="flex items-center justify-between p-4">
+                <div>
+                  <h3 className="font-bold">{item.hospital}</h3>
+                  <p className="text-xs text-slate-500">{item.date}</p>
+                </div>
+                <StatusBadge tone="green">Completed</StatusBadge>
+              </CardContent>
+            </Card>
+          ))}
+
+        {scheduleTab === "upcoming" &&
+          shifts.map((shift) => (
+            <Card key={shift.id}>
+              <CardContent className="space-y-3 p-4">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <StatusBadge tone="green">{shift.department}</StatusBadge>
+                    <h3 className="mt-2 font-bold">{shift.hospital}</h3>
+                    <p className="text-xs text-slate-500">{shift.location}</p>
+                  </div>
+                  <p className="font-bold text-blue-700">{getShiftPayout(shift)}</p>
+                </div>
+                <div className="grid grid-cols-2 gap-3 rounded-xl bg-slate-50 p-3 text-xs">
+                  <span>Date: {shift.date}</span>
+                  <span>Shift: {shift.time}</span>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <Button type="button" variant="outline" onClick={() => onOpenShift(shift)}>
+                    View Details
+                  </Button>
+                  <Button
+                    type="button"
+                    className="bg-rose-600 hover:bg-rose-700"
+                    onClick={() => onShiftEntry(selectedShift || shift)}
+                  >
+                    Clock In
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+      </main>
+    </>
+  );
+}
+
+function ShiftEntryScreen({
+  shift,
+  onBack,
+  onClockIn,
+}: {
+  shift?: AvailableShift;
+  onBack: () => void;
+  onClockIn: () => void;
+}) {
+  if (!shift) return null;
+
+  return (
+    <>
+      <Header title="Shift Entry" subtitle="Verify your location" onBack={onBack} />
+      <main className="space-y-5 px-5 py-4">
+        <Card>
+          <CardContent className="p-5">
+            <p className="text-xs font-bold uppercase text-slate-500">Current Facility</p>
+            <h2 className="mt-2 text-xl font-bold">{shift.hospital}</h2>
+            <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
+              <p>
+                <span className="block text-xs text-slate-500">Department</span>
+                {shift.department}
+              </p>
+              <p>
+                <span className="block text-xs text-slate-500">Time Slot</span>
+                {shift.time}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-5 text-center">
+            <div className="mx-auto flex h-28 w-28 items-center justify-center rounded-full bg-emerald-50">
+              <span className="h-4 w-4 rounded-full bg-emerald-600" />
+            </div>
+            <h3 className="mt-4 font-bold">Within Range (50m)</h3>
+            <p className="text-xs text-slate-500">
+              Geofence validation successful. You are currently on-site.
+            </p>
+          </CardContent>
+        </Card>
+        <div className="flex h-52 items-center justify-center rounded-3xl bg-slate-900 text-cyan-300">
+          <MapPin className="h-14 w-14" />
+        </div>
+        <Button
+          type="button"
+          onClick={onClockIn}
+          className="h-28 w-full rounded-3xl bg-rose-600 text-xl hover:bg-rose-700"
+        >
+          <Clock className="mr-3 h-8 w-8" />
+          Clock In
+        </Button>
+        <p className="text-center text-xs text-slate-500">
+          Syncing with Lagos Central Node...
+        </p>
+      </main>
+    </>
+  );
+}
+
+function ActiveShiftScreen({
+  activeShift,
+  seconds,
+  selectedPatient,
+  onPatientSelect,
+  onClockOut,
+}: {
+  activeShift: ActiveShift;
+  seconds: number;
+  selectedPatient: PatientQueueItem;
+  onPatientSelect: (patient: PatientQueueItem) => void;
+  onClockOut: () => void;
+}) {
+  const time = new Date(seconds * 1000).toISOString().substring(11, 19);
+
+  return (
+    <>
+      <Header title="Current Shift Status" subtitle={activeShift.department} />
+      <main className="space-y-5 px-5 py-4">
+        <section className="rounded-2xl bg-blue-700 p-5 text-white">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs uppercase text-blue-100">Current shift status</p>
+              <p className="text-4xl font-bold">{time}</p>
+            </div>
+            <StatusBadge tone="green">Onsite</StatusBadge>
+          </div>
+          <div className="mt-4 grid grid-cols-2 gap-3 text-xs text-blue-50">
+            <p>Department: {activeShift.department}</p>
+            <p>Duration: 08 Hours</p>
+          </div>
+          <Button type="button" className="mt-4 bg-white text-blue-800 hover:blue-50">
+            Take a Break
+          </Button>
+        </section>
+
+        <section>
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="font-bold">Patient Queue</h2>
+            <StatusBadge>{patientQueue.length} Active Patients</StatusBadge>
+          </div>
+          <div className="space-y-3">
+            {patientQueue.map((patient) => (
+              <button
+                type="button"
+                key={patient.id}
+                onClick={() => onPatientSelect(patient)}
+                className={cn(
+                  "flex w-full items-center justify-between rounded-2xl bg-white p-4 text-left shadow-sm",
+                  selectedPatient.id === patient.id && "ring-2 ring-blue-200",
+                )}
+              >
+                <div>
+                  <p className="font-bold">{patient.name}</p>
+                  <p className="text-xs text-slate-500">
+                    {patient.room} • {patient.age}
+                  </p>
+                  <p
+                    className={cn(
+                      "mt-2 text-[10px] font-bold uppercase",
+                      patient.status === "medication" ? "text-rose-600" : "text-emerald-600",
+                    )}
+                  >
+                    {patient.note}
+                  </p>
+                </div>
+                <ChevronRight className="h-5 w-5 text-slate-400" />
+              </button>
+            ))}
+          </div>
+        </section>
+
+        <Card>
+          <CardHeader className="p-4 pb-2">
+            <CardTitle className="text-base">Clinical Tasks</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3 p-4 pt-0">
+            {["Review patient charts (3)", "Administer morning meds", "Prepare discharge summaries", "Round with lead physician"].map((task, index) => (
+              <label key={task} className="flex items-center gap-3 text-sm">
+                <input type="checkbox" defaultChecked={index === 1} className="h-4 w-4 rounded" />
+                <span>{task}</span>
+              </label>
+            ))}
+            <Button type="button" variant="outline" className="w-full">
+              + New Task
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="flex items-center justify-between p-4">
+            <div className="flex items-center gap-3">
+              <MessageSquare className="h-5 w-5 text-blue-700" />
+              <div>
+                <p className="font-bold">2 Unread Messages</p>
+                <p className="text-xs text-slate-500">Shift coordinator and lab services</p>
+              </div>
+            </div>
+            <Button type="button" size="sm" variant="outline">
+              Open
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Button
+          type="button"
+          onClick={onClockOut}
+          className="w-full bg-rose-600 hover:bg-rose-700"
+        >
+          Clock Out
+        </Button>
+      </main>
+    </>
+  );
+}
+
+function WaitingRoomScreen({
+  patient,
+  onBack,
+  onStartConsultation,
+}: {
+  patient: PatientQueueItem;
+  onBack: () => void;
+  onStartConsultation: () => void;
+}) {
+  return (
+    <>
+      <Header title="Virtual Waiting Room" subtitle="Live Queue" onBack={onBack} />
+      <main className="space-y-5 px-5 py-4">
+        <p className="text-sm text-slate-600">
+          Manage upcoming consultations. Patients are automatically screened and prioritized.
+        </p>
+        <Card>
+          <CardContent className="space-y-4 p-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
+                <User className="h-6 w-6" />
+              </div>
+              <div className="flex-1">
+                <h2 className="font-bold">{patient.name}</h2>
+                <p className="text-xs text-slate-500">
+                  Patient ID: {patient.id} • Waiting for 5 mins
+                </p>
+              </div>
+            </div>
+            <Button type="button" className="w-full bg-blue-700" onClick={onStartConsultation}>
+              Start Consultation
+              <Video className="ml-2 h-4 w-4" />
+            </Button>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="p-4 pb-2">
+            <CardTitle className="text-base">Reason for Visit</CardTitle>
+          </CardHeader>
+          <CardContent className="p-4 pt-0 text-sm text-slate-600">
+            Follow-up hypertension. Patient reports consistent adherence and requests review of home BP readings.
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="p-4 pb-2">
+            <CardTitle className="text-base">Vital Signs Summary</CardTitle>
+          </CardHeader>
+          <CardContent className="grid grid-cols-2 gap-3 p-4 pt-0">
+            <Metric label="Blood Pressure" value="138/84" icon={Activity} />
+            <Metric label="Heart Rate" value="72 BPM" icon={Activity} />
+          </CardContent>
+        </Card>
+      </main>
+    </>
+  );
+}
+
+function ConsultationScreen({
+  patient,
+  onBack,
+  onReview,
+  onToggleMic,
+  onToggleCam,
+  isMicOn,
+  isCamOn,
+}: {
+  patient: PatientQueueItem;
+  onBack: () => void;
+  onReview: () => void;
+  onToggleMic?: () => void;
+  onToggleCam?: () => void;
+  isMicOn?: boolean;
+  isCamOn?: boolean;
+}) {
+  return (
+    <>
+      <Header title={patient.name} subtitle={patient.id} onBack={onBack} />
+      <main className="space-y-5 px-5 py-4">
+        <section className="relative overflow-hidden rounded-3xl bg-slate-900 text-white">
+          <div className="flex h-80 items-center justify-center bg-gradient-to-br from-slate-700 to-slate-950">
+            <User className="h-20 w-20 text-slate-300" />
+          </div>
+          <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-3">
+            <button
+              type="button"
+              onClick={onToggleMic}
+              className={cn("rounded-full p-3", isMicOn ? "bg-rose-600" : "bg-white/20 backdrop-blur")}
+            >
+              {isMicOn ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+            </button>
+
+            <button
+              type="button"
+              onClick={onToggleCam}
+              className={cn("rounded-full p-3", isCamOn ? "bg-rose-600" : "bg-white/20 backdrop-blur")}
+            >
+              <Video className="h-5 w-5" />
+            </button>
+
+            <button type="button" className={cn("rounded-full p-3", "bg-white/20 backdrop-blur")}>
+              <Activity className="h-5 w-5" />
+            </button>
+
+            <button type="button" className={cn("rounded-full p-3", "bg-white/20 backdrop-blur")}>
+              <MessageSquare className="h-5 w-5" />
+            </button>
+          </div>
+        </section>
+
+        <div className="grid grid-cols-2 gap-3">
+          {[
+            { label: "Start AI Transcriber", icon: Mic },
+            { label: "View Medical History", icon: FileText },
+            { label: "Prescribe Meds", icon: Stethoscope },
+            { label: "Mark STAT Follow-up", icon: AlertTriangle },
+          ].map((action) => (
+            <button
+              type="button"
+              key={action.label}
+              className="rounded-2xl bg-white p-4 text-sm font-bold shadow-sm"
+            >
+              <action.icon className="mx-auto mb-2 h-5 w-5 text-blue-700" />
+              {action.label}
+            </button>
+          ))}
+        </div>
+
+        <Card>
+          <CardHeader className="p-4 pb-2">
+            <CardTitle className="text-base">Patient Vitals</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3 p-4 pt-0">
+            {["Heart Rate 72 BPM", "Temp 36.8 C", "Blood Pressure 120/80"].map((item) => (
+              <div key={item} className="rounded-xl bg-slate-50 px-3 py-2 text-sm">
+                {item}
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+
+        <section className="rounded-3xl bg-blue-700 p-4 text-white">
+          <div className="flex items-center justify-between">
+            <p className="font-bold">AI Live Transcriber</p>
+            <StatusBadge tone="green">Live</StatusBadge>
+          </div>
+          <p className="mt-4 rounded-2xl bg-blue-800 p-4 text-sm text-blue-50">
+            Translation on: Yoruba to English. "I am happy, but I have pain in my stomach."
+          </p>
+        </section>
+
+        <Button type="button" className="w-full bg-blue-700" onClick={onReview}>
+          Finish Consultation
+        </Button>
+      </main>
+    </>
+  );
+}
+
+function ClinicalReviewScreen({
+  patient,
+  onBack,
+  onFinalize,
+}: {
+  patient: PatientQueueItem;
+  onBack: () => void;
+  onFinalize: () => void;
+}) {
+  return (
+    <>
+      <Header title="Active Review" subtitle={patient.name} onBack={onBack} />
+      <main className="space-y-4 px-5 py-4">
+        <Card>
+          <CardContent className="flex items-center justify-between p-4">
+            <div>
+              <h2 className="font-bold">{patient.name}</h2>
+              <p className="text-xs text-slate-500">Patient ID: {patient.id}</p>
+            </div>
+            <StatusBadge tone="green">Draft</StatusBadge>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="flex items-center justify-between p-4">
+            <div>
+              <p className="font-bold">96% High Confidence</p>
+              <p className="text-xs text-slate-500">AI insight cadence confirmed</p>
+            </div>
+            <Activity className="h-8 w-8 text-emerald-600" />
+          </CardContent>
+        </Card>
+        {[
+          ["Chief Complaint", "Patient presents with persistent dry cough and mild nocturnal dyspnea."],
+          ["History of Present Illness", "Symptoms started after exposure to dust during harmattan."],
+          ["Assessment", "Mild intermittent asthma exacerbated by environmental triggers."],
+          ["Clinical Plan", "Initiate salbutamol inhaler, chest X-ray, follow-up in two weeks."],
+          ["Prescriptions", "Salbutamol inhaler 100mcg, 1 puff every 4-6 hours PRN."],
+        ].map(([title, body]) => (
+          <Card key={title}>
+            <CardHeader className="p-4 pb-2">
+              <CardTitle className="text-base">{title}</CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 pt-0 text-sm text-slate-600">
+              {body}
+            </CardContent>
+          </Card>
+        ))}
+        <Button type="button" className="w-full bg-blue-700" onClick={onFinalize}>
+          Save & Finalize
+        </Button>
+        <div className="grid grid-cols-2 gap-3 pb-4">
+          <Button type="button" variant="outline">
+            <Download className="mr-2 h-4 w-4" />
+            Export to EHR
+          </Button>
+          <Button type="button" variant="outline">
+            Print
+          </Button>
+        </div>
+      </main>
+    </>
+  );
+}
+
+function HandoverScreen({
+  activeShift,
+  seconds,
+  onBack,
+  onConfirm,
+}: {
+  activeShift: ActiveShift;
+  seconds: number;
+  onBack: () => void;
+  onConfirm: () => void;
+}) {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+
+  return (
+    <>
+      <Header title="Shift Completion" subtitle="Review handover summary" onBack={onBack} />
+      <main className="space-y-5 px-5 py-4">
+        <section className="rounded-2xl bg-blue-700 p-5 text-white">
+          <p className="text-xs text-blue-100">Current Shift Status</p>
+          <p className="text-4xl font-bold">
+            {hours.toString().padStart(2, "0")}:{minutes.toString().padStart(2, "0")}:30
+          </p>
+          <p className="text-xs text-blue-100">{activeShift.department}</p>
+        </section>
+        <h1 className="text-2xl font-bold">Great job today, Dr. Abodey</h1>
+        <p className="text-sm text-slate-500">
+          Your shift is nearing its end. Please review the patient handover summary before clocking out.
+        </p>
+        <div className="grid grid-cols-2 gap-3">
+          <Metric label="Duration" value={`${hours}h ${minutes}m`} icon={Clock} />
+          <Metric label="Attended" value="8 Patients" icon={User} />
+        </div>
+        <Card>
+          <CardHeader className="p-4 pb-2">
+            <CardTitle className="text-base">Handover Notes</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3 p-4 pt-0">
+            {[
+              "Amina Yusuf: Hypertension follow-up, BP stable at 130/85.",
+              "Chidi Okoro: Post-op recovery, monitor vitals every 30 mins.",
+              "Emeka Nwosu: Blood sample taken for malaria screening.",
+            ].map((note, index) => (
+              <div
+                key={note}
+                className={cn(
+                  "border-l-4 bg-slate-50 p-3 text-sm",
+                  index === 1 ? "border-rose-500" : "border-emerald-500",
+                )}
+              >
+                {note}
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+        <Button type="button" className="w-full bg-blue-700" onClick={onConfirm}>
+          Confirm Handover & Clock-Out
+        </Button>
+      </main>
+    </>
+  );
+}
+
+function EarningsScreen({
+  earnings,
+  history,
+}: {
+  earnings: ShiftEarnings;
+  history: ShiftHistoryItem[];
+}) {
+  return (
+    <>
+      <Header title="Earnings" />
+      <main className="space-y-5 px-5 py-4">
+        <section className="rounded-2xl bg-blue-700 p-5 text-white">
+          <p className="text-xs text-blue-100">Total Balance</p>
+          <p className="text-3xl font-bold">{formatCurrency(earnings.totalEarnings)}</p>
+          <Button type="button" className="mt-4 bg-white text-blue-800 hover:bg-blue-50">
+            <CreditCard className="mr-2 h-4 w-4" />
+            Withdraw Funds
+          </Button>
+          <p className="mt-3 text-xs text-blue-100">Next payout: Friday, 24 Oct</p>
+        </section>
+        <Metric label="Pending Payouts" value={formatCurrency(42000)} icon={Clock} />
+        <Metric label="Monthly Earnings" value={formatCurrency(earnings.monthlyEarnings)} icon={Activity} />
+        <section>
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="font-bold">Recent Earnings</h2>
+            <button type="button" className="text-xs font-bold text-blue-700">
+              View all
+            </button>
+          </div>
+          <div className="space-y-3">
+            {history.map((item) => (
+              <Card key={item.id}>
+                <CardContent className="flex items-center justify-between p-4">
+                  <div>
+                    <p className="font-bold">{item.hospital}</p>
+                    <p className="text-xs text-slate-500">{item.date}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-bold text-emerald-700">
+                      {formatCurrency(item.earnings)}
+                    </p>
+                    <StatusBadge tone="green">Completed</StatusBadge>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </section>
+      </main>
+    </>
+  );
+}
+
+function ProfileScreen({
+  profile,
+  isBookingActive,
+  onToggleBooking,
+  onLogout,
+}: {
+  profile: HealthWorkerProfile | null;
+  isBookingActive: boolean;
+  onToggleBooking: () => void;
+  onLogout: () => void;
+}) {
+  return (
+    <>
+      <Header title="Profile" />
+      <main className="space-y-5 px-5 py-4">
+        <section className="text-center">
+          <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-3xl bg-slate-200">
+            <User className="h-12 w-12 text-slate-500" />
+          </div>
+          <h1 className="mt-4 text-xl font-bold">{profile?.name || "Dr. Chidi Okonjo"}</h1>
+          <StatusBadge tone="green">Verified Professional</StatusBadge>
+          <p className="mt-2 text-sm text-slate-500">
+            {profile?.specialization || "Consultant Cardiologist"} • Senior Registrar
+          </p>
+        </section>
+
+        <Card>
+          <CardHeader className="p-4 pb-2">
+            <CardTitle className="text-base">Credentials & Licensing</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3 p-4 pt-0 text-sm">
+            <InfoRow icon={ShieldCheck} label="MDC Number" value={profile?.licenseNumber || "MDC/REG/774291"} />
+            <InfoRow icon={ShieldCheck} label="NGR License" value="NGR-HEALTH-aA2" />
+          </CardContent>
+        </Card>
+
+        <div className="grid grid-cols-2 gap-3">
+          <Metric label="Avg Rating" value={(profile?.rating || 4.9).toFixed(1)} icon={Star} />
+          <Metric label="Consults" value="1.2k" icon={MessageSquare} />
+        </div>
+
+        <Card>
+          <CardHeader className="p-4 pb-2">
+            <CardTitle className="text-base">Specialties & Expertise</CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-wrap gap-2 p-4 pt-0">
+            {["Cardiovascular Medicine", "Interventional Radiology", "Emergency Care", "Diagnostic Ultrasound"].map((item) => (
+              <span key={item} className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700">
+                {item}
+              </span>
+            ))}
+          </CardContent>
+        </Card>
+
+        <div className="space-y-3">
+          <ProfileLink icon={Settings} label="Account Settings" />
+          <ProfileLink icon={Wallet} label="Payout Preferences" />
+          <button
+            type="button"
+            onClick={onLogout}
+            className="flex w-full items-center gap-3 rounded-2xl bg-white p-4 text-left font-bold text-rose-600 shadow-sm"
+          >
+            <LogOut className="h-5 w-5" />
+            Logout
+          </button>
+        </div>
+
+        <section className="flex items-center justify-between rounded-2xl bg-blue-700 p-4 text-white">
+          <div>
+            <p className="font-bold">Active for Booking</p>
+            <p className="text-xs text-blue-100">Visible to patients for immediate consultation.</p>
+          </div>
+          <button
+            type="button"
+            onClick={onToggleBooking}
+            className={cn(
+              "flex h-8 w-14 items-center rounded-full p-1 transition",
+              isBookingActive ? "justify-end bg-emerald-400" : "justify-start bg-slate-300",
+            )}
+          >
+            <span className="h-6 w-6 rounded-full bg-white" />
+          </button>
+        </section>
+      </main>
+    </>
+  );
+}
+
+function ProfileLink({
+  icon: Icon,
+  label,
+}: {
+  icon: ComponentType<{ className?: string }>;
+  label: string;
+}) {
+  return (
+    <button
+      type="button"
+      className="flex w-full items-center justify-between rounded-2xl bg-white p-4 text-left shadow-sm"
+    >
+      <span className="flex items-center gap-3 font-bold">
+        <Icon className="h-5 w-5 text-blue-700" />
+        {label}
+      </span>
+      <ChevronRight className="h-5 w-5 text-slate-400" />
+    </button>
+  );
+}
+
+function NotificationsScreen({ onBack }: { onBack: () => void }) {
+  return (
+    <>
+      <Header title="Notifications" subtitle="Manage clinical updates" onBack={onBack} />
+      <main className="space-y-4 px-5 py-4">
+        <div className="flex gap-2">
+          {["All", "Shifts", "Payments", "Alerts"].map((filter, index) => (
+            <button
+              type="button"
+              key={filter}
+              className={cn(
+                "rounded-full px-4 py-2 text-xs font-bold",
+                index === 0 ? "bg-blue-700 text-white" : "bg-slate-100 text-slate-600",
+              )}
+            >
+              {filter}
+            </button>
+          ))}
+        </div>
+        {notifications.map((item) => (
+          <Card key={item.title}>
+            <CardContent className="flex gap-3 p-4">
+              <span
+                className={cn(
+                  "rounded-xl p-2",
+                  item.kind === "payment"
+                    ? "bg-emerald-50 text-emerald-700"
+                    : item.kind === "alert"
+                      ? "bg-rose-50 text-rose-700"
+                      : "bg-blue-50 text-blue-700",
+                )}
+              >
+                {item.kind === "payment" ? (
+                  <Wallet className="h-5 w-5" />
+                ) : item.kind === "alert" ? (
+                  <AlertTriangle className="h-5 w-5" />
+                ) : (
+                  <Calendar className="h-5 w-5" />
+                )}
+              </span>
+              <div className="flex-1">
+                <div className="flex justify-between gap-3">
+                  <h2 className="font-bold">{item.title}</h2>
+                  <span className="text-[10px] text-slate-400">{item.meta}</span>
+                </div>
+                <p className="mt-1 text-sm text-slate-500">{item.body}</p>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </main>
+    </>
   );
 }

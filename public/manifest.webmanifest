@@ -1,0 +1,25 @@
+{
+  "name": "NexusCare Health Worker",
+  "short_name": "NexusCare",
+  "description": "Clinical shift marketplace and mobile care workflow for healthcare professionals.",
+  "start_url": "/medical-staff/dashboard",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#eef7fb",
+  "theme_color": "#0f63d9",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

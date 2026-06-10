@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/shared/components/ui/Card";
 import { Button } from "@/shared/components/ui/Button";
 import { NexusCareLogo } from "@/shared/components/ui/NexusCareLogo";
-import { ArrowLeft, Mail, Shield } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 export function OtpVerify() {
   const navigate = useNavigate();

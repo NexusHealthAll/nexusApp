@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { Button } from "@/shared/components/ui/Button";
 import {
   Bell,
@@ -7,9 +6,7 @@ import {
   Clock,
   DollarSign,
   Home,
-  MapPin,
   ShoppingBag,
-  TrendingUp,
   User,
   ChevronRight,
   Briefcase,
@@ -88,7 +85,6 @@ export function MedicalStaffDashboard({
   doctorId: _doctorId,
 }: MedicalStaffDashboardProps) {
   const [activeTab, setActiveTab] = useState("home");
-  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-white">

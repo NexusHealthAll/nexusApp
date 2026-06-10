@@ -32,6 +32,10 @@ export function MainLayout({ children, profile }: MainLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const layoutStyles = profileLayoutStyles[profile];
 
+  if (profile === "medical-staff") {
+    return <main className="min-h-screen bg-[#eef7fb]">{children}</main>;
+  }
+
   return (
     <div className={`flex h-screen ${layoutStyles.shell}`}>
       {/* Mobile sidebar overlay */}
