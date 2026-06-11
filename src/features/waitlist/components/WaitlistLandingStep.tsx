@@ -360,34 +360,6 @@ export function WaitlistLandingStep() {
           </div>
         </div>
       </section>
-
-      <section className="px-4 pb-16 sm:px-6 lg:px-8 lg:pb-24">
-        <div className="mx-auto max-w-6xl overflow-hidden rounded-2xl bg-[linear-gradient(135deg,_#228eb0,_#46b8ab)] px-6 py-10 text-center text-white shadow-strong sm:px-10 lg:py-14">
-          <h2 className="text-3xl font-semibold sm:text-4xl">
-            Ready for the Pulse?
-          </h2>
-          <p className="mx-auto mt-3 max-w-2xl text-sm leading-7 text-white/90 sm:text-base">
-            Join the waitlist to be part of the first cohort of clinicians and
-            facilities in our high-fidelity private beta.
-          </p>
-
-          <div className="mx-auto mt-7 flex max-w-xl flex-col gap-3 sm:flex-row">
-            <input
-              type="email"
-              placeholder="Enter your work email"
-              className="h-12 flex-1 rounded-lg border border-white/70 bg-white px-4 text-sm text-neutral-800 outline-none"
-              readOnly
-            />
-            <Button
-              type="button"
-              onClick={openJoinModal}
-              className="h-12 w-full rounded-lg bg-white px-6 text-sm font-semibold text-onboarding-primaryBlue hover:bg-neutral-100 sm:w-auto"
-            >
-              Secure My Spot
-            </Button>
-          </div>
-        </div>
-      </section>
     </div>
   );
 }

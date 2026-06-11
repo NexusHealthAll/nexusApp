@@ -354,23 +354,6 @@ export function WaitlistPage() {
           </div>
         </section>
 
-        <section className="px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
-          <div className="mx-auto max-w-6xl overflow-hidden rounded-[2rem] bg-[linear-gradient(135deg,_#228eb0,_#46b8ab)] px-6 py-10 text-white shadow-strong sm:px-10 lg:px-16 lg:py-14">
-            <div className="mx-auto max-w-3xl text-center">
-              <h2 className="text-3xl font-semibold sm:text-4xl">
-                Ready for the Pulse?
-              </h2>
-              <p className="mt-4 text-sm leading-7 text-white/85 sm:text-base">
-                Join the waitlist to be part of the first cohort of clinicians
-                and facilities in our high-fidelity private beta.
-              </p>
-            </div>
-
-            <div className="mx-auto mt-8 max-w-2xl rounded-[1.75rem] bg-white/10 p-4 backdrop-blur-sm sm:p-5">
-              <WaitlistEmailForm />
-            </div>
-          </div>
-        </section>
       </main>
 
       <footer className="border-t border-neutral-200 bg-white px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
