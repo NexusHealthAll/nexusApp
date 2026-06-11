@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/shared/components/ui/Card";
 import { Button } from "@/shared/components/ui/Button";
 import { NexusCareLogo } from "@/shared/components/ui/NexusCareLogo";
-import { X, Bell, Building, CheckCircle, Loader2 } from "lucide-react";
+import { Bell, Building, CheckCircle, Loader2 } from "lucide-react";
 
 // Nigerian banks for demo
 const nigerianBanks = [
@@ -175,10 +175,6 @@ export function PayoutSetup() {
     }
   };
 
-  const handleClose = () => {
-    navigate("/auth/login");
-  };
-
   return (
     <div className="min-h-screen bg-[#F3FAFF] flex items-center justify-center p-4">
       <div className="w-full max-w-md">
@@ -254,9 +250,8 @@ export function PayoutSetup() {
                     type="text"
                     value={formData.accountNumber}
                     onChange={(e) => handleAccountNumberChange(e.target.value)}
-                    className={`flex-1 bg-transparent text-sm text-neutral-800 outline-none placeholder:text-neutral-400 font-mono ${
-                      errors.accountNumber ? "text-red-600" : ""
-                    }`}
+                    className={`flex-1 bg-transparent text-sm text-neutral-800 outline-none placeholder:text-neutral-400 font-mono ${errors.accountNumber ? "text-red-600" : ""
+                      }`}
                     placeholder="0123456789"
                     maxLength={10}
                   />
@@ -281,11 +276,10 @@ export function PayoutSetup() {
                   Account Name
                 </label>
                 <div
-                  className={`flex items-center gap-2.5 rounded-lg px-3 py-2.5 transition-all ${
-                    isVerified
-                      ? "border-green-300 bg-green-50"
-                      : "bg-onboarding-inputBackground"
-                  }`}
+                  className={`flex items-center gap-2.5 rounded-lg px-3 py-2.5 transition-all ${isVerified
+                    ? "border-green-300 bg-green-50"
+                    : "bg-onboarding-inputBackground"
+                    }`}
                 >
                   {isVerifying ? (
                     <div className="flex items-center space-x-2 text-onboarding-textSecondary">
@@ -382,9 +376,8 @@ function BankDropdown({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className={`flex items-center gap-2.5 rounded-lg bg-onboarding-inputBackground px-3 py-2.5 w-full text-left ${
-          error ? "ring-1 ring-red-400" : ""
-        }`}
+        className={`flex items-center gap-2.5 rounded-lg bg-onboarding-inputBackground px-3 py-2.5 w-full text-left ${error ? "ring-1 ring-red-400" : ""
+          }`}
       >
         <Building className="h-4 w-4 flex-shrink-0 text-secondary-600" />
         <span className={`flex-1 text-sm ${selected ? "text-neutral-800" : "text-neutral-400"}`}>

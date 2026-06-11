@@ -10,14 +10,12 @@ import {
   Zap,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { Button } from "@/shared/components/ui/Button";
 import {
   waitlistPartners,
 } from "../constants/waitlistContent";
 import { DirectionalStepper } from "./DirectionalStepper";
 import { FaqAccordion } from "./FaqAccordion";
 import { ProblemCard } from "./ProblemCard";
-import { useWaitlistFlow } from "./waitlistFlowContext";
 
 const staffingProblems = [
   {
@@ -144,8 +142,6 @@ const ecosystemColumns = [
 
 export function WaitlistLandingStep() {
   const navigate = useNavigate();
-  const { openJoinModal } = useWaitlistFlow();
-
   const goToRoleLogin = (role: "hospital" | "health-worker") => {
     localStorage.setItem("selectedRole", role);
     navigate(`/auth/login?role=${role}`);
