@@ -82,8 +82,6 @@ export function validateHealthWorkerForm(
   const licenseNumber = form.licenseNumber.trim();
   if (!licenseNumber) {
     errors.licenseNumber = "License number is required.";
-  } else if (!LICENSE_REGEX.test(licenseNumber)) {
-    errors.licenseNumber = "Enter a valid license number.";
   }
 
   return errors;

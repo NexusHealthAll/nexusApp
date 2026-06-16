@@ -24,27 +24,27 @@ const roleCards: Array<{
   ctaLabel: string;
   icon: typeof Building2;
 }> = [
-  {
-    role: "hospital",
-    title: "Hospitals",
-    description:
-      "Join as a facility admin to secure verified clinicians and streamline staffing coverage.",
-    image: "/waitlist/hospitals.jpg",
-    badge: "Institutional Excellence",
-    ctaLabel: "Join as Hospital",
-    icon: Building2,
-  },
-  {
-    role: "health-worker",
-    title: "For Health Workers",
-    description:
-      "Join as a clinician to discover high-priority shifts and get AI-assisted documentation tools.",
-    image: "/waitlist/health-workers.jpg",
-    badge: "Clinician Empowerment",
-    ctaLabel: "Join as Health Worker",
-    icon: Stethoscope,
-  },
-];
+    {
+      role: "hospital",
+      title: "Hospitals",
+      description:
+        "Join as a facility admin to secure verified clinicians and streamline staffing coverage.",
+      image: "/waitlist/hospitals.jpg",
+      badge: "Institutional Excellence",
+      ctaLabel: "Join as Hospital",
+      icon: Building2,
+    },
+    {
+      role: "health-worker",
+      title: "For Health Workers",
+      description:
+        "Join as a clinician to discover high-priority shifts and get AI-assisted documentation tools.",
+      image: "/waitlist/health-workers.jpg",
+      badge: "Clinician Empowerment",
+      ctaLabel: "Join as Health Worker",
+      icon: Stethoscope,
+    },
+  ];
 
 type SubmitState = "idle" | "loading";
 
@@ -372,7 +372,7 @@ export function WaitlistJoinModalFlow() {
               updateHealthWorkerForm({ licenseNumber: event.target.value })
             }
             className="h-12 w-full rounded-xl border border-white/55 bg-[linear-gradient(180deg,_rgba(255,255,255,0.95),_rgba(238,245,251,0.88))] px-4 text-sm text-neutral-900 outline-none backdrop-blur transition focus:border-onboarding-primaryBlue"
-            placeholder="License number (MDC/NGR)"
+            placeholder="License number"
           />
 
           <Button
