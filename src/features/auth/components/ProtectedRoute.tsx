@@ -42,15 +42,6 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
           currentPath: location.pathname 
         });
         
-        // Validate token format (basic check)
-        if (!authToken.startsWith('token_') && !authToken.startsWith('temp_token_')) {
-          localStorage.removeItem('authToken');
-          localStorage.removeItem('userData');
-          setIsAuthenticated(false);
-          setIsLoading(false);
-          return;
-        }
-
         setIsAuthenticated(true);
         setUserRole(userData.role);
       } catch (error) {

@@ -203,10 +203,23 @@ export function EmailLogin() {
               </div>
             </form>
 
-            {/* Enhanced Support Link */}
-            <div className={`mt-10 text-center transition-all duration-700 delay-600 ease-out ${
+            {/* Create Account + Support Links */}
+            <div className={`mt-10 text-center space-y-4 transition-all duration-700 delay-600 ease-out ${
               isVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
             }`}>
+              {/* Create an account CTA */}
+              <div className="flex items-center justify-center gap-2">
+                <span className="text-sm text-onboarding-textSecondary">Don't have an account?</span>
+                <button
+                  id="create-account-btn"
+                  type="button"
+                  onClick={() => navigate('/auth/role-selection')}
+                  className="text-sm font-semibold text-transparent bg-clip-text bg-gradient-to-r from-onboarding-primaryGreen to-onboarding-primaryBlue hover:opacity-80 transition-opacity duration-200"
+                >
+                  Create an account →
+                </button>
+              </div>
+
               <p className="text-sm text-onboarding-textSecondary">
                 Need help accessing your account?{' '}
                 <button className="text-secondary-600 hover:text-secondary-700 font-medium transition-colors duration-200 hover:underline">
