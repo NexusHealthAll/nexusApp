@@ -5,7 +5,6 @@ import type {
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE_REGEX = /^\+?[0-9()\-\s]{7,20}$/;
-const LICENSE_REGEX = /^[a-z0-9-]{4,}$/i;
 
 export type HospitalFormErrors = Partial<
   Record<keyof HospitalFormDraft, string>
