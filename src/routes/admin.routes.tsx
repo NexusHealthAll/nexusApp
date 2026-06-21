@@ -5,7 +5,7 @@ import { ProtectedRoute } from "@/features/auth/components";
 // Simple admin dashboard placeholder
 function AdminDashboard() {
   return (
-    <ProtectedRoute requiredRole="hospital-admin">
+    <ProtectedRoute requiredRole="hospital_admin">
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center p-4">
         <div className="text-center">
           <img
@@ -21,9 +21,9 @@ function AdminDashboard() {
           </p>
           <button
             onClick={() => {
-              localStorage.removeItem('authToken');
-              localStorage.removeItem('userData');
-              window.location.href = '/auth/login';
+              localStorage.removeItem("authToken");
+              localStorage.removeItem("userData");
+              window.location.href = "/auth/login";
             }}
             className="bg-slate-900 hover:bg-slate-800 text-white px-6 py-3 rounded-lg font-semibold transition-all"
           >

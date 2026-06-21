@@ -5,6 +5,8 @@ import { Button } from "@/shared/components/ui/Button";
 import { NexusCareLogo } from "@/shared/components/ui/NexusCareLogo";
 import { ArrowLeft } from "lucide-react";
 
+import { useAuthStore } from "@/features/auth/store/authStore";
+
 export function OtpVerify() {
   const navigate = useNavigate();
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
@@ -98,27 +100,133 @@ export function OtpVerify() {
       return;
     }
 
+    const email = localStorage.getItem("pendingEmail") ?? "";
+
     setIsLoading(true);
     setError("");
 
     try {
-      // Simulate OTP verification
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const BASE = import.meta.env.VITE_API_BASE_URL ?? "http://0.0.0.0:8080";
 
-      // For demo, accept any 6-digit code
-      if (codeToVerify.length === 6) {
-        // Store verification success
-        localStorage.setItem("emailVerified", "true");
-        localStorage.removeItem("pendingEmail");
+      // Decide which OTP verify endpoint to call based on the current auth flow.
+      // - Health-worker registration uses clinicians OTP.
+      // - Otherwise, default to normal auth OTP.
+      const flowForOtpVerify = useAuthStore.getState().activeAuthFlow;
+      const otpVerifyMode =
+        flowForOtpVerify?.role === "health-worker" &&
+        flowForOtpVerify?.action === "register"
+          ? "clinicians"
+          : "normal";
 
-        // Navigate to verification success page
-        navigate("/auth/verification-success");
-      } else {
-        setError("Invalid verification code. Please try again.");
+      const otpVerifyUrl =
+        otpVerifyMode === "clinicians"
+          ? `${BASE}/api/v1/clinicians/otp/verify`
+          : `${BASE}/api/v1/auth/otp/verify`;
+
+      const response = await fetch(otpVerifyUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: codeToVerify, email }),
+      });
+
+      let body: {
+        message?: string;
+        access_token?: string;
+        refresh_token?: string;
+        user?: any;
+        token?: string;
+        clinician_id?: string;
+        [k: string]: unknown;
+      } = {};
+      try {
+        body = await response.json();
+      } catch {
+        /* non-JSON body */
       }
-    } catch (error) {
-      console.error("OTP verification error:", error);
-      setError("Verification failed. Please try again.");
+
+      if (!response.ok) {
+        setError(
+          body.message ?? "Invalid verification code. Please try again.",
+        );
+        return;
+      }
+
+      // Save auth session (access/refresh tokens + user)
+      // API returns: access_token, refresh_token, user
+      if (body.access_token && body.refresh_token && body.user) {
+        useAuthStore.getState().setAuthSession({
+          accessToken: body.access_token,
+          refreshToken: body.refresh_token,
+          user: body.user,
+        });
+      } else if (body.token) {
+        // Backward compatibility with older token field
+        localStorage.setItem("authToken", body.token as string);
+      }
+
+      if (body?.access_token) {
+        useAuthStore.getState().setAuthSession({
+          accessToken: body.access_token,
+          refreshToken: "",
+          user: { id: body?.clinician_id || "" },
+        });
+      }
+
+      localStorage.setItem("emailVerified", "true");
+      localStorage.removeItem("pendingEmail");
+
+      const userRole =
+        body.user?.role ?? useAuthStore.getState().user?.role ?? null;
+
+      if (!flowForOtpVerify) {
+        navigate("/auth/verification-success");
+        return;
+      }
+
+      const { role, action } = flowForOtpVerify;
+
+      const clearFlow = () => {
+        useAuthStore.getState().clearActiveAuthFlow();
+      };
+
+      // Hospital routes
+      if (role === "hospital") {
+        if (action === "login") {
+          clearFlow();
+          navigate("/hospital/dashboard");
+          return;
+        }
+
+        // hospital/register => after verify, complete hospital onboarding first.
+        // Hospital onboarding step will route into shared OTP login when done.
+        clearFlow();
+        navigate("/hospital/onboarding/registration");
+        return;
+      }
+
+      // Health-worker routes
+      if (role === "health-worker") {
+        if (action === "login") {
+          clearFlow();
+          navigate("/medical-staff/dashboard");
+          return;
+        }
+
+        // health-worker/register => proceed to health-worker onboarding
+        clearFlow();
+        navigate("/auth/onboarding/professional-profile");
+        return;
+      }
+
+      // Fallback
+      clearFlow();
+      navigate(
+        userRole === "hospital_admin"
+          ? "/hospital/dashboard"
+          : "/medical-staff/dashboard",
+      );
+    } catch {
+      setError("Network error — please check your connection and try again.");
     } finally {
       setIsLoading(false);
     }
@@ -127,15 +235,34 @@ export function OtpVerify() {
   const handleResendOtp = async () => {
     if (!canResend) return;
 
+    const email = localStorage.getItem("pendingEmail") ?? "";
+
     setCanResend(false);
     setResendTimer(60);
     setError("");
 
     try {
-      // Simulate resend
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const BASE = import.meta.env.VITE_API_BASE_URL ?? "http://0.0.0.0:8080";
+      const response = await fetch(`${BASE}/api/v1/auth/otp/send`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
 
-      // Restart timer
+      let body: { message?: string } = {};
+      try {
+        body = await response.json();
+      } catch {
+        /* non-JSON body */
+      }
+
+      if (!response.ok) {
+        setError(body.message ?? "Failed to resend OTP. Please try again.");
+        setCanResend(true);
+        return;
+      }
+
+      // Restart countdown timer
       const timer = setInterval(() => {
         setResendTimer((prev) => {
           if (prev <= 1) {
@@ -146,8 +273,8 @@ export function OtpVerify() {
           return prev - 1;
         });
       }, 1000);
-    } catch (error) {
-      console.error("Resend error:", error);
+    } catch {
+      setError("Network error — please check your connection and try again.");
       setCanResend(true);
     }
   };

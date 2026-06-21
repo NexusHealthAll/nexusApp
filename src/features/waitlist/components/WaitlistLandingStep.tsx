@@ -9,7 +9,6 @@ import {
   Wallet,
   Zap,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import {
   waitlistPartners,
 } from "../constants/waitlistContent";
@@ -141,12 +140,6 @@ const ecosystemColumns = [
 ] as const;
 
 export function WaitlistLandingStep() {
-  const navigate = useNavigate();
-  const goToRoleLogin = (role: "hospital" | "health-worker") => {
-    localStorage.setItem("selectedRole", role);
-    navigate(`/auth/login?role=${role}`);
-  };
-
   return (
     <div className="bg-[#f4f6fa]">
       <section className="px-4 pb-12 pt-12 sm:px-6 lg:px-8 lg:pb-16 lg:pt-20">
@@ -196,13 +189,13 @@ export function WaitlistLandingStep() {
                 Eliminate staffing gaps with automated compliance and verified
                 talent pipelines.
               </p>
-              <button
+              {/* <button
                 type="button"
                 onClick={() => goToRoleLogin("hospital")}
                 className="text-sm bg-white text-onboarding-primaryBlue py-4 px-6 rounded-lg mt-2"
               >
                 Join as a Hospital
-              </button>
+              </button> */}
             </div>
           </article>
 
@@ -224,13 +217,13 @@ export function WaitlistLandingStep() {
                 The freedom to work anywhere, powered by AI documentation that
                 saves hours daily.
               </p>
-              <button
+              {/* <button
                 type="button"
                 onClick={() => goToRoleLogin("health-worker")}
                 className="text-sm bg-white text-onboarding-primaryBlue py-4 px-6 rounded-lg mt-2"
               >
                 Join as a Health Worker
-              </button>
+              </button> */}
             </div>
           </article>
         </div>

@@ -3,12 +3,11 @@ import { MapPin, Minus, Plus, Search, ShieldCheck } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
 import { useHospitalSetup } from "../hooks/useHospitalSetup";
 
-const DEFAULT_COORDS = { lat: 6.4965, lng: 3.3764 };
-
 export function SetHospitalLocation() {
-  const { setLocationDone } = useHospitalSetup();
-  const [coords] = useState(DEFAULT_COORDS);
+  const { coordinates, setLocationDone } = useHospitalSetup();
   const [search, setSearch] = useState("");
+
+  const coords = coordinates ?? { lat: 6.4965, lng: 3.3764 };
 
   return (
     <div className="space-y-6">

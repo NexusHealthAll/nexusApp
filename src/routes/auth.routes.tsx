@@ -6,6 +6,7 @@ import {
   OtpVerify,
   RoleSelection,
   EmailVerificationSuccess,
+  PublicOnlyAuthRoute,
 } from "@/features/auth/components";
 import {
   ProfessionalProfile,
@@ -20,11 +21,46 @@ export const authRoutes: RouteObject[] = [
     path: "auth",
     children: [
       { index: true, element: <Navigate to="login" replace /> },
-      { path: "signup", element: <EmailSignup /> },
-      { path: "login", element: <EmailLogin /> },
-      { path: "verify-otp", element: <OtpVerify /> },
-      { path: "verification-success", element: <EmailVerificationSuccess /> },
-      { path: "role-selection", element: <RoleSelection /> },
+      {
+        path: "signup",
+        element: (
+          <PublicOnlyAuthRoute>
+            <EmailSignup />
+          </PublicOnlyAuthRoute>
+        ),
+      },
+      {
+        path: "login",
+        element: (
+          <PublicOnlyAuthRoute>
+            <EmailLogin />
+          </PublicOnlyAuthRoute>
+        ),
+      },
+      {
+        path: "verify-otp",
+        element: (
+          <PublicOnlyAuthRoute>
+            <OtpVerify />
+          </PublicOnlyAuthRoute>
+        ),
+      },
+      {
+        path: "verification-success",
+        element: (
+          <PublicOnlyAuthRoute>
+            <EmailVerificationSuccess />
+          </PublicOnlyAuthRoute>
+        ),
+      },
+      {
+        path: "role-selection",
+        element: (
+          <PublicOnlyAuthRoute>
+            <RoleSelection />
+          </PublicOnlyAuthRoute>
+        ),
+      },
       {
         path: "onboarding",
         children: [
@@ -32,8 +68,22 @@ export const authRoutes: RouteObject[] = [
             index: true,
             element: <Navigate to="professional-profile" replace />,
           },
-          { path: "professional-profile", element: <ProfessionalProfile /> },
-          { path: "payout-setup", element: <PayoutSetup /> },
+          {
+            path: "professional-profile",
+            element: (
+              <PublicOnlyAuthRoute>
+                <ProfessionalProfile />
+              </PublicOnlyAuthRoute>
+            ),
+          },
+          {
+            path: "payout-setup",
+            element: (
+              <PublicOnlyAuthRoute>
+                <PayoutSetup />
+              </PublicOnlyAuthRoute>
+            ),
+          },
           {
             path: "*",
             element: <Navigate to="professional-profile" replace />,
@@ -43,6 +93,7 @@ export const authRoutes: RouteObject[] = [
       { path: "*", element: <Navigate to="login" replace /> },
     ],
   },
+
   {
     path: "/",
     element: <LandingPage />,

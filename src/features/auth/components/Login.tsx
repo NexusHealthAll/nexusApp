@@ -1,8 +1,13 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/Card';
-import { Button } from '@/shared/components/ui/Button';
-import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/shared/components/ui/Card";
+import { Button } from "@/shared/components/ui/Button";
+import { Eye, EyeOff, Mail, Lock } from "lucide-react";
 
 interface LoginFormData {
   email: string;
@@ -12,47 +17,47 @@ interface LoginFormData {
 // Mock user database for demo
 const mockUsers = [
   {
-    id: 'user_1',
-    email: 'doctor@nexuscare.com',
-    password: 'password123',
-    role: 'medical-staff',
-    fullName: 'Dr. Sarah Johnson'
+    id: "user_1",
+    email: "doctor@nexuscare.com",
+    password: "password123",
+    role: "medical-staff",
+    fullName: "Dr. Sarah Johnson",
   },
   {
-    id: 'user_2',
-    email: 'admin@nexuscare.com',
-    password: 'admin123',
-    role: 'hospital-admin',
-    fullName: 'Michael Chen'
-  }
+    id: "user_2",
+    email: "admin@nexuscare.com",
+    password: "admin123",
+    role: "hospital_admin",
+    fullName: "Michael Chen",
+  },
 ];
 
 export function Login() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState<LoginFormData>({
-    email: '',
-    password: ''
+    email: "",
+    password: "",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Partial<LoginFormData>>({});
-  const [loginError, setLoginError] = useState<string>('');
+  const [loginError, setLoginError] = useState<string>("");
 
   const handleInputChange = (field: keyof LoginFormData, value: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
-    
+
     // Clear errors when user starts typing
     if (errors[field]) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        [field]: undefined
+        [field]: undefined,
       }));
     }
     if (loginError) {
-      setLoginError('');
+      setLoginError("");
     }
   };
 
@@ -60,13 +65,13 @@ export function Login() {
     const newErrors: Partial<LoginFormData> = {};
 
     if (!formData.email.trim()) {
-      newErrors.email = 'Email is required';
+      newErrors.email = "Email is required";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email address';
+      newErrors.email = "Please enter a valid email address";
     }
 
     if (!formData.password) {
-      newErrors.password = 'Password is required';
+      newErrors.password = "Password is required";
     }
 
     setErrors(newErrors);
@@ -75,23 +80,23 @@ export function Login() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
 
     setIsLoading(true);
-    setLoginError('');
+    setLoginError("");
 
     try {
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
       // Check credentials against mock database
       const user = mockUsers.find(
-        u => u.email === formData.email && u.password === formData.password
+        (u) => u.email === formData.email && u.password === formData.password,
       );
 
       if (!user) {
-        setLoginError('Invalid email or password');
+        setLoginError("Invalid email or password");
         return;
       }
 
@@ -102,25 +107,25 @@ export function Login() {
         fullName: user.fullName,
         email: user.email,
         role: user.role,
-        loginAt: new Date().toISOString()
+        loginAt: new Date().toISOString(),
       };
 
       // Store auth data
-      localStorage.setItem('authToken', authToken);
-      localStorage.setItem('userData', JSON.stringify(userData));
+      localStorage.setItem("authToken", authToken);
+      localStorage.setItem("userData", JSON.stringify(userData));
 
       // Route based on user role
-      if (user.role === 'medical-staff') {
-        navigate('/medical-staff/dashboard');
-      } else if (user.role === 'hospital-admin') {
-        navigate('/admin/dashboard');
+      if (user.role === "medical-staff") {
+        navigate("/medical-staff/dashboard");
+      } else if (user.role === "hospital_admin") {
+        navigate("/admin/dashboard");
       } else {
         // Fallback route
-        navigate('/dashboard');
+        navigate("/dashboard");
       }
     } catch (error) {
-      console.error('Login error:', error);
-      setLoginError('An error occurred. Please try again.');
+      console.error("Login error:", error);
+      setLoginError("An error occurred. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -136,7 +141,9 @@ export function Login() {
             alt="Nexus Care"
             className="h-12 w-auto mx-auto mb-4"
           />
-          <h1 className="text-2xl font-bold text-slate-900 mb-2">Welcome Back</h1>
+          <h1 className="text-2xl font-bold text-slate-900 mb-2">
+            Welcome Back
+          </h1>
           <p className="text-slate-600">Sign in to your account</p>
         </div>
 
@@ -166,11 +173,11 @@ export function Login() {
                   <input
                     type="email"
                     value={formData.email}
-                    onChange={(e) => handleInputChange('email', e.target.value)}
+                    onChange={(e) => handleInputChange("email", e.target.value)}
                     className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500 transition-colors ${
-                      errors.email 
-                        ? 'border-red-300 focus:ring-red-500 focus:border-red-500' 
-                        : 'border-slate-200'
+                      errors.email
+                        ? "border-red-300 focus:ring-red-500 focus:border-red-500"
+                        : "border-slate-200"
                     }`}
                     placeholder="Enter your email"
                   />
@@ -188,13 +195,15 @@ export function Login() {
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
                   <input
-                    type={showPassword ? 'text' : 'password'}
+                    type={showPassword ? "text" : "password"}
                     value={formData.password}
-                    onChange={(e) => handleInputChange('password', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("password", e.target.value)
+                    }
                     className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500 transition-colors ${
-                      errors.password 
-                        ? 'border-red-300 focus:ring-red-500 focus:border-red-500' 
-                        : 'border-slate-200'
+                      errors.password
+                        ? "border-red-300 focus:ring-red-500 focus:border-red-500"
+                        : "border-slate-200"
                     }`}
                     placeholder="Enter your password"
                   />
@@ -232,16 +241,16 @@ export function Login() {
                 isLoading={isLoading}
                 className="w-full bg-slate-900 hover:bg-slate-800 text-white py-3 font-semibold transition-all shadow-lg"
               >
-                {isLoading ? 'Signing In...' : 'Sign In'}
+                {isLoading ? "Signing In..." : "Sign In"}
               </Button>
             </form>
 
             {/* Sign Up Link */}
             <div className="mt-6 text-center">
               <p className="text-sm text-slate-600">
-                Don't have an account?{' '}
+                Don't have an account?{" "}
                 <button
-                  onClick={() => navigate('/auth/signup')}
+                  onClick={() => navigate("/auth/signup")}
                   className="font-medium text-slate-900 hover:text-slate-700 transition-colors"
                 >
                   Sign up
@@ -253,10 +262,16 @@ export function Login() {
 
         {/* Demo Credentials */}
         <div className="mt-6 p-4 bg-white/50 backdrop-blur-sm rounded-lg border border-slate-200">
-          <h4 className="text-sm font-semibold text-slate-700 mb-2">Demo Credentials:</h4>
+          <h4 className="text-sm font-semibold text-slate-700 mb-2">
+            Demo Credentials:
+          </h4>
           <div className="space-y-1 text-xs text-slate-600">
-            <p><strong>Medical Staff:</strong> doctor@nexuscare.com / password123</p>
-            <p><strong>Hospital Admin:</strong> admin@nexuscare.com / admin123</p>
+            <p>
+              <strong>Medical Staff:</strong> doctor@nexuscare.com / password123
+            </p>
+            <p>
+              <strong>Hospital Admin:</strong> admin@nexuscare.com / admin123
+            </p>
           </div>
         </div>
       </div>

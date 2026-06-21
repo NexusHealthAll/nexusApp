@@ -1,6 +1,6 @@
-import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { authUtils } from '../utils/authUtils';
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { authUtils } from "../utils/authUtils";
 
 export function SplashScreen() {
   const navigate = useNavigate();
@@ -8,19 +8,19 @@ export function SplashScreen() {
   useEffect(() => {
     const checkAuthAndRedirect = async () => {
       // Show splash for at least 2 seconds for branding
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise((resolve) => setTimeout(resolve, 2000));
 
       if (authUtils.isAuthenticated()) {
         const user = authUtils.getCurrentUser();
-        if (user?.role === 'medical-staff') {
-          navigate('/medical-staff/dashboard');
-        } else if (user?.role === 'hospital-admin') {
-          navigate('/admin/dashboard');
+        if (user?.role === "medical-staff") {
+          navigate("/medical-staff/dashboard");
+        } else if (user?.role === "hospital_admin") {
+          navigate("/admin/dashboard");
         } else {
-          navigate('/auth/login');
+          navigate("/auth/login");
         }
       } else {
-        navigate('/auth/login');
+        navigate("/auth/login");
       }
     };
 
@@ -46,8 +46,14 @@ export function SplashScreen() {
         {/* Loading Indicator */}
         <div className="flex items-center justify-center space-x-2">
           <div className="w-2 h-2 bg-white rounded-full animate-bounce"></div>
-          <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-          <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+          <div
+            className="w-2 h-2 bg-white rounded-full animate-bounce"
+            style={{ animationDelay: "0.1s" }}
+          ></div>
+          <div
+            className="w-2 h-2 bg-white rounded-full animate-bounce"
+            style={{ animationDelay: "0.2s" }}
+          ></div>
         </div>
       </div>
     </div>

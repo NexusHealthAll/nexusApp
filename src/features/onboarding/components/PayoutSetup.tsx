@@ -144,7 +144,7 @@ export function PayoutSetup() {
         fullName: formData.accountName,
         email: localStorage.getItem("pendingEmail") || "",
         role:
-          selectedRole === "health-worker" ? "medical-staff" : "hospital-admin",
+          selectedRole === "health-worker" ? "medical-staff" : "hospital_admin",
         professional: professionalData,
         payout: formData,
         onboardingComplete: true,
@@ -187,8 +187,18 @@ export function PayoutSetup() {
                 onClick={() => navigate(-1)}
                 className="rounded-full p-2 text-slate-600 hover:bg-slate-100"
               >
-                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                <svg
+                  className="h-4 w-4"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M15 19l-7-7 7-7"
+                  />
                 </svg>
               </button>
               <NexusCareLogo size="md" />
@@ -232,7 +242,9 @@ export function PayoutSetup() {
                 </label>
                 <BankDropdown
                   value={formData.bankCode}
-                  onChange={(code) => setFormData((prev) => ({ ...prev, bankCode: code }))}
+                  onChange={(code) =>
+                    setFormData((prev) => ({ ...prev, bankCode: code }))
+                  }
                   error={!!errors.bankCode}
                 />
                 {errors.bankCode && (
@@ -250,8 +262,9 @@ export function PayoutSetup() {
                     type="text"
                     value={formData.accountNumber}
                     onChange={(e) => handleAccountNumberChange(e.target.value)}
-                    className={`flex-1 bg-transparent text-sm text-neutral-800 outline-none placeholder:text-neutral-400 font-mono ${errors.accountNumber ? "text-red-600" : ""
-                      }`}
+                    className={`flex-1 bg-transparent text-sm text-neutral-800 outline-none placeholder:text-neutral-400 font-mono ${
+                      errors.accountNumber ? "text-red-600" : ""
+                    }`}
                     placeholder="0123456789"
                     maxLength={10}
                   />
@@ -276,10 +289,11 @@ export function PayoutSetup() {
                   Account Name
                 </label>
                 <div
-                  className={`flex items-center gap-2.5 rounded-lg px-3 py-2.5 transition-all ${isVerified
-                    ? "border-green-300 bg-green-50"
-                    : "bg-onboarding-inputBackground"
-                    }`}
+                  className={`flex items-center gap-2.5 rounded-lg px-3 py-2.5 transition-all ${
+                    isVerified
+                      ? "border-green-300 bg-green-50"
+                      : "bg-onboarding-inputBackground"
+                  }`}
                 >
                   {isVerifying ? (
                     <div className="flex items-center space-x-2 text-onboarding-textSecondary">
@@ -376,14 +390,21 @@ function BankDropdown({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className={`flex items-center gap-2.5 rounded-lg bg-onboarding-inputBackground px-3 py-2.5 w-full text-left ${error ? "ring-1 ring-red-400" : ""
-          }`}
+        className={`flex items-center gap-2.5 rounded-lg bg-onboarding-inputBackground px-3 py-2.5 w-full text-left ${
+          error ? "ring-1 ring-red-400" : ""
+        }`}
       >
         <Building className="h-4 w-4 flex-shrink-0 text-secondary-600" />
-        <span className={`flex-1 text-sm ${selected ? "text-neutral-800" : "text-neutral-400"}`}>
+        <span
+          className={`flex-1 text-sm ${selected ? "text-neutral-800" : "text-neutral-400"}`}
+        >
           {selected ? selected.name : "Choose your bank"}
         </span>
-        <svg className="h-4 w-4 text-neutral-500" viewBox="0 0 20 20" fill="currentColor">
+        <svg
+          className="h-4 w-4 text-neutral-500"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+        >
           <path d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 011.08 1.04l-4.25 4.25a.75.75 0 01-1.06 0L5.21 8.27a.75.75 0 01.02-1.06z" />
         </svg>
       </button>

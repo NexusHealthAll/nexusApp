@@ -29,7 +29,7 @@ function formatExpiry(value: string) {
 }
 
 export function AddPaymentMethod() {
-  const { setPaymentDone, reset } = useHospitalSetup();
+  const { paymentSet, setPaymentDone, reset } = useHospitalSetup();
 
   const [form, setForm] = useState({
     cardholderName: "Dr. Adeyemi Michael",
@@ -59,7 +59,10 @@ export function AddPaymentMethod() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setPaymentDone();
+    if (!paymentSet) {
+      setPaymentDone();
+    }
+
     // initializePayment({
     //   onSuccess: () => setPaymentDone(),
     //   onClose: () => {},

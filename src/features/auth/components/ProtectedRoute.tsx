@@ -1,72 +1,106 @@
-import { useEffect, useState } from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
+import { useEffect, useMemo, useState } from "react";
+import { Navigate, useLocation } from "react-router-dom";
+import { useAuthStore } from "@/features/auth/store/authStore";
 
-interface ProtectedRouteProps {
+type UserRole = "medical-staff" | "hospital_admin";
+
+type ProtectedRouteProps = {
   children: React.ReactNode;
-  requiredRole?: 'medical-staff' | 'hospital-admin';
-}
+  requiredRole?: UserRole;
+};
 
-interface UserData {
+type UserData = {
   id: string;
-  fullName: string;
-  email: string;
-  role: string;
+  fullName?: string;
+  email?: string;
+  role?: string;
   loginAt?: string;
   createdAt?: string;
+};
+
+function isKnownRole(role: unknown): role is UserRole {
+  return role === "medical-staff" || role === "hospital_admin";
 }
 
-export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) {
+function purgeAuth() {
+  // localStorage
+  localStorage.removeItem("accessToken");
+  localStorage.removeItem("refreshToken");
+  localStorage.removeItem("userData");
+  localStorage.removeItem("authToken"); // legacy
+  localStorage.removeItem("pendingUser");
+
+  // zustand
+  useAuthStore.getState().clearAuthSession();
+}
+
+function getCanonicalDashboardPath(role: UserRole) {
+  return role === "hospital_admin"
+    ? "/hospital/dashboard"
+    : "/medical-staff/dashboard";
+}
+
+function getRoleFromPath(pathname: string): UserRole | null {
+  if (pathname.startsWith("/hospital/")) return "hospital_admin";
+  if (pathname.startsWith("/medical-staff/")) return "medical-staff";
+  return null;
+}
+
+export function ProtectedRoute({
+  children,
+  requiredRole,
+}: ProtectedRouteProps) {
   const location = useLocation();
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [userRole, setUserRole] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<UserRole | null>(null);
+
+  const currentRoleFromUrl = useMemo(
+    () => getRoleFromPath(location.pathname),
+    [location.pathname],
+  );
 
   useEffect(() => {
     const checkAuth = () => {
       try {
-        const authToken = localStorage.getItem('authToken');
-        const userDataStr = localStorage.getItem('userData');
+        const accessToken = localStorage.getItem("accessToken");
+        const userDataStr = localStorage.getItem("userData");
 
-        if (!authToken || !userDataStr) {
+        if (!accessToken || !userDataStr) {
+          purgeAuth();
           setIsAuthenticated(false);
-          setIsLoading(false);
+          setUserRole(null);
           return;
         }
 
         const userData: UserData = JSON.parse(userDataStr);
-        
-        console.log('ProtectedRoute auth check:', { 
-          authToken: authToken.substring(0, 20) + '...', 
-          userData, 
-          requiredRole,
-          currentPath: location.pathname 
-        });
-        
-        // Validate token format (basic check)
-        if (!authToken.startsWith('token_') && !authToken.startsWith('temp_token_')) {
-          localStorage.removeItem('authToken');
-          localStorage.removeItem('userData');
+        const role = userData?.role;
+
+        if (!isKnownRole(role) || !userData?.id) {
+          purgeAuth();
           setIsAuthenticated(false);
-          setIsLoading(false);
+          setUserRole(null);
           return;
         }
 
         setIsAuthenticated(true);
-        setUserRole(userData.role);
+        setUserRole(role);
+
+        // Extra safety: if the requiredRole is explicitly provided and mismatched,
+        // let the redirect logic below handle it.
       } catch (error) {
-        console.error('Auth validation error:', error);
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('userData');
+        purgeAuth();
         setIsAuthenticated(false);
+        setUserRole(null);
       } finally {
         setIsLoading(false);
       }
     };
 
     checkAuth();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Show loading spinner while checking auth
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center">
@@ -78,22 +112,26 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
     );
   }
 
-  // Redirect to login if not authenticated
-  if (!isAuthenticated) {
+  if (!isAuthenticated || !userRole) {
     return <Navigate to="/auth/login" state={{ from: location }} replace />;
   }
 
-  // Check role-based access if required
+  // 1) Explicit role requirement check
   if (requiredRole && userRole !== requiredRole) {
-    // Redirect to appropriate dashboard based on user's actual role
-    if (userRole === 'medical-staff') {
-      return <Navigate to="/medical-staff/dashboard" replace />;
-    } else if (userRole === 'hospital-admin') {
-      return <Navigate to="/hospital/dashboard" replace />;
-    } else {
-      // Fallback: redirect to login if role is unknown
-      return <Navigate to="/auth/login" replace />;
-    }
+    return (
+      <Navigate
+        to={getCanonicalDashboardPath(userRole)}
+        replace
+        state={{ from: location }}
+      />
+    );
+  }
+
+  // 2) Role must match the section they are trying to access.
+  //    - hospital_admin => /hospital/*
+  //    - medical-staff => /medical-staff/*
+  if (currentRoleFromUrl && currentRoleFromUrl !== userRole) {
+    return <Navigate to={getCanonicalDashboardPath(userRole)} replace />;
   }
 
   return <>{children}</>;
