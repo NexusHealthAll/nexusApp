@@ -1,6 +1,4 @@
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") ||
-  "http://localhost:8080";
+import apiClient from "@/lib/apiClient";
 
 type BackendWorkerStatus = "available" | "on_shift" | "off_duty";
 type WorkerStatus = "available" | "on-shift" | "off-duty";
@@ -66,19 +64,6 @@ export interface ShiftHistoryItem {
   status: string;
 }
 
-async function requestJson<T>(
-  path: string,
-  init?: RequestInit,
-): Promise<T> {
-  const response = await fetch(`${API_BASE_URL}${path}`, init);
-
-  if (!response.ok) {
-    throw new Error(`HTTP error ${response.status}`);
-  }
-
-  return response.json() as Promise<T>;
-}
-
 function normalizeWorkerStatus(status: WorkerStatus | BackendWorkerStatus): WorkerStatus {
   if (status === "on_shift") return "on-shift";
   if (status === "off_duty") return "off-duty";
@@ -100,9 +85,10 @@ export class HealthWorkerService {
     if (location) params.append("location", location);
 
     try {
-      return await requestJson<AvailableShift[]>(
+      const res = await apiClient.get<AvailableShift[]>(
         `/api/health-worker/shifts/available?${params}`,
       );
+      return res.data;
     } catch (error) {
       console.error("Failed to fetch available shifts:", error);
       return this.getMockAvailableShifts();
@@ -114,14 +100,11 @@ export class HealthWorkerService {
     workerId: string,
   ): Promise<{ success: boolean; activeShiftId: string }> {
     try {
-      return await requestJson<{ success: boolean; activeShiftId: string }>(
+      const res = await apiClient.post<{ success: boolean; activeShiftId: string }>(
         "/api/health-worker/shifts/accept",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ shiftId, workerId }),
-        },
+        { shiftId, workerId },
       );
+      return res.data;
     } catch (error) {
       console.error("Failed to accept shift:", error);
       return { success: true, activeShiftId: `ACTIVE_${Date.now()}` };
@@ -130,14 +113,11 @@ export class HealthWorkerService {
 
   static async clockIn(shiftId: string, workerId: string): Promise<ActiveShift> {
     try {
-      return await requestJson<ActiveShift>(
+      const res = await apiClient.post<ActiveShift>(
         "/api/health-worker/shifts/clock-in",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ shiftId, workerId }),
-        },
+        { shiftId, workerId },
       );
+      return res.data;
     } catch (error) {
       console.error("Failed to clock in:", error);
       return {
@@ -158,15 +138,12 @@ export class HealthWorkerService {
     workerId: string,
   ): Promise<{ success: boolean; totalDuration: string; earnings: number }> {
     try {
-      return await requestJson<{
+      const res = await apiClient.post<{
         success: boolean;
         totalDuration: string;
         earnings: number;
-      }>("/api/health-worker/shifts/clock-out", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ activeShiftId, workerId }),
-      });
+      }>("/api/health-worker/shifts/clock-out", { activeShiftId, workerId });
+      return res.data;
     } catch (error) {
       console.error("Failed to clock out:", error);
       return { success: true, totalDuration: "08:30:00", earnings: 68000 };
@@ -178,17 +155,11 @@ export class HealthWorkerService {
     status: Exclude<WorkerStatus, "on-shift">,
   ): Promise<{ success: boolean }> {
     try {
-      return await requestJson<{ success: boolean }>(
+      const res = await apiClient.put<{ success: boolean }>(
         "/api/health-worker/status",
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            workerId,
-            status: toBackendWorkerStatus(status),
-          }),
-        },
+        { workerId, status: toBackendWorkerStatus(status) },
       );
+      return res.data;
     } catch (error) {
       console.error("Failed to update duty status:", error);
       return { success: true };
@@ -197,15 +168,15 @@ export class HealthWorkerService {
 
   static async getWorkerProfile(workerId: string): Promise<HealthWorkerProfile> {
     try {
-      const profile = await requestJson<
+      const res = await apiClient.get<
         Omit<HealthWorkerProfile, "currentStatus"> & {
           currentStatus: WorkerStatus | BackendWorkerStatus;
         }
       >(`/api/health-worker/profile/${workerId}`);
 
       return {
-        ...profile,
-        currentStatus: normalizeWorkerStatus(profile.currentStatus),
+        ...res.data,
+        currentStatus: normalizeWorkerStatus(res.data.currentStatus),
       };
     } catch (error) {
       console.error("Failed to fetch worker profile:", error);
@@ -215,9 +186,10 @@ export class HealthWorkerService {
 
   static async getDashboardStats(workerId: string): Promise<DashboardStats> {
     try {
-      return await requestJson<DashboardStats>(
+      const res = await apiClient.get<DashboardStats>(
         `/api/health-worker/dashboard/${workerId}`,
       );
+      return res.data;
     } catch (error) {
       console.error("Failed to fetch dashboard stats:", error);
       return {
@@ -231,9 +203,10 @@ export class HealthWorkerService {
 
   static async getEarnings(workerId: string): Promise<ShiftEarnings> {
     try {
-      return await requestJson<ShiftEarnings>(
+      const res = await apiClient.get<ShiftEarnings>(
         `/api/health-worker/earnings/${workerId}`,
       );
+      return res.data;
     } catch (error) {
       console.error("Failed to fetch earnings:", error);
       return this.getMockEarnings();
@@ -244,15 +217,13 @@ export class HealthWorkerService {
     workerId: string,
     limit = 10,
   ): Promise<ShiftHistoryItem[]> {
-    const params = new URLSearchParams({
-      workerId,
-      limit: limit.toString(),
-    });
+    const params = new URLSearchParams({ workerId, limit: limit.toString() });
 
     try {
-      return await requestJson<ShiftHistoryItem[]>(
+      const res = await apiClient.get<ShiftHistoryItem[]>(
         `/api/health-worker/shifts/history?${params}`,
       );
+      return res.data;
     } catch (error) {
       console.error("Failed to fetch shift history:", error);
       return this.getMockShiftHistory();

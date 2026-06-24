@@ -10,7 +10,8 @@ import {
 } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
 import { formatNaira } from "@/shared/utils/currency";
-import { ShiftService } from "../services/shiftService";
+import { useHospitalShift } from "../hooks/useHospitalShift";
+import { useShiftDraftStore } from "../hooks/useShiftDraftStore";
 import type { ShiftFormData } from "../types";
 
 interface Props {
@@ -107,6 +108,8 @@ function InfoRow({ label, value }: { label: string; value: string }) {
 
 export function ShiftPreview({ data, onBack, onBroadcast }: Props) {
   const [broadcasting, setBroadcasting] = useState(false);
+  const { createShift } = useHospitalShift();
+  const { clearDraft } = useShiftDraftStore();
 
   const isStatUrgency = data.urgencyLevel === "stat";
 
@@ -119,9 +122,14 @@ export function ShiftPreview({ data, onBack, onBroadcast }: Props) {
 
   const handleBroadcast = async () => {
     setBroadcasting(true);
-    await ShiftService.createShift(data);
-    setBroadcasting(false);
-    onBroadcast();
+    try {
+      await createShift(data);
+      clearDraft();
+      setBroadcasting(false);
+      onBroadcast();
+    } catch (error) {
+      setBroadcasting(false);
+    }
   };
 
   return (

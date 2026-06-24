@@ -36,7 +36,7 @@ export function VerificationStatusStep() {
   }).format(new Date());
 
   return (
-    <HospitalOnboardingLayout activeStep={2}>
+    <HospitalOnboardingLayout activeStep={3} lockedSteps={[0, 1, 2]}>
       <div className="max-w-4xl mx-auto">
         {/* ── Success banner — light blue gradient as in design ── */}
         <div className="rounded-xl bg-gradient-to-br from-[#EBF4FF] via-[#DAE8F3] to-[#C8DFEF] border border-[#C8DFEF] px-7 py-6 mb-7">
@@ -212,7 +212,11 @@ export function VerificationStatusStep() {
             onClick={() => {
               // Mark that user is coming from hospital onboarding verification
               // so we can route them to the correct dashboard post-login.
-              useAuthStore.getState().setAuthFlowOrigin("hospital-onboarding");
+              useAuthStore.getState().setActiveAuthFlow({
+                role: "hospital",
+                action: "login",
+                origin: "hospital-onboarding",
+              });
 
               navigate("/auth/login");
             }}

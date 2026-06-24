@@ -11,8 +11,8 @@ import {
 import { Button } from "@/shared/components/ui/Button";
 import { cn } from "@/shared/utils/cn";
 import { formatNaira } from "@/shared/utils/currency";
-import { ShiftService } from "../services/shiftService";
 import type { ShiftBonus, ShiftFormData } from "../types";
+import { useShiftDraftStore } from "../hooks/useShiftDraftStore";
 
 interface Props {
   data: ShiftFormData;
@@ -72,9 +72,17 @@ export function Step2Compensation({ data, onUpdate, onNext, onBack }: Props) {
     onUpdate({ bonuses: data.bonuses.filter((b) => b.id !== id) });
   };
 
+  const { setDraft } = useShiftDraftStore();
+
   const handleSaveDraft = async () => {
     setSaving(true);
-    await ShiftService.saveDraft(data);
+
+    // Drafts should only be cleared when preview or create shift succeeds.
+
+    // For now, persist the entered fields into the dedicated zustand store.
+    setDraft(data);
+
+    await new Promise((resolve) => setTimeout(resolve, 300));
     setSaving(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);

@@ -18,6 +18,7 @@ import {
 import {
   HospitalDetailsStep,
   LocationGeofencingStep,
+  IdentityVerificationStep,
   VerificationStatusStep,
 } from "@/features/hospital/onboarding/components";
 import { OnboardingProvider } from "@/features/hospital/onboarding/context/OnboardingContext";
@@ -77,6 +78,10 @@ const hospitalOnboardingRoutes: RouteObject[] = [
       {
         path: "/hospital/onboarding/location",
         element: <LocationGeofencingStep />,
+      },
+      {
+        path: "/hospital/onboarding/identity-verification",
+        element: <IdentityVerificationStep />,
       },
       {
         path: "/hospital/onboarding/verification-status",

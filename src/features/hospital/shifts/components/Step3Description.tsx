@@ -48,6 +48,7 @@ function draftQuality(data: ShiftFormData): number {
 export function Step3Description({ data, onUpdate, onNext, onBack }: Props) {
   const [taskInput, setTaskInput] = useState("");
   const [deliverableInput, setDeliverableInput] = useState("");
+
   const [equipmentInput, setEquipmentInput] = useState("");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);

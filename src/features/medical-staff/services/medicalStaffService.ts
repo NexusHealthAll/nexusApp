@@ -1,6 +1,8 @@
 // Medical Staff API Service Layer
 // This service handles all API calls specific to medical staff workflows
 
+import apiClient from "@/lib/apiClient";
+
 export interface DoctorAppointment {
   id: string;
   time: string;
@@ -45,14 +47,13 @@ export class MedicalStaffService {
     doctorId: string,
   ): Promise<DoctorAppointment[]> {
     try {
-      const response = await fetch(`http://localhost:8080/api/medical-staff/appointments/today?doctorId=${doctorId}`);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      return await response.json();
+      const res = await apiClient.get<DoctorAppointment[]>(
+        `/api/medical-staff/appointments/today`,
+        { params: { doctorId } },
+      );
+      return res.data;
     } catch (error) {
-      console.error('Failed to fetch appointments:', error);
-      // Fallback to mock data if API fails
+      console.error("Failed to fetch appointments:", error);
       return this.getMockAppointments();
     }
   }
@@ -122,14 +123,12 @@ export class MedicalStaffService {
     patientId: string,
   ): Promise<PatientVitals> {
     try {
-      const response = await fetch(`http://localhost:8080/api/medical-staff/patient-vitals/${patientId}`);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      return await response.json();
+      const res = await apiClient.get<PatientVitals>(
+        `/api/medical-staff/patient-vitals/${patientId}`,
+      );
+      return res.data;
     } catch (error) {
-      console.error('Failed to fetch patient vitals:', error);
-      // Fallback to mock data if API fails
+      console.error("Failed to fetch patient vitals:", error);
       return this.getMockPatientVitals();
     }
   }
@@ -155,14 +154,13 @@ export class MedicalStaffService {
    */
   static async getDoctorStats(doctorId: string): Promise<DoctorStats> {
     try {
-      const response = await fetch(`http://localhost:8080/api/medical-staff/stats/today?doctorId=${doctorId}`);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      return await response.json();
+      const res = await apiClient.get<DoctorStats>(
+        `/api/medical-staff/stats/today`,
+        { params: { doctorId } },
+      );
+      return res.data;
     } catch (error) {
-      console.error('Failed to fetch doctor stats:', error);
-      // Fallback to mock data if API fails
+      console.error("Failed to fetch doctor stats:", error);
       return this.getMockDoctorStats();
     }
   }
@@ -183,20 +181,13 @@ export class MedicalStaffService {
    */
   static async startConsultation(appointmentId: string, doctorId: string) {
     try {
-      const response = await fetch('http://localhost:8080/api/medical-staff/consultations/start', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ appointmentId, doctorId })
-      });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      return await response.json();
+      const res = await apiClient.post<{ success: boolean; consultationId: string }>(
+        "/api/medical-staff/consultations/start",
+        { appointmentId, doctorId },
+      );
+      return res.data;
     } catch (error) {
-      console.error('Failed to start consultation:', error);
-      // Fallback to mock response if API fails
+      console.error("Failed to start consultation:", error);
       return { success: true, consultationId: `CONS_${Date.now()}` };
     }
   }
@@ -221,20 +212,13 @@ export class MedicalStaffService {
     },
   ) {
     try {
-      const response = await fetch(`http://localhost:8080/api/medical-staff/consultations/${consultationId}/notes`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(notes)
-      });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      return await response.json();
+      const res = await apiClient.post<{ success: boolean; savedAt: string }>(
+        `/api/medical-staff/consultations/${consultationId}/notes`,
+        notes,
+      );
+      return res.data;
     } catch (error) {
-      console.error('Failed to save consultation notes:', error);
-      // Fallback to mock response if API fails
+      console.error("Failed to save consultation notes:", error);
       return { success: true, savedAt: new Date().toISOString() };
     }
   }
@@ -245,18 +229,12 @@ export class MedicalStaffService {
    */
   static async completeConsultation(consultationId: string) {
     try {
-      const response = await fetch(`http://localhost:8080/api/medical-staff/consultations/${consultationId}/complete`, {
-        method: 'POST'
-      });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      return await response.json();
+      const res = await apiClient.post<{ success: boolean; completedAt: string }>(
+        `/api/medical-staff/consultations/${consultationId}/complete`,
+      );
+      return res.data;
     } catch (error) {
-      console.error('Failed to complete consultation:', error);
-      // Fallback to mock response if API fails
+      console.error("Failed to complete consultation:", error);
       return { success: true, completedAt: new Date().toISOString() };
     }
   }
@@ -267,16 +245,12 @@ export class MedicalStaffService {
    */
   static async getPatientHistory(patientId: string) {
     try {
-      const response = await fetch(`http://localhost:8080/api/medical-staff/patients/${patientId}/history`);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      return await response.json();
+      const res = await apiClient.get(
+        `/api/medical-staff/patients/${patientId}/history`,
+      );
+      return res.data;
     } catch (error) {
-      console.error('Failed to fetch patient history:', error);
-      // Fallback to mock data if API fails
+      console.error("Failed to fetch patient history:", error);
       return this.getMockPatientHistory();
     }
   }
@@ -365,7 +339,7 @@ GET /api/medical-staff/patients/{patientId}/history
 Response: PatientHistoryResponse
 Status: ✅ Working - Returns mock patient history
 
-Backend Server: http://localhost:8080
+Backend Server: VITE_API_BASE_URL (via apiClient)
 Frontend Integration: ✅ Connected with fallback to mock data
 Swagger Documentation: ✅ Available at http://localhost:8080/api/docs
 */

@@ -39,6 +39,7 @@ export interface ShiftFormData {
   tasks: string[];
   deliverables: ShiftDeliverable[];
   equipment: ShiftEquipment[];
+  requirements: string[];
 
   // Step 4 – Requirements
   qualifications: string[];

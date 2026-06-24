@@ -6,6 +6,7 @@ import {
   Settings,
   HelpCircle,
   CheckCircle2,
+  BadgeCheck,
 } from "lucide-react";
 import { HospitalOnboardingNavbar } from "./HospitalOnboardingNavbar";
 
@@ -17,17 +18,24 @@ interface Step {
 }
 
 const STEPS: Step[] = [
-  { index: 0, label: "Hospital Details",      icon: Building2,  path: "/hospital/onboarding/registration" },
-  { index: 1, label: "Location & Geofencing", icon: MapPin,      path: "/hospital/onboarding/location" },
-  { index: 2, label: "Verification Status",   icon: ShieldCheck, path: "/hospital/onboarding/verification-status" },
+  { index: 0, label: "Hospital Details", icon: Building2, path: "/hospital/onboarding/registration" },
+  { index: 1, label: "Location & Geofencing", icon: MapPin, path: "/hospital/onboarding/location" },
+  { index: 2, label: "Identity Verification", icon: ShieldCheck, path: "/hospital/onboarding/identity-verification" },
+  { index: 3, label: "Verification Status", icon: BadgeCheck, path: "/hospital/onboarding/verification-status" },
 ];
 
 interface HospitalOnboardingLayoutProps {
   activeStep: number;
+  /** Step indices that are completed but navigation is disabled (greyed-out with checkmarks) */
+  lockedSteps?: number[];
   children: React.ReactNode;
 }
 
-export function HospitalOnboardingLayout({ activeStep, children }: HospitalOnboardingLayoutProps) {
+export function HospitalOnboardingLayout({
+  activeStep,
+  lockedSteps = [],
+  children,
+}: HospitalOnboardingLayoutProps) {
   const navigate = useNavigate();
   const progressPercent = (activeStep / (STEPS.length - 1)) * 100;
 
@@ -62,31 +70,42 @@ export function HospitalOnboardingLayout({ activeStep, children }: HospitalOnboa
             <nav className="space-y-1">
               {STEPS.map((step) => {
                 const completed = step.index < activeStep;
-                const active    = step.index === activeStep;
-                const Icon      = step.icon;
+                const active = step.index === activeStep;
+                const locked = lockedSteps.includes(step.index);
+                const Icon = step.icon;
+
+                // A locked step is completed but not navigable
+                const isClickable = (completed || active) && !locked;
 
                 return (
                   <button
                     key={step.index}
-                    onClick={() => (completed || active) && navigate(step.path)}
+                    onClick={() => isClickable && navigate(step.path)}
+                    disabled={locked || (!completed && !active)}
                     className={[
                       "w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg text-[12px] font-medium transition-all duration-150",
                       active
                         ? "bg-[#349C93] text-white"
-                        : completed
-                        ? "text-neutral-600 hover:bg-gray-50 cursor-pointer"
-                        : "text-neutral-400 cursor-default",
+                        : locked
+                          ? "text-neutral-400 cursor-not-allowed opacity-70"
+                          : completed
+                            ? "text-neutral-600 hover:bg-gray-50 cursor-pointer"
+                            : "text-neutral-400 cursor-default",
                     ].join(" ")}
                   >
                     <span className="flex items-center gap-2 whitespace-nowrap">
                       <Icon
                         className={`h-[14px] w-[14px] shrink-0 ${
-                          active ? "text-white" : completed ? "text-neutral-500" : "text-neutral-300"
+                          active
+                            ? "text-white"
+                            : completed || locked
+                              ? "text-neutral-400"
+                              : "text-neutral-300"
                         }`}
                       />
                       {step.label}
                     </span>
-                    {completed && !active && (
+                    {(completed || locked) && !active && (
                       <CheckCircle2 className="h-[14px] w-[14px] shrink-0 text-[#349C93]" />
                     )}
                   </button>

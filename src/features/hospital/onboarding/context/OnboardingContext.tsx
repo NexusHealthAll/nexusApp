@@ -17,6 +17,9 @@ export interface OnboardingFormData {
   state: string;            // → address.state
   postalCode: string;       // → address.postal_code
   radius: string;
+
+  // ── Step 3: Identity Verification ──
+  hospitalId: string;       // returned from register API, used in identity endpoints
 }
 
 const INITIAL: OnboardingFormData = {
@@ -32,6 +35,7 @@ const INITIAL: OnboardingFormData = {
   state: "",
   postalCode: "",
   radius: "500",
+  hospitalId: "",
 };
 
 interface OnboardingCtx {

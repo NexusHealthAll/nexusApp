@@ -6,6 +6,8 @@ import { NexusCareLogo } from "@/shared/components/ui/NexusCareLogo";
 import { ArrowLeft } from "lucide-react";
 
 import { useAuthStore } from "@/features/auth/store/authStore";
+import apiClient from "@/lib/apiClient";
+import { ApiError } from "@/lib/apiError";
 
 export function OtpVerify() {
   const navigate = useNavigate();
@@ -106,8 +108,6 @@ export function OtpVerify() {
     setError("");
 
     try {
-      const BASE = import.meta.env.VITE_API_BASE_URL ?? "http://0.0.0.0:8080";
-
       // Decide which OTP verify endpoint to call based on the current auth flow.
       // - Health-worker registration uses clinicians OTP.
       // - Otherwise, default to normal auth OTP.
@@ -118,18 +118,12 @@ export function OtpVerify() {
           ? "clinicians"
           : "normal";
 
-      const otpVerifyUrl =
+      const otpVerifyPath =
         otpVerifyMode === "clinicians"
-          ? `${BASE}/api/v1/clinicians/otp/verify`
-          : `${BASE}/api/v1/auth/otp/verify`;
+          ? "/api/v1/clinicians/otp/verify"
+          : "/api/v1/auth/otp/verify";
 
-      const response = await fetch(otpVerifyUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code: codeToVerify, email }),
-      });
-
-      let body: {
+      const { data: body } = await apiClient.post<{
         message?: string;
         access_token?: string;
         refresh_token?: string;
@@ -137,19 +131,7 @@ export function OtpVerify() {
         token?: string;
         clinician_id?: string;
         [k: string]: unknown;
-      } = {};
-      try {
-        body = await response.json();
-      } catch {
-        /* non-JSON body */
-      }
-
-      if (!response.ok) {
-        setError(
-          body.message ?? "Invalid verification code. Please try again.",
-        );
-        return;
-      }
+      }>(otpVerifyPath, { code: codeToVerify, email });
 
       // Save auth session (access/refresh tokens + user)
       // API returns: access_token, refresh_token, user
@@ -164,7 +146,7 @@ export function OtpVerify() {
         localStorage.setItem("authToken", body.token as string);
       }
 
-      if (body?.access_token) {
+      if (body?.access_token && flowForOtpVerify?.role === "health-worker") {
         useAuthStore.getState().setAuthSession({
           accessToken: body.access_token,
           refreshToken: "",
@@ -225,8 +207,12 @@ export function OtpVerify() {
           ? "/hospital/dashboard"
           : "/medical-staff/dashboard",
       );
-    } catch {
-      setError("Network error — please check your connection and try again.");
+    } catch (err) {
+      if (err instanceof ApiError) {
+        setError(err.message || "Invalid verification code. Please try again.");
+      } else {
+        setError("Network error — please check your connection and try again.");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -242,25 +228,7 @@ export function OtpVerify() {
     setError("");
 
     try {
-      const BASE = import.meta.env.VITE_API_BASE_URL ?? "http://0.0.0.0:8080";
-      const response = await fetch(`${BASE}/api/v1/auth/otp/send`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
-
-      let body: { message?: string } = {};
-      try {
-        body = await response.json();
-      } catch {
-        /* non-JSON body */
-      }
-
-      if (!response.ok) {
-        setError(body.message ?? "Failed to resend OTP. Please try again.");
-        setCanResend(true);
-        return;
-      }
+      await apiClient.post("/api/v1/auth/otp/send", { email });
 
       // Restart countdown timer
       const timer = setInterval(() => {
@@ -273,8 +241,12 @@ export function OtpVerify() {
           return prev - 1;
         });
       }, 1000);
-    } catch {
-      setError("Network error — please check your connection and try again.");
+    } catch (err) {
+      if (err instanceof ApiError) {
+        setError(err.message || "Failed to resend OTP. Please try again.");
+      } else {
+        setError("Network error — please check your connection and try again.");
+      }
       setCanResend(true);
     }
   };

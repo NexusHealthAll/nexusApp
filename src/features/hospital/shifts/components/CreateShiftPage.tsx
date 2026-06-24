@@ -1,4 +1,7 @@
 import { useState } from "react";
+import { useHospitalShift } from "../hooks/useHospitalShift";
+import { useShiftDraftStore } from "../hooks/useShiftDraftStore";
+
 import { useNavigate } from "react-router-dom";
 import { PATHS } from "@/routes/paths";
 import type { ShiftFormData } from "../types";
@@ -34,11 +37,15 @@ const defaultFormData: ShiftFormData = {
   tasks: [],
   deliverables: [],
   equipment: [],
+  requirements: [],
   qualifications: [],
 };
 
 export function CreateShiftPage() {
   const navigate = useNavigate();
+  const { previewShift } = useHospitalShift();
+  const { clearDraft } = useShiftDraftStore();
+
   const [step, setStep] = useState<CurrentStep>(1);
   const [formData, setFormData] = useState<ShiftFormData>(defaultFormData);
 
@@ -75,15 +82,26 @@ export function CreateShiftPage() {
         <Step4Requirements
           data={formData}
           onUpdate={updateForm}
-          onNext={() => setStep("preview")}
+          onNext={async () => {
+            // Call preview endpoint before navigating to preview page.
+            await previewShift(formData);
+            clearDraft();
+            setStep("preview");
+          }}
           onBack={() => setStep(3)}
         />
       )}
+
       {step === "preview" && (
         <ShiftPreview
           data={formData}
           onBack={() => setStep(4)}
-          onBroadcast={() => navigate(PATHS.hospital.shifts)}
+          onBroadcast={async () => {
+            // Shift is created/broadcasted from the preview screen.
+            // If success, clear draft and go back to shifts.
+            // ShiftPreview handles the actual endpoint call.
+            navigate(PATHS.hospital.shifts);
+          }}
         />
       )}
     </div>

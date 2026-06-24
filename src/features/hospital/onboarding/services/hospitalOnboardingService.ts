@@ -1,7 +1,7 @@
 import type { OnboardingFormData } from "../context/OnboardingContext";
 import { authUtils } from "@/features/auth/utils/authUtils";
-
-const BASE = import.meta.env.VITE_API_BASE_URL ?? "http://0.0.0.0:8080";
+import apiClient from "@/lib/apiClient";
+import { type ApiFieldError } from "@/lib/apiError";
 
 // ── E.164 phone normaliser ───────────────────────────────────────────────────
 
@@ -34,20 +34,13 @@ function toE164(raw: string): string {
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
-export interface ApiFieldError {
-  field: string;   // e.g. "email", "address.city"
-  message: string;
-}
-
-export interface HospitalRegisterError extends Error {
-  status: number;
-  fieldErrors: ApiFieldError[];
-}
+export type { ApiFieldError };
 
 export interface HospitalRegisterSuccess {
-  id: string;
-  hospital_name: string;
+  hospital_id: string;
   status: string;
+  message: string;
+  next_steps?: string[];
   [key: string]: unknown;
 }
 
@@ -80,68 +73,16 @@ function buildPayload(data: OnboardingFormData) {
 
 export const hospitalOnboardingService = {
   /**
-   * POST /api/v1/hospital/register
+   * POST /api/v1/hospitals/register
    * Sends all collected onboarding data in a single call.
-   * Throws HospitalRegisterError (with field errors) on non-2xx response.
+   * Throws ApiError (with field errors) on non-2xx response.
    */
   async register(data: OnboardingFormData): Promise<HospitalRegisterSuccess> {
-    const token = localStorage.getItem("authToken");
     const payload = buildPayload(data);
-
-    const response = await fetch(`${BASE}/api/v1/hospitals/register`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-      body: JSON.stringify(payload),
-    });
-
-    let body: unknown;
-    try {
-      body = await response.json();
-    } catch {
-      body = {};
-    }
-
-    if (!response.ok) {
-      const err = new Error(
-        (body as { message?: string })?.message ?? `Server error ${response.status}`
-      ) as HospitalRegisterError;
-
-      err.status = response.status;
-      err.fieldErrors = parseFieldErrors(body);
-      throw err;
-    }
-
-    return body as HospitalRegisterSuccess;
+    const response = await apiClient.post<HospitalRegisterSuccess>(
+      "/api/v1/hospitals/register",
+      payload,
+    );
+    return response.data;
   },
 };
-
-// ── Helpers ──────────────────────────────────────────────────────────────────
-
-/** Try to extract field-level errors from various common API error shapes */
-function parseFieldErrors(body: unknown): ApiFieldError[] {
-  if (!body || typeof body !== "object") return [];
-
-  const b = body as Record<string, unknown>;
-
-  // Shape 1: { errors: [{ field, message }] }
-  if (Array.isArray(b.errors)) {
-    return (b.errors as Record<string, string>[]).map((e) => ({
-      field: e.field ?? e.param ?? "",
-      message: e.message ?? e.msg ?? "Invalid value",
-    }));
-  }
-
-  // Shape 2: { fields: { email: "...", hospital_name: "..." } }
-  if (b.fields && typeof b.fields === "object") {
-    return Object.entries(b.fields as Record<string, string>).map(([field, message]) => ({
-      field,
-      message,
-    }));
-  }
-
-  // Shape 3: single message at top level, no field specifics
-  return [];
-}

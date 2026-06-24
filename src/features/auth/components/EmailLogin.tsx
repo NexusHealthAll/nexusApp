@@ -6,6 +6,8 @@ import { NexusCareLogo } from "@/shared/components/ui/NexusCareLogo";
 import { Mail, Check, AlertCircle } from "lucide-react";
 
 import { useAuthStore } from "@/features/auth/store/authStore";
+import apiClient from "@/lib/apiClient";
+import { ApiError } from "@/lib/apiError";
 
 export function EmailLogin() {
   const navigate = useNavigate();
@@ -75,40 +77,25 @@ export function EmailLogin() {
     setHealthWorkerFallback(false);
 
     try {
-      const BASE = import.meta.env.VITE_API_BASE_URL ?? "http://0.0.0.0:8080";
-
       const shouldUseCliniciansOtp = roleFromStore === "health-worker";
+      const otpSendPath = shouldUseCliniciansOtp
+        ? "/api/v1/clinicians/otp/send"
+        : "/api/v1/auth/otp/send";
 
-      const otpSendUrl = shouldUseCliniciansOtp
-        ? `${BASE}/api/v1/clinicians/otp/send`
-        : `${BASE}/api/v1/auth/otp/send`;
-
-      const response = await fetch(otpSendUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
-
-      let body: { message?: string } = {};
-      try {
-        body = await response.json();
-      } catch {
-        /* non-JSON body */
-      }
-
-      if (!response.ok) {
-        setError(
-          body.message ??
-            `Failed to send OTP (${response.status}). Please try again.`,
-        );
-        return;
-      }
+      await apiClient.post(otpSendPath, { email });
 
       // Persist email so the verify-otp screen can read it
       localStorage.setItem("pendingEmail", email);
       navigate("/auth/verify-otp");
-    } catch {
-      setError("Network error — please check your connection and try again.");
+    } catch (err) {
+      if (err instanceof ApiError) {
+        setError(
+          err.message ||
+            `Failed to send OTP (${err.status}). Please try again.`,
+        );
+      } else {
+        setError("Network error — please check your connection and try again.");
+      }
     } finally {
       setIsLoading(false);
     }
