@@ -66,25 +66,6 @@ export function MainLayout({ children, profile }: MainLayoutProps) {
           <div className={layoutStyles.content}>{children}</div>
         </main>
 
-        {/* Setup Progress Footer — hospital profile only */}
-        {profile === "hospital" && (
-          <div className="flex h-10 flex-shrink-0 items-center justify-between border-t border-neutral-200 bg-white px-6">
-            <div className="flex items-center gap-3">
-              <span className="text-[10px] font-semibold uppercase tracking-widest text-neutral-400">
-                Setup Progress
-              </span>
-              <div className="h-1.5 w-28 overflow-hidden rounded-full bg-neutral-200">
-                <div className="h-full w-3/4 rounded-full bg-gradient-to-r from-secondary-600 to-secondary-400" />
-              </div>
-              <span className="text-xs font-semibold text-secondary-700">
-                75%
-              </span>
-            </div>
-            <button className="text-xs font-semibold text-secondary-600 hover:text-secondary-900">
-              Skip for now
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );

@@ -3,7 +3,7 @@ import CashIcon from "@/shared/assets/svgs/cashIcon.svg?react";
 import GradientLoader from "@/shared/assets/svgs/gradientLoader.svg?react";
 
 export function ShiftFillRateCard() {
-  const fillRate = 84;
+  const fillRate = 0;
 
   return (
     <div className="grid gap-4 lg:grid-cols-[3fr_2fr]">
@@ -16,7 +16,7 @@ export function ShiftFillRateCard() {
           <div>
             <p className="text-5xl font-bold leading-none">{fillRate}%</p>
             <p className="mt-2 max-w-[180px] text-xs leading-relaxed text-onboarding-lemonGreen">
-              Institutional goal: 92%. You are 8% below the weekly target.
+              Institutional goal: 0%. You are 0% below the weekly target.
             </p>
           </div>
           {/* Ring */}
@@ -49,10 +49,10 @@ export function ShiftFillRateCard() {
         <div className="flex flex-col justify-center rounded-2xl border border-neutral-100 bg-white p-6">
           <CashIcon className="mb-3 h-6 w-6 text-onboarding-darkBrown" />
           <p className="mb-1 text-sm text-neutral-500">Total Disbursements</p>
-          <p className="text-3xl font-bold text-neutral-900">₦12.4M</p>
+          <p className="text-3xl font-bold text-neutral-900">₦0</p>
           <div className="mt-2 flex items-center gap-1 text-xs font-medium text-onboarding-darkBrown">
             <TrendingUp className="h-3.5 w-3.5" />
-            +4.2% from last week
+            0% from last week
           </div>
         </div>
 
@@ -60,9 +60,9 @@ export function ShiftFillRateCard() {
         <div className="flex flex-col justify-center rounded-2xl border border-neutral-100 bg-white p-6">
           <GradientLoader className="mb-3 h-6 w-6" />
           <p className="mb-1 text-sm text-neutral-500">Average Fill Time</p>
-          <p className="text-3xl font-bold text-neutral-900">14.2 hrs</p>
+          <p className="text-3xl font-bold text-neutral-900">0 hrs</p>
           <div className="mt-2 flex items-center gap-1 text-xs font-medium bg-gradient-to-b from-onboarding-primaryBlue to-onboarding-primaryGreen bg-clip-text text-transparent">
-            -2h improvement
+            0h improvement
           </div>
         </div>
       </div>

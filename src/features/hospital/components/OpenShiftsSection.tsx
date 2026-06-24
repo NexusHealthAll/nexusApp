@@ -142,13 +142,32 @@ export function OpenShiftsSection() {
           ))}
         </div>
       ) : !hasData ? (
-        <div className="rounded-2xl border border-dashed border-neutral-200 bg-white p-6 text-center">
-          <p className="text-sm font-semibold text-neutral-800">
-            No applications right now
-          </p>
-          <p className="mt-1 text-xs text-neutral-500">
-            Open shifts will appear here once clinicians apply.
-          </p>
+        <div className="flex min-h-[220px] flex-col items-center justify-center gap-4 rounded-2xl border border-dashed border-neutral-200 bg-white px-6 py-10 text-center">
+          <svg width="96" height="96" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            {/* Clipboard body */}
+            <rect x="18" y="22" width="54" height="62" rx="10" fill="#EFF6FF" />
+            <rect x="18" y="22" width="54" height="62" rx="10" stroke="#BFDBFE" strokeWidth="1.5" strokeDasharray="4 3" />
+            {/* Clipboard clip */}
+            <rect x="34" y="16" width="22" height="14" rx="5" fill="#BFDBFE" />
+            <rect x="38" y="20" width="14" height="6" rx="3" fill="#93C5FD" />
+            {/* Lines */}
+            <rect x="28" y="44" width="34" height="3.5" rx="1.75" fill="#DBEAFE" />
+            <rect x="28" y="53" width="26" height="3.5" rx="1.75" fill="#DBEAFE" />
+            <rect x="28" y="62" width="30" height="3.5" rx="1.75" fill="#DBEAFE" />
+            {/* Magnifier */}
+            <circle cx="66" cy="62" r="18" fill="#EFF6FF" />
+            <circle cx="66" cy="62" r="18" stroke="#93C5FD" strokeWidth="1.5" />
+            <circle cx="63" cy="59" r="9" stroke="#3B82F6" strokeWidth="2.5" fill="none" />
+            <line x1="69.5" y1="65.5" x2="76" y2="72" stroke="#3B82F6" strokeWidth="2.5" strokeLinecap="round" />
+            {/* Magnifier shine */}
+            <circle cx="59.5" cy="55.5" r="2" fill="white" fillOpacity="0.7" />
+          </svg>
+          <div>
+            <p className="text-sm font-semibold text-neutral-800">No applications yet</p>
+            <p className="mt-1.5 text-xs text-neutral-400 max-w-[240px] mx-auto leading-relaxed">
+              Open shifts will appear here once clinicians apply. Post a shift to get started.
+            </p>
+          </div>
         </div>
       ) : (
         <div className="space-y-3">
