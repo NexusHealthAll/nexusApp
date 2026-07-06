@@ -8,7 +8,6 @@ import {
   X,
 } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
-import { cn } from "@/shared/utils/cn";
 import { ShiftService } from "../services/shiftService";
 import type { ShiftDeliverable, ShiftEquipment, ShiftFormData } from "../types";
 
@@ -17,22 +16,6 @@ interface Props {
   onUpdate: (patch: Partial<ShiftFormData>) => void;
   onNext: () => void;
   onBack: () => void;
-}
-
-function StepDashes({ current }: { current: number }) {
-  return (
-    <div className="flex gap-1.5">
-      {[1, 2, 3, 4].map((i) => (
-        <div
-          key={i}
-          className={cn(
-            "h-[3px] w-7 rounded-full",
-            i <= current ? "bg-secondary-600" : "bg-neutral-300",
-          )}
-        />
-      ))}
-    </div>
-  );
 }
 
 function draftQuality(data: ShiftFormData): number {
@@ -104,28 +87,7 @@ export function Step3Description({ data, onUpdate, onNext, onBack }: Props) {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-50 py-8 px-6">
-      <div className="mx-auto max-w-5xl">
-        {/* Header */}
-        <div className="mb-6 flex items-start justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-neutral-900">
-              Shift Description
-            </h1>
-            <p className="mt-1 text-sm text-neutral-500">
-              Define the clinical responsibilities and provided resources for
-              this rotation.
-            </p>
-          </div>
-          <div className="text-right">
-            <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-neutral-500">
-              Step 3 of 4
-            </p>
-            <StepDashes current={3} />
-          </div>
-        </div>
-        <div className="mb-8 h-px bg-neutral-200" />
-
+    <div>
         <div className="grid grid-cols-[1fr_260px] gap-8 items-start">
           {/* Left: Form */}
           <div className="space-y-6">
@@ -377,7 +339,6 @@ export function Step3Description({ data, onUpdate, onNext, onBack }: Props) {
             </Button>
           </div>
         </div>
-      </div>
     </div>
   );
 }

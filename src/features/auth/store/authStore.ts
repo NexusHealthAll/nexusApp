@@ -15,9 +15,9 @@ type AuthUser = {
   [k: string]: unknown;
 };
 
-type AuthRole = "hospital" | "health-worker";
+export type AuthRole = "hospital" | "health-worker";
 
-type AuthAction = "register" | "login";
+export type AuthAction = "register" | "login";
 
 type AuthFlowOrigin =
   | "landing"

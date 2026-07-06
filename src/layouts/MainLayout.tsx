@@ -2,6 +2,7 @@ import { ReactNode, useState } from "react";
 import { Sidebar } from "./components/Sidebar";
 import { TopNavigation } from "./components/TopNavigation";
 import { AppProfile } from "@/types";
+import { CreateShiftModal } from "@/features/hospital/shifts/components/CreateShiftModal";
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -22,19 +23,14 @@ const profileLayoutStyles: Record<
       "mx-auto max-w-6xl rounded-2xl border border-success-100 bg-white p-4 lg:p-6",
   },
   "medical-staff": {
-    shell: "bg-warning-50/50",
-    content:
-      "mx-auto max-w-7xl rounded-2xl border border-warning-100 bg-white p-4 lg:p-6",
+    shell: "bg-primary-50/40",
+    content: "mx-auto bg-neutral-50 p-4 lg:p-6",
   },
 };
 
 export function MainLayout({ children, profile }: MainLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const layoutStyles = profileLayoutStyles[profile];
-
-  if (profile === "medical-staff") {
-    return <main className="min-h-screen bg-[#eef7fb]">{children}</main>;
-  }
 
   return (
     <div className={`flex h-screen ${layoutStyles.shell}`}>
@@ -67,6 +63,8 @@ export function MainLayout({ children, profile }: MainLayoutProps) {
         </main>
 
       </div>
+
+      {profile === "hospital" && <CreateShiftModal />}
     </div>
   );
 }

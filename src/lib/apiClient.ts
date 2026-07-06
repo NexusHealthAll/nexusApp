@@ -131,6 +131,30 @@ apiClient.interceptors.response.use(
 
 // ── Error builder ────────────────────────────────────────────────────────────
 
+/** Safely coerce any backend "message" value to a human-readable string. */
+function coerceMessage(raw: unknown): string | undefined {
+  if (raw === null || raw === undefined) return undefined;
+  if (typeof raw === "string") return raw || undefined;
+  // Array of strings or FastAPI-style detail objects: [{loc, msg, type}]
+  if (Array.isArray(raw)) {
+    const parts = raw.map((item) => {
+      if (typeof item === "string") return item;
+      if (item && typeof item === "object") {
+        const o = item as Record<string, unknown>;
+        return (o.msg ?? o.message ?? o.detail ?? JSON.stringify(item)) as string;
+      }
+      return String(item);
+    });
+    return parts.join("; ") || undefined;
+  }
+  // Plain object with a nested message/detail
+  if (typeof raw === "object") {
+    const o = raw as Record<string, unknown>;
+    return coerceMessage(o.detail ?? o.msg ?? o.message) ?? JSON.stringify(raw);
+  }
+  return String(raw);
+}
+
 function buildApiError(error: unknown): ApiError {
   if (!axios.isAxiosError(error)) {
     return new ApiError(
@@ -144,9 +168,18 @@ function buildApiError(error: unknown): ApiError {
     | Record<string, unknown>
     | undefined;
 
+  // Backend error shape: { error: { message: string, status: number } }
+  // Check the nested error.message first, then fall back to other common shapes.
+  const nested = body?.error;
+  const nestedMessage =
+    nested && typeof nested === "object"
+      ? (nested as Record<string, unknown>).message
+      : undefined;
+
   const message =
-    (body?.message as string | undefined) ??
-    (body?.error as string | undefined) ??
+    coerceMessage(nestedMessage) ??
+    coerceMessage(body?.message) ??
+    coerceMessage(body?.detail) ??
     error.message ??
     `Request failed (${status})`;
 

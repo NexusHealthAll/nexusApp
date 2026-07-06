@@ -15,6 +15,11 @@ export interface AvailableShift {
   urgency: "high" | "medium" | "low";
   description?: string;
   requirements?: string[];
+  tasks?: string[];
+  hospitalRating?: number;
+  distanceKm?: number;
+  bonus?: number;
+  totalPayout?: number;
 }
 
 export interface ActiveShift {
@@ -36,6 +41,12 @@ export interface HealthWorkerProfile {
   specialization: string;
   licenseNumber: string;
   currentStatus: WorkerStatus;
+  phone?: string;
+  email?: string;
+  location?: string;
+  memberSince?: string;
+  languages?: string[];
+  ratingCount?: number;
 }
 
 export interface ShiftEarnings {
@@ -48,8 +59,17 @@ export interface ShiftEarnings {
 
 export interface DashboardStats {
   rating: number;
+  ratingTrend?: number;
+  ratingCount: number;
+  shiftsThisMonth: number;
+  shiftsThisMonthTrend?: number;
+  shiftsCompleted: number;
   totalEarnings: string;
+  earningsTrendPct?: number;
+  earningsMonthLabel: string;
   hoursWorked: string;
+  hoursTrendLabel?: string;
+  hoursShiftCount: number;
   weeklyEarnings: string;
 }
 
@@ -62,6 +82,67 @@ export interface ShiftHistoryItem {
   earnings: number;
   rating: number;
   status: string;
+}
+
+export interface TodaysPatient {
+  id: string;
+  time: string;
+  status: "approved" | "draft";
+}
+
+export interface EarningsSeriesPoint {
+  month: string;
+  amount: number;
+}
+
+export interface HoursWorkedPoint {
+  week: string;
+  hours: number;
+}
+
+export interface PaymentHistoryRow {
+  shiftId: string;
+  hospital: string;
+  date: string;
+  hours: string;
+  rate: number;
+  bonus?: number;
+  total: number;
+  status: "in_progress" | "pending" | "paid";
+}
+
+export interface EarningsSummary {
+  thisMonth: string;
+  thisMonthTrendPct: number;
+  totalEarned: string;
+  shiftsPaid: number;
+  shiftsPending: number;
+  avgPerShift: string;
+  avgPerShiftTrend: string;
+}
+
+export interface PerformanceOverview {
+  shiftsCompleted: number;
+  onTimeRatePct: number;
+  avgRating: number;
+  totalEarned: string;
+}
+
+export interface HospitalRating {
+  hospital: string;
+  date: string;
+  quote: string;
+  rating: number;
+}
+
+export interface PatientNote {
+  id: string;
+  summary: string;
+  date: string;
+  time: string;
+  language?: string;
+  status: "approved" | "draft";
+  transcript?: { speaker: string; original: string; translated: string }[];
 }
 
 function normalizeWorkerStatus(status: WorkerStatus | BackendWorkerStatus): WorkerStatus {
@@ -90,7 +171,6 @@ export class HealthWorkerService {
       );
       return res.data;
     } catch (error) {
-      console.error("Failed to fetch available shifts:", error);
       return this.getMockAvailableShifts();
     }
   }
@@ -106,7 +186,6 @@ export class HealthWorkerService {
       );
       return res.data;
     } catch (error) {
-      console.error("Failed to accept shift:", error);
       return { success: true, activeShiftId: `ACTIVE_${Date.now()}` };
     }
   }
@@ -119,11 +198,10 @@ export class HealthWorkerService {
       );
       return res.data;
     } catch (error) {
-      console.error("Failed to clock in:", error);
       return {
         id: shiftId,
         hospital: "Lagos University Teaching Hospital",
-        department: "ICU",
+        department: "Main Emergency Dept.",
         startTime: new Date().toISOString(),
         hourlyRate: 8000,
         location: "Idi-Araba, Lagos",
@@ -145,8 +223,7 @@ export class HealthWorkerService {
       }>("/api/health-worker/shifts/clock-out", { activeShiftId, workerId });
       return res.data;
     } catch (error) {
-      console.error("Failed to clock out:", error);
-      return { success: true, totalDuration: "08:30:00", earnings: 68000 };
+      return { success: true, totalDuration: "08:05:00", earnings: 69000 };
     }
   }
 
@@ -161,7 +238,6 @@ export class HealthWorkerService {
       );
       return res.data;
     } catch (error) {
-      console.error("Failed to update duty status:", error);
       return { success: true };
     }
   }
@@ -179,7 +255,6 @@ export class HealthWorkerService {
         currentStatus: normalizeWorkerStatus(res.data.currentStatus),
       };
     } catch (error) {
-      console.error("Failed to fetch worker profile:", error);
       return this.getMockWorkerProfile(workerId);
     }
   }
@@ -191,11 +266,19 @@ export class HealthWorkerService {
       );
       return res.data;
     } catch (error) {
-      console.error("Failed to fetch dashboard stats:", error);
       return {
         rating: 4.9,
+        ratingTrend: 0.1,
+        ratingCount: 45,
+        shiftsThisMonth: 8,
+        shiftsThisMonthTrend: 3,
+        shiftsCompleted: 4,
         totalEarnings: "₦385k",
-        hoursWorked: "34.5h",
+        earningsTrendPct: 18,
+        earningsMonthLabel: "Apr 2026",
+        hoursWorked: "72h",
+        hoursTrendLabel: "+8h",
+        hoursShiftCount: 8,
         weeklyEarnings: "₦429k",
       };
     }
@@ -208,7 +291,6 @@ export class HealthWorkerService {
       );
       return res.data;
     } catch (error) {
-      console.error("Failed to fetch earnings:", error);
       return this.getMockEarnings();
     }
   }
@@ -225,49 +307,147 @@ export class HealthWorkerService {
       );
       return res.data;
     } catch (error) {
-      console.error("Failed to fetch shift history:", error);
       return this.getMockShiftHistory();
     }
+  }
+
+  static async getTodaysPatients(_workerId: string): Promise<TodaysPatient[]> {
+    return [
+      { id: "#2341", time: "2:15 PM", status: "approved" },
+      { id: "#2342", time: "2:45 PM", status: "approved" },
+      { id: "#2343", time: "3:20 PM", status: "draft" },
+    ];
+  }
+
+  static async getMonthlyEarningsSeries(_workerId: string): Promise<EarningsSeriesPoint[]> {
+    return [
+      { month: "Nov", amount: 290000 },
+      { month: "Dec", amount: 330000 },
+      { month: "Jan", amount: 295000 },
+      { month: "Feb", amount: 405000 },
+      { month: "Mar", amount: 340000 },
+      { month: "Apr", amount: 355000 },
+    ];
+  }
+
+  static async getHoursWorkedSeries(_workerId: string): Promise<HoursWorkedPoint[]> {
+    return [
+      { week: "W1", hours: 24 },
+      { week: "W2", hours: 32 },
+      { week: "W3", hours: 16 },
+      { week: "W4", hours: 40 },
+    ];
+  }
+
+  static async getEarningsSummary(_workerId: string): Promise<EarningsSummary> {
+    return {
+      thisMonth: "₦385,000",
+      thisMonthTrendPct: 18,
+      totalEarned: "₦1.84M",
+      shiftsPaid: 41,
+      shiftsPending: 2,
+      avgPerShift: "₦44,900",
+      avgPerShiftTrend: "+₦3k",
+    };
+  }
+
+  static async getPaymentHistory(_workerId: string): Promise<PaymentHistoryRow[]> {
+    return [
+      { shiftId: "SH-001", hospital: "LUTH", date: "Today, Apr 14", hours: "8h", rate: 8000, bonus: 5000, total: 69000, status: "in_progress" },
+      { shiftId: "SH-002", hospital: "IGH", date: "Apr 16, 2026", hours: "12h", rate: 7500, total: 90000, status: "pending" },
+      { shiftId: "SH-H1", hospital: "GHL", date: "Apr 12, 2026", hours: "12h", rate: 7000, total: 84000, status: "paid" },
+      { shiftId: "SH-H2", hospital: "LUTH", date: "Apr 10, 2026", hours: "8h", rate: 8000, bonus: 5000, total: 69000, status: "paid" },
+    ];
+  }
+
+  static async getPerformanceOverview(_workerId: string): Promise<PerformanceOverview> {
+    return {
+      shiftsCompleted: 45,
+      onTimeRatePct: 98,
+      avgRating: 4.9,
+      totalEarned: "₦1.84M",
+    };
+  }
+
+  static async getRecentHospitalRatings(_workerId: string): Promise<HospitalRating[]> {
+    return [
+      { hospital: "LUTH", date: "Apr 12, 2026", quote: "Excellent doctor, very professional and thorough with patients.", rating: 5 },
+      { hospital: "GHL", date: "Apr 10, 2026", quote: "Arrived early, great with patients, would hire again.", rating: 5 },
+      { hospital: "IGH", date: "Mar 28, 2026", quote: "Good work overall, punctual and knowledgeable.", rating: 4 },
+    ];
+  }
+
+  static async getPatientNotes(_workerId: string): Promise<PatientNote[]> {
+    return [
+      {
+        id: "#2341",
+        summary: "Fever and cough for three days",
+        date: "Apr 14, 2026",
+        time: "2:15 PM",
+        language: "Hausa → English",
+        status: "approved",
+        transcript: [
+          { speaker: "Patient", original: "Ina jin zazzabi na kwana uku", translated: "I have had fever for three days" },
+          { speaker: "Doctor", original: "Zan duba zafin jikin ku", translated: "I will check your temperature now" },
+        ],
+      },
+      { id: "#2342", summary: "Hypertension follow-up, BP 160/100", date: "Apr 14, 2026", time: "2:45 PM", language: "English", status: "approved" },
+      { id: "#2343", summary: "Malaria symptoms, high fever", date: "Apr 14, 2026", time: "3:20 PM", language: "Yoruba → English", status: "draft" },
+      { id: "#2344", summary: "Road traffic accident, leg fracture", date: "Apr 12, 2026", time: "10:05 AM", language: "English", status: "approved" },
+      { id: "#2345", summary: "Chest pain, shortness of breath", date: "Apr 12, 2026", time: "11:30 AM", language: "Igbo → English", status: "approved" },
+    ];
   }
 
   private static getMockAvailableShifts(): AvailableShift[] {
     return [
       {
-        id: "1",
+        id: "SH-003",
         hospital: "Lagos University Teaching Hospital",
-        department: "ICU Specialist",
-        date: "Today",
-        time: "08:00 - 20:00",
-        duration: "12 hours",
-        hourlyRate: 3750,
-        location: "Idi-Araba, Lagos",
+        department: "Emergency Doctor",
+        date: "Today, Apr 14",
+        time: "2:00 PM–10:00 PM",
+        duration: "8 hours",
+        hourlyRate: 8000,
+        location: "Idi-Araba, Surulere, Lagos",
         urgency: "high",
-        description: "ICU registered nurse coverage for critical care support.",
-        requirements: ["Valid RN License", "ACLS Certification", "2+ yrs ICU"],
+        description: "Emergency department coverage with continuous monitoring and treatment support.",
+        requirements: ["2+ years emergency experience", "ACLS certified", "Valid medical license"],
       },
       {
-        id: "2",
-        hospital: "Reddington Hospital",
-        department: "ICU Specialist",
-        date: "Sept 20, 2024",
-        time: "20:00 - 08:00",
-        duration: "12 hours",
-        hourlyRate: 5208,
-        location: "Victoria Island",
+        id: "SH-004",
+        hospital: "General Hospital Lagos",
+        department: "GP Consultation",
+        date: "Tomorrow, Apr 15",
+        time: "8:00 AM–4:00 PM",
+        duration: "8 hours",
+        hourlyRate: 5500,
+        location: "Lagos Island",
         urgency: "medium",
-        requirements: ["Valid RN License", "Critical Care"],
+        requirements: ["Valid medical license", "General practice experience"],
       },
       {
-        id: "3",
-        hospital: "Lagos State University Hospital",
-        department: "Surgical Technologist",
-        date: "Tomorrow",
-        time: "07:00 - 19:00",
+        id: "SH-005",
+        hospital: "Teleclinic NG",
+        department: "Virtual GP",
+        date: "Today, Apr 14",
+        time: "6:00 PM–9:00 PM",
+        duration: "3 hours",
+        hourlyRate: 6000,
+        location: "Remote",
+        urgency: "low",
+        requirements: ["Stable internet connection", "Valid medical license"],
+      },
+      {
+        id: "SH-006",
+        hospital: "Island General Hospital",
+        department: "Emergency Doctor",
+        date: "Apr 16",
+        time: "7:00 AM–7:00 PM",
         duration: "12 hours",
-        hourlyRate: 4583,
-        location: "Ikeja",
-        urgency: "high",
-        requirements: ["Theatre experience", "Sterile processing"],
+        hourlyRate: 7500,
+        location: "Victoria Island",
+        urgency: "low",
+        requirements: ["Valid medical license"],
       },
     ];
   }
@@ -275,21 +455,27 @@ export class HealthWorkerService {
   private static getMockWorkerProfile(workerId: string): HealthWorkerProfile {
     return {
       id: workerId,
-      name: "Dr. Chidi Okonjo",
+      name: "Dr. Abiola Oluwaseun",
       rating: 4.9,
-      totalEarnings: 385000,
-      specialization: "Consultant Cardiologist",
-      licenseNumber: "MDC/REG/774291",
+      ratingCount: 45,
+      totalEarnings: 1840000,
+      specialization: "Emergency Medicine",
+      licenseNumber: "MDC/NGR/2024/12345",
       currentStatus: "available",
+      phone: "+234 801 234 5678",
+      email: "abiola@nexuscare.ng",
+      location: "Surulere, Lagos",
+      memberSince: "January 2025",
+      languages: ["English", "Hausa", "Yoruba"],
     };
   }
 
   private static getMockEarnings(): ShiftEarnings {
     return {
-      weeklyHours: 34.5,
-      weeklyEarnings: 428500,
-      monthlyEarnings: 684200,
-      totalEarnings: 248500,
+      weeklyHours: 32,
+      weeklyEarnings: 355000,
+      monthlyEarnings: 385000,
+      totalEarnings: 1840000,
       averageHourlyRate: 7500,
     };
   }
@@ -297,33 +483,43 @@ export class HealthWorkerService {
   private static getMockShiftHistory(): ShiftHistoryItem[] {
     return [
       {
-        id: "1",
-        hospital: "Emergency Ward Shift",
-        department: "St. Nicholas Hospital",
-        date: "Oct 11, 2023",
-        duration: "8 hours",
-        earnings: 18500,
-        rating: 5,
-        status: "completed",
+        id: "SH-001",
+        hospital: "Lagos University Teaching Hospital",
+        department: "Emergency Doctor",
+        date: "Today, Apr 14",
+        duration: "8h",
+        earnings: 69000,
+        rating: 0,
+        status: "in_progress",
       },
       {
-        id: "2",
-        hospital: "Home Care Consultation",
-        department: "Ruby Residence",
-        date: "Oct 9, 2023",
-        duration: "4 hours",
-        earnings: 12000,
-        rating: 4.8,
-        status: "completed",
+        id: "SH-002",
+        hospital: "Island General Hospital",
+        department: "Emergency Doctor",
+        date: "Apr 16, 2026",
+        duration: "12h",
+        earnings: 90000,
+        rating: 0,
+        status: "upcoming",
       },
       {
-        id: "3",
-        hospital: "Laboratory Oversight",
-        department: "HealthPlus Labs",
-        date: "Oct 6, 2023",
-        duration: "6 hours",
-        earnings: 22000,
+        id: "SH-H1",
+        hospital: "General Hospital Lagos",
+        department: "Emergency Doctor",
+        date: "Apr 12, 2026",
+        duration: "12h",
+        earnings: 84000,
         rating: 4.9,
+        status: "completed",
+      },
+      {
+        id: "SH-H2",
+        hospital: "Lagos University Teaching Hospital",
+        department: "Emergency Doctor",
+        date: "Apr 10, 2026",
+        duration: "8h",
+        earnings: 69000,
+        rating: 5,
         status: "completed",
       },
     ];

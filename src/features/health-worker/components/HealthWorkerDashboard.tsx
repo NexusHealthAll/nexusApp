@@ -20,7 +20,6 @@ import {
   Mic,
   MicOff,
   Navigation,
-  Search,
   Settings,
   ShieldCheck,
   Star,
@@ -31,6 +30,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/Card";
+import { SearchInput } from "@/shared/components/ui/SearchInput";
 import { cn } from "@/shared/utils/cn";
 import { authUtils } from "@/features/auth/utils/authUtils";
 import {
@@ -72,8 +72,13 @@ interface PatientQueueItem {
 
 const fallbackStats: DashboardStats = {
   rating: 4.9,
+  ratingCount: 45,
+  shiftsThisMonth: 8,
+  shiftsCompleted: 4,
   totalEarnings: "₦385k",
+  earningsMonthLabel: "Apr 2026",
   hoursWorked: "34.5h",
+  hoursShiftCount: 8,
   weeklyEarnings: "₦429k",
 };
 
@@ -167,13 +172,13 @@ function Shell({
   ];
 
   return (
-    <div className="min-h-screen bg-[#eef7fb] text-slate-950">
+    <div className="min-h-screen bg-[#eef7fb] text-neutral-950">
       <div className="flex min-h-screen w-full bg-[#f6fbff] shadow-2xl">
         {/** Desktop left sidebar (md+) */}
         {showTabs && (
-          <aside className="hidden md:flex md:w-72 md:flex-col md:shrink-0 border-r border-slate-100 bg-white/95 p-4">
+          <aside className="hidden md:flex md:w-72 md:flex-col md:shrink-0 border-r border-neutral-100 bg-white/95 p-4">
             <div className="mb-4">
-              <p className="text-[10px] font-bold uppercase tracking-wide text-teal-700">NEXUSCARE</p>
+              <p className="text-[10px] font-bold uppercase tracking-wide text-secondary-700">NEXUSCARE</p>
             </div>
             <nav className="flex flex-col gap-2 mt-2">
               {tabs.map((tab) => {
@@ -186,7 +191,7 @@ function Shell({
                     onClick={() => onTabChange(tab.id)}
                     className={cn(
                       "flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold",
-                      isActive ? "bg-blue-700 text-white" : "text-slate-700 hover:bg-slate-50",
+                      isActive ? "bg-secondary-700 text-white" : "text-neutral-700 hover:bg-neutral-50",
                     )}
                   >
                     <Icon className="h-5 w-5" />
@@ -204,7 +209,7 @@ function Shell({
 
         {/** Mobile bottom nav (hidden on md+) */}
         {showTabs && (
-          <nav className="fixed bottom-0 left-1/2 z-40 grid h-16 w-full max-w-[430px] -translate-x-1/2 grid-cols-5 border-t border-slate-200 bg-white/95 px-2 backdrop-blur md:hidden">
+          <nav className="fixed bottom-0 left-1/2 z-40 grid h-16 w-full max-w-[430px] -translate-x-1/2 grid-cols-5 border-t border-neutral-200 bg-white/95 px-2 backdrop-blur md:hidden">
             {tabs.map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -215,13 +220,13 @@ function Shell({
                   onClick={() => onTabChange(tab.id)}
                   className={cn(
                     "flex flex-col items-center justify-center gap-1 text-[10px] font-semibold",
-                    isActive ? "text-blue-700" : "text-slate-500",
+                    isActive ? "text-secondary-700" : "text-neutral-500",
                   )}
                 >
                   <span
                     className={cn(
                       "rounded-xl p-1.5",
-                      isActive && "bg-blue-700 text-white",
+                      isActive && "bg-secondary-700 text-white",
                     )}
                   >
                     <Icon className="h-4 w-4" />
@@ -249,35 +254,35 @@ function Header({
   onNotifications?: () => void;
 }) {
   return (
-    <header className="sticky top-0 z-30 border-b border-slate-100 bg-[#f6fbff]/95 px-5 py-4 backdrop-blur">
+    <header className="sticky top-0 z-30 border-b border-neutral-100 bg-[#f6fbff]/95 px-5 py-4 backdrop-blur">
       <div className="flex items-center justify-between">
         <div className="flex min-w-0 items-center gap-3">
           {onBack && (
             <button
               type="button"
               onClick={onBack}
-              className="rounded-full p-1.5 text-blue-700 hover:bg-blue-50"
+              className="rounded-full p-1.5 text-secondary-700 hover:bg-secondary-50"
             >
               <ArrowLeft className="h-5 w-5" />
             </button>
           )}
           <div className="min-w-0">
-            <p className="text-[10px] font-bold uppercase tracking-wide text-teal-700">
+            <p className="text-[10px] font-bold uppercase tracking-wide text-secondary-700">
               NexusCare
             </p>
             {title && (
-              <h1 className="truncate text-xl font-bold text-slate-950">
+              <h1 className="truncate text-xl font-bold text-neutral-950">
                 {title}
               </h1>
             )}
-            {subtitle && <p className="text-xs text-slate-500">{subtitle}</p>}
+            {subtitle && <p className="text-xs text-neutral-500">{subtitle}</p>}
           </div>
         </div>
         {onNotifications && (
           <button
             type="button"
             onClick={onNotifications}
-            className="rounded-full p-2 text-blue-700 hover:bg-blue-50"
+            className="rounded-full p-2 text-secondary-700 hover:bg-secondary-50"
           >
             <Bell className="h-5 w-5" />
           </button>
@@ -289,10 +294,10 @@ function Header({
 
 function StatusBadge({ children, tone = "blue" }: { children: ReactNode; tone?: "blue" | "green" | "red" | "amber" }) {
   const tones = {
-    blue: "bg-blue-50 text-blue-700",
-    green: "bg-emerald-50 text-emerald-700",
-    red: "bg-rose-50 text-rose-700",
-    amber: "bg-amber-50 text-amber-700",
+    blue: "bg-secondary-50 text-secondary-700",
+    green: "bg-success-50 text-success-700",
+    red: "bg-error-50 text-error-700",
+    amber: "bg-warning-50 text-warning-700",
   };
 
   return (
@@ -701,10 +706,10 @@ function HomeScreen({
       <main className="space-y-5 px-5 py-4">
         <section className="flex items-start justify-between">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">
+            <p className="text-[10px] font-bold uppercase tracking-wide text-neutral-500">
               Welcome back
             </p>
-            <h1 className="mt-1 text-3xl font-bold leading-tight text-blue-800">
+            <h1 className="mt-1 text-3xl font-bold leading-tight text-secondary-800">
               Good Morning,
               <br />
               {profile?.name?.split(" ")[1] || "Dr. Abiola"}
@@ -716,14 +721,14 @@ function HomeScreen({
         </section>
 
         {upcomingShift && (
-          <section className="rounded-2xl bg-blue-700 p-4 text-white shadow-lg">
+          <section className="rounded-2xl bg-secondary-700 p-4 text-white shadow-lg">
             <div className="flex items-center justify-between">
               <StatusBadge>Upcoming Shift</StatusBadge>
               <Calendar className="h-5 w-5" />
             </div>
             <h2 className="mt-3 text-xl font-bold">{upcomingShift.department}</h2>
-            <p className="text-sm text-blue-100">{upcomingShift.hospital}</p>
-            <div className="mt-3 flex items-center gap-4 text-xs text-blue-50">
+            <p className="text-sm text-secondary-100">{upcomingShift.hospital}</p>
+            <div className="mt-3 flex items-center gap-4 text-xs text-secondary-50">
               <span className="flex items-center gap-1">
                 <Calendar className="h-3.5 w-3.5" />
                 {upcomingShift.date}
@@ -736,7 +741,7 @@ function HomeScreen({
             <Button
               type="button"
               onClick={() => onOpenShift(upcomingShift)}
-              className="mt-4 w-full bg-white text-blue-800 hover:bg-blue-50"
+              className="mt-4 w-full bg-white text-secondary-800 hover:bg-secondary-50"
             >
               View Details
               <ChevronRight className="ml-2 h-4 w-4" />
@@ -755,21 +760,21 @@ function HomeScreen({
           className="flex w-full items-center justify-between rounded-2xl bg-white p-4 text-left shadow-sm"
         >
           <div className="flex items-center gap-3">
-            <span className="rounded-xl bg-blue-50 p-2 text-blue-700">
+            <span className="rounded-xl bg-secondary-50 p-2 text-secondary-700">
               <BriefcaseMedical className="h-5 w-5" />
             </span>
             <div>
               <p className="font-bold">Marketplace</p>
-              <p className="text-xs text-slate-500">Find new shifts near you</p>
+              <p className="text-xs text-neutral-500">Find new shifts near you</p>
             </div>
           </div>
-          <ChevronRight className="h-5 w-5 text-slate-400" />
+          <ChevronRight className="h-5 w-5 text-neutral-400" />
         </button>
 
         <section>
           <div className="mb-3 flex items-center justify-between">
             <h2 className="font-bold">Recent Activity</h2>
-            <button type="button" className="text-xs font-bold text-blue-700">
+            <button type="button" className="text-xs font-bold text-secondary-700">
               View all
             </button>
           </div>
@@ -779,9 +784,9 @@ function HomeScreen({
                 key={item.id}
                 className="flex items-center justify-between rounded-xl bg-white p-3 shadow-sm"
               >
-                <div className="border-l-4 border-emerald-500 pl-3">
+                <div className="border-l-4 border-success-500 pl-3">
                   <p className="text-sm font-bold">{item.hospital}</p>
-                  <p className="text-[10px] uppercase text-slate-500">
+                  <p className="text-[10px] uppercase text-neutral-500">
                     {item.department}
                   </p>
                 </div>
@@ -806,8 +811,8 @@ function Metric({
 }) {
   return (
     <div className="rounded-2xl bg-white p-4 shadow-sm">
-      <Icon className="h-5 w-5 text-blue-700" />
-      <p className="mt-3 text-xs text-slate-500">{label}</p>
+      <Icon className="h-5 w-5 text-secondary-700" />
+      <p className="mt-3 text-xs text-neutral-500">{label}</p>
       <p className="text-xl font-bold">{value}</p>
     </div>
   );
@@ -830,28 +835,25 @@ function MarketplaceScreen({
     <>
       <Header title="Shift Marketplace" subtitle={`${shifts.length} shifts found`} />
       <main className="space-y-4 px-5 py-4">
-        <label className="flex items-center gap-2 rounded-xl bg-slate-100 px-3 py-3 text-sm">
-          <Search className="h-4 w-4 text-slate-400" />
-          <input
-            value={searchTerm}
-            onChange={(event) => onSearchChange(event.target.value)}
-            className="min-w-0 flex-1 bg-transparent outline-none"
-            placeholder="Search role or facility..."
-          />
-        </label>
+        <SearchInput
+          value={searchTerm}
+          onChange={(event) => onSearchChange(event.target.value)}
+          placeholder="Search role or facility..."
+          className="rounded-xl bg-neutral-100 border-transparent py-3"
+        />
         <div className="flex gap-2 overflow-x-auto pb-1">
           {["Specialty", "5km", "Urgency", "Direct Deposit"].map((filter) => (
             <button
               type="button"
               key={filter}
-              className="whitespace-nowrap rounded-full bg-white px-3 py-2 text-xs font-bold text-slate-600 shadow-sm"
+              className="whitespace-nowrap rounded-full bg-white px-3 py-2 text-xs font-bold text-neutral-600 shadow-sm"
             >
               {filter}
             </button>
           ))}
         </div>
 
-        {isLoading && <p className="text-sm text-slate-500">Loading shifts...</p>}
+        {isLoading && <p className="text-sm text-neutral-500">Loading shifts...</p>}
 
         <div className="space-y-4">
           {shifts.map((shift) => (
@@ -867,14 +869,14 @@ function MarketplaceScreen({
                     {shift.urgency === "high" ? "Stat" : "Scheduled"}
                   </StatusBadge>
                   <h3 className="mt-2 font-bold">{shift.department}</h3>
-                  <p className="text-xs text-slate-500">{shift.hospital}</p>
+                  <p className="text-xs text-neutral-500">{shift.hospital}</p>
                 </div>
                 <div className="text-right">
-                  <p className="font-bold text-blue-700">{getShiftPayout(shift)}</p>
-                  <p className="text-[10px] uppercase text-slate-400">per shift</p>
+                  <p className="font-bold text-secondary-700">{getShiftPayout(shift)}</p>
+                  <p className="text-[10px] uppercase text-neutral-400">per shift</p>
                 </div>
               </div>
-              <div className="mt-3 flex items-center gap-4 text-xs text-slate-500">
+              <div className="mt-3 flex items-center gap-4 text-xs text-neutral-500">
                 <span className="flex items-center gap-1">
                   <MapPin className="h-3.5 w-3.5" />
                   {shift.location}
@@ -885,7 +887,7 @@ function MarketplaceScreen({
                 </span>
               </div>
               <div className="mt-3 flex justify-end">
-                <span className="rounded-lg bg-blue-700 px-4 py-2 text-xs font-bold text-white">
+                <span className="rounded-lg bg-secondary-700 px-4 py-2 text-xs font-bold text-white">
                   Apply
                 </span>
               </div>
@@ -911,11 +913,11 @@ function ShiftDetailScreen({
       <Header title="Shift Details" onBack={onBack} />
       <main className="space-y-4 px-5 py-4">
         <section className="rounded-3xl bg-white p-4 shadow-sm">
-          <div className="h-28 rounded-2xl bg-gradient-to-br from-cyan-50 to-blue-100" />
+          <div className="h-28 rounded-2xl bg-gradient-to-br from-secondary-50 to-secondary-100" />
           <div className="mt-4 flex items-start justify-between">
             <div>
               <h2 className="text-lg font-bold">{shift.hospital}</h2>
-              <p className="text-xs text-slate-500">{shift.location}</p>
+              <p className="text-xs text-neutral-500">{shift.location}</p>
               <div className="mt-2 flex gap-2">
                 <StatusBadge tone="green">4.8</StatusBadge>
                 <StatusBadge>{shift.department}</StatusBadge>
@@ -925,10 +927,10 @@ function ShiftDetailScreen({
           </div>
         </section>
 
-        <section className="rounded-2xl bg-blue-700 p-4 text-white">
-          <p className="text-xs text-blue-100">Estimated Pay</p>
+        <section className="rounded-2xl bg-secondary-700 p-4 text-white">
+          <p className="text-xs text-secondary-100">Estimated Pay</p>
           <p className="text-3xl font-bold">{getShiftPayout(shift)}</p>
-          <p className="text-xs text-blue-100">Direct deposit ready</p>
+          <p className="text-xs text-secondary-100">Direct deposit ready</p>
         </section>
 
         <section className="grid grid-cols-2 gap-3">
@@ -940,26 +942,26 @@ function ShiftDetailScreen({
           <CardHeader className="p-4 pb-2">
             <CardTitle className="text-base">Shift Overview</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3 p-4 pt-0 text-sm text-slate-600">
+          <CardContent className="space-y-3 p-4 pt-0 text-sm text-neutral-600">
             <p>
               {shift.description ||
                 `${shift.hospital} is seeking a dedicated clinician for a critical daily shift with continuous monitoring and treatment support.`}
             </p>
             {["Ventilator management", "Hemodynamic monitoring", "Medication titration", "EHR documentation"].map((task) => (
-              <div key={task} className="rounded-xl bg-slate-50 px-3 py-2 font-medium text-slate-700">
-                <Check className="mr-2 inline h-4 w-4 text-emerald-600" />
+              <div key={task} className="rounded-xl bg-neutral-50 px-3 py-2 font-medium text-neutral-700">
+                <Check className="mr-2 inline h-4 w-4 text-success-600" />
                 {task}
               </div>
             ))}
           </CardContent>
         </Card>
 
-        <section className="rounded-2xl bg-slate-900 p-4 text-white">
-          <div className="flex h-36 items-center justify-center rounded-xl bg-slate-800">
-            <Navigation className="h-10 w-10 text-cyan-300" />
+        <section className="rounded-2xl bg-neutral-900 p-4 text-white">
+          <div className="flex h-36 items-center justify-center rounded-xl bg-neutral-800">
+            <Navigation className="h-10 w-10 text-secondary-300" />
           </div>
           <p className="mt-3 text-sm font-bold">Idi-Araba Complex</p>
-          <p className="text-xs text-slate-300">Gate 4 entrance, staff parking available</p>
+          <p className="text-xs text-neutral-300">Gate 4 entrance, staff parking available</p>
         </section>
 
         <Card>
@@ -968,8 +970,8 @@ function ShiftDetailScreen({
           </CardHeader>
           <CardContent className="space-y-2 p-4 pt-0">
             {(shift.requirements || ["Valid license", "ACLS certification", "2+ yrs ICU experience"]).map((item) => (
-              <p key={item} className="text-sm text-slate-700">
-                <ShieldCheck className="mr-2 inline h-4 w-4 text-blue-700" />
+              <p key={item} className="text-sm text-neutral-700">
+                <ShieldCheck className="mr-2 inline h-4 w-4 text-secondary-700" />
                 {item}
               </p>
             ))}
@@ -980,7 +982,7 @@ function ShiftDetailScreen({
           <Button type="button" variant="outline" onClick={onBack}>
             Decline
           </Button>
-          <Button type="button" onClick={onInterested} className="bg-blue-700">
+          <Button type="button" onClick={onInterested} className="bg-secondary-700">
             I'm Interested
           </Button>
         </div>
@@ -1000,8 +1002,8 @@ function InfoTile({
 }) {
   return (
     <div className="rounded-2xl bg-white p-4 shadow-sm">
-      <Icon className="h-5 w-5 text-blue-700" />
-      <p className="mt-2 text-xs text-slate-500">{label}</p>
+      <Icon className="h-5 w-5 text-secondary-700" />
+      <p className="mt-2 text-xs text-neutral-500">{label}</p>
       <p className="text-sm font-bold">{value}</p>
     </div>
   );
@@ -1019,11 +1021,11 @@ function ShiftConfirmedScreen({
   return (
     <main className="flex min-h-screen flex-col px-5 py-8">
       <div className="mt-6 text-center">
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700">
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-success-100 text-success-700">
           <Check className="h-8 w-8" />
         </div>
         <h1 className="mt-5 text-2xl font-bold">Shift Confirmed</h1>
-        <p className="mt-2 text-sm text-slate-500">
+        <p className="mt-2 text-sm text-neutral-500">
           Your request has been processed successfully. You're all set for your next shift.
         </p>
       </div>
@@ -1033,14 +1035,14 @@ function ShiftConfirmedScreen({
           <InfoRow icon={BriefcaseMedical} label="Facility" value={shift.hospital} />
           <InfoRow icon={Calendar} label="Date" value={shift.date} />
           <InfoRow icon={Clock} label="Time" value={shift.time} />
-          <div className="flex h-32 items-center justify-center rounded-2xl bg-blue-50 text-blue-700">
+          <div className="flex h-32 items-center justify-center rounded-2xl bg-secondary-50 text-secondary-700">
             <MapPin className="h-10 w-10" />
           </div>
         </CardContent>
       </Card>
 
       <div className="mt-auto space-y-3 pb-8">
-        <Button type="button" className="w-full bg-blue-700">
+        <Button type="button" className="w-full bg-secondary-700">
           <Calendar className="mr-2 h-4 w-4" />
           Add to Calendar
         </Button>
@@ -1068,11 +1070,11 @@ function InfoRow({
 }) {
   return (
     <div className="flex items-center gap-3">
-      <span className="rounded-xl bg-blue-50 p-2 text-blue-700">
+      <span className="rounded-xl bg-secondary-50 p-2 text-secondary-700">
         <Icon className="h-5 w-5" />
       </span>
       <div>
-        <p className="text-xs text-slate-500">{label}</p>
+        <p className="text-xs text-neutral-500">{label}</p>
         <p className="font-bold">{value}</p>
       </div>
     </div>
@@ -1109,7 +1111,7 @@ function ScheduleScreen({
               key={day}
               className={cn(
                 "rounded-2xl p-3 text-xs font-bold",
-                index === 1 ? "bg-blue-700 text-white" : "bg-white text-slate-600",
+                index === 1 ? "bg-secondary-700 text-white" : "bg-white text-neutral-600",
               )}
             >
               {day}
@@ -1124,7 +1126,7 @@ function ScheduleScreen({
               onClick={() => onScheduleTabChange(tab)}
               className={cn(
                 "rounded-lg px-3 py-2 text-xs font-bold capitalize",
-                scheduleTab === tab ? "bg-blue-50 text-blue-700" : "text-slate-500",
+                scheduleTab === tab ? "bg-secondary-50 text-secondary-700" : "text-neutral-500",
               )}
             >
               {tab}
@@ -1137,7 +1139,7 @@ function ScheduleScreen({
             <CardContent className="p-4">
               <StatusBadge tone="green">Active now</StatusBadge>
               <h3 className="mt-3 font-bold">{activeShift.hospital}</h3>
-              <p className="text-sm text-slate-500">{activeShift.department}</p>
+              <p className="text-sm text-neutral-500">{activeShift.department}</p>
             </CardContent>
           </Card>
         )}
@@ -1148,7 +1150,7 @@ function ScheduleScreen({
               <CardContent className="flex items-center justify-between p-4">
                 <div>
                   <h3 className="font-bold">{item.hospital}</h3>
-                  <p className="text-xs text-slate-500">{item.date}</p>
+                  <p className="text-xs text-neutral-500">{item.date}</p>
                 </div>
                 <StatusBadge tone="green">Completed</StatusBadge>
               </CardContent>
@@ -1163,11 +1165,11 @@ function ScheduleScreen({
                   <div>
                     <StatusBadge tone="green">{shift.department}</StatusBadge>
                     <h3 className="mt-2 font-bold">{shift.hospital}</h3>
-                    <p className="text-xs text-slate-500">{shift.location}</p>
+                    <p className="text-xs text-neutral-500">{shift.location}</p>
                   </div>
-                  <p className="font-bold text-blue-700">{getShiftPayout(shift)}</p>
+                  <p className="font-bold text-secondary-700">{getShiftPayout(shift)}</p>
                 </div>
-                <div className="grid grid-cols-2 gap-3 rounded-xl bg-slate-50 p-3 text-xs">
+                <div className="grid grid-cols-2 gap-3 rounded-xl bg-neutral-50 p-3 text-xs">
                   <span>Date: {shift.date}</span>
                   <span>Shift: {shift.time}</span>
                 </div>
@@ -1177,7 +1179,7 @@ function ScheduleScreen({
                   </Button>
                   <Button
                     type="button"
-                    className="bg-rose-600 hover:bg-rose-700"
+                    className="bg-error-600 hover:bg-error-700"
                     onClick={() => onShiftEntry(selectedShift || shift)}
                   >
                     Clock In
@@ -1208,15 +1210,15 @@ function ShiftEntryScreen({
       <main className="space-y-5 px-5 py-4">
         <Card>
           <CardContent className="p-5">
-            <p className="text-xs font-bold uppercase text-slate-500">Current Facility</p>
+            <p className="text-xs font-bold uppercase text-neutral-500">Current Facility</p>
             <h2 className="mt-2 text-xl font-bold">{shift.hospital}</h2>
             <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
               <p>
-                <span className="block text-xs text-slate-500">Department</span>
+                <span className="block text-xs text-neutral-500">Department</span>
                 {shift.department}
               </p>
               <p>
-                <span className="block text-xs text-slate-500">Time Slot</span>
+                <span className="block text-xs text-neutral-500">Time Slot</span>
                 {shift.time}
               </p>
             </div>
@@ -1224,27 +1226,27 @@ function ShiftEntryScreen({
         </Card>
         <Card>
           <CardContent className="p-5 text-center">
-            <div className="mx-auto flex h-28 w-28 items-center justify-center rounded-full bg-emerald-50">
-              <span className="h-4 w-4 rounded-full bg-emerald-600" />
+            <div className="mx-auto flex h-28 w-28 items-center justify-center rounded-full bg-success-50">
+              <span className="h-4 w-4 rounded-full bg-success-600" />
             </div>
             <h3 className="mt-4 font-bold">Within Range (50m)</h3>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-neutral-500">
               Geofence validation successful. You are currently on-site.
             </p>
           </CardContent>
         </Card>
-        <div className="flex h-52 items-center justify-center rounded-3xl bg-slate-900 text-cyan-300">
+        <div className="flex h-52 items-center justify-center rounded-3xl bg-neutral-900 text-secondary-300">
           <MapPin className="h-14 w-14" />
         </div>
         <Button
           type="button"
           onClick={onClockIn}
-          className="h-28 w-full rounded-3xl bg-rose-600 text-xl hover:bg-rose-700"
+          className="h-28 w-full rounded-3xl bg-error-600 text-xl hover:bg-error-700"
         >
           <Clock className="mr-3 h-8 w-8" />
           Clock In
         </Button>
-        <p className="text-center text-xs text-slate-500">
+        <p className="text-center text-xs text-neutral-500">
           Syncing with Lagos Central Node...
         </p>
       </main>
@@ -1271,19 +1273,19 @@ function ActiveShiftScreen({
     <>
       <Header title="Current Shift Status" subtitle={activeShift.department} />
       <main className="space-y-5 px-5 py-4">
-        <section className="rounded-2xl bg-blue-700 p-5 text-white">
+        <section className="rounded-2xl bg-secondary-700 p-5 text-white">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs uppercase text-blue-100">Current shift status</p>
+              <p className="text-xs uppercase text-secondary-100">Current shift status</p>
               <p className="text-4xl font-bold">{time}</p>
             </div>
             <StatusBadge tone="green">Onsite</StatusBadge>
           </div>
-          <div className="mt-4 grid grid-cols-2 gap-3 text-xs text-blue-50">
+          <div className="mt-4 grid grid-cols-2 gap-3 text-xs text-secondary-50">
             <p>Department: {activeShift.department}</p>
             <p>Duration: 08 Hours</p>
           </div>
-          <Button type="button" className="mt-4 bg-white text-blue-800 hover:blue-50">
+          <Button type="button" className="mt-4 bg-white text-secondary-800 hover:secondary-50">
             Take a Break
           </Button>
         </section>
@@ -1301,24 +1303,24 @@ function ActiveShiftScreen({
                 onClick={() => onPatientSelect(patient)}
                 className={cn(
                   "flex w-full items-center justify-between rounded-2xl bg-white p-4 text-left shadow-sm",
-                  selectedPatient.id === patient.id && "ring-2 ring-blue-200",
+                  selectedPatient.id === patient.id && "ring-2 ring-secondary-200",
                 )}
               >
                 <div>
                   <p className="font-bold">{patient.name}</p>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-neutral-500">
                     {patient.room} • {patient.age}
                   </p>
                   <p
                     className={cn(
                       "mt-2 text-[10px] font-bold uppercase",
-                      patient.status === "medication" ? "text-rose-600" : "text-emerald-600",
+                      patient.status === "medication" ? "text-error-600" : "text-success-600",
                     )}
                   >
                     {patient.note}
                   </p>
                 </div>
-                <ChevronRight className="h-5 w-5 text-slate-400" />
+                <ChevronRight className="h-5 w-5 text-neutral-400" />
               </button>
             ))}
           </div>
@@ -1344,10 +1346,10 @@ function ActiveShiftScreen({
         <Card>
           <CardContent className="flex items-center justify-between p-4">
             <div className="flex items-center gap-3">
-              <MessageSquare className="h-5 w-5 text-blue-700" />
+              <MessageSquare className="h-5 w-5 text-secondary-700" />
               <div>
                 <p className="font-bold">2 Unread Messages</p>
-                <p className="text-xs text-slate-500">Shift coordinator and lab services</p>
+                <p className="text-xs text-neutral-500">Shift coordinator and lab services</p>
               </div>
             </div>
             <Button type="button" size="sm" variant="outline">
@@ -1359,7 +1361,7 @@ function ActiveShiftScreen({
         <Button
           type="button"
           onClick={onClockOut}
-          className="w-full bg-rose-600 hover:bg-rose-700"
+          className="w-full bg-error-600 hover:bg-error-700"
         >
           Clock Out
         </Button>
@@ -1381,23 +1383,23 @@ function WaitingRoomScreen({
     <>
       <Header title="Virtual Waiting Room" subtitle="Live Queue" onBack={onBack} />
       <main className="space-y-5 px-5 py-4">
-        <p className="text-sm text-slate-600">
+        <p className="text-sm text-neutral-600">
           Manage upcoming consultations. Patients are automatically screened and prioritized.
         </p>
         <Card>
           <CardContent className="space-y-4 p-4">
             <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-success-100 text-success-700">
                 <User className="h-6 w-6" />
               </div>
               <div className="flex-1">
                 <h2 className="font-bold">{patient.name}</h2>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-neutral-500">
                   Patient ID: {patient.id} • Waiting for 5 mins
                 </p>
               </div>
             </div>
-            <Button type="button" className="w-full bg-blue-700" onClick={onStartConsultation}>
+            <Button type="button" className="w-full bg-secondary-700" onClick={onStartConsultation}>
               Start Consultation
               <Video className="ml-2 h-4 w-4" />
             </Button>
@@ -1407,7 +1409,7 @@ function WaitingRoomScreen({
           <CardHeader className="p-4 pb-2">
             <CardTitle className="text-base">Reason for Visit</CardTitle>
           </CardHeader>
-          <CardContent className="p-4 pt-0 text-sm text-slate-600">
+          <CardContent className="p-4 pt-0 text-sm text-neutral-600">
             Follow-up hypertension. Patient reports consistent adherence and requests review of home BP readings.
           </CardContent>
         </Card>
@@ -1446,15 +1448,15 @@ function ConsultationScreen({
     <>
       <Header title={patient.name} subtitle={patient.id} onBack={onBack} />
       <main className="space-y-5 px-5 py-4">
-        <section className="relative overflow-hidden rounded-3xl bg-slate-900 text-white">
-          <div className="flex h-80 items-center justify-center bg-gradient-to-br from-slate-700 to-slate-950">
-            <User className="h-20 w-20 text-slate-300" />
+        <section className="relative overflow-hidden rounded-3xl bg-neutral-900 text-white">
+          <div className="flex h-80 items-center justify-center bg-gradient-to-br from-neutral-700 to-neutral-950">
+            <User className="h-20 w-20 text-neutral-300" />
           </div>
           <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-3">
             <button
               type="button"
               onClick={onToggleMic}
-              className={cn("rounded-full p-3", isMicOn ? "bg-rose-600" : "bg-white/20 backdrop-blur")}
+              className={cn("rounded-full p-3", isMicOn ? "bg-error-600" : "bg-white/20 backdrop-blur")}
             >
               {isMicOn ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
             </button>
@@ -1462,7 +1464,7 @@ function ConsultationScreen({
             <button
               type="button"
               onClick={onToggleCam}
-              className={cn("rounded-full p-3", isCamOn ? "bg-rose-600" : "bg-white/20 backdrop-blur")}
+              className={cn("rounded-full p-3", isCamOn ? "bg-error-600" : "bg-white/20 backdrop-blur")}
             >
               <Video className="h-5 w-5" />
             </button>
@@ -1489,7 +1491,7 @@ function ConsultationScreen({
               key={action.label}
               className="rounded-2xl bg-white p-4 text-sm font-bold shadow-sm"
             >
-              <action.icon className="mx-auto mb-2 h-5 w-5 text-blue-700" />
+              <action.icon className="mx-auto mb-2 h-5 w-5 text-secondary-700" />
               {action.label}
             </button>
           ))}
@@ -1501,24 +1503,24 @@ function ConsultationScreen({
           </CardHeader>
           <CardContent className="space-y-3 p-4 pt-0">
             {["Heart Rate 72 BPM", "Temp 36.8 C", "Blood Pressure 120/80"].map((item) => (
-              <div key={item} className="rounded-xl bg-slate-50 px-3 py-2 text-sm">
+              <div key={item} className="rounded-xl bg-neutral-50 px-3 py-2 text-sm">
                 {item}
               </div>
             ))}
           </CardContent>
         </Card>
 
-        <section className="rounded-3xl bg-blue-700 p-4 text-white">
+        <section className="rounded-3xl bg-secondary-700 p-4 text-white">
           <div className="flex items-center justify-between">
             <p className="font-bold">AI Live Transcriber</p>
             <StatusBadge tone="green">Live</StatusBadge>
           </div>
-          <p className="mt-4 rounded-2xl bg-blue-800 p-4 text-sm text-blue-50">
+          <p className="mt-4 rounded-2xl bg-secondary-800 p-4 text-sm text-secondary-50">
             Translation on: Yoruba to English. "I am happy, but I have pain in my stomach."
           </p>
         </section>
 
-        <Button type="button" className="w-full bg-blue-700" onClick={onReview}>
+        <Button type="button" className="w-full bg-secondary-700" onClick={onReview}>
           Finish Consultation
         </Button>
       </main>
@@ -1543,7 +1545,7 @@ function ClinicalReviewScreen({
           <CardContent className="flex items-center justify-between p-4">
             <div>
               <h2 className="font-bold">{patient.name}</h2>
-              <p className="text-xs text-slate-500">Patient ID: {patient.id}</p>
+              <p className="text-xs text-neutral-500">Patient ID: {patient.id}</p>
             </div>
             <StatusBadge tone="green">Draft</StatusBadge>
           </CardContent>
@@ -1552,9 +1554,9 @@ function ClinicalReviewScreen({
           <CardContent className="flex items-center justify-between p-4">
             <div>
               <p className="font-bold">96% High Confidence</p>
-              <p className="text-xs text-slate-500">AI insight cadence confirmed</p>
+              <p className="text-xs text-neutral-500">AI insight cadence confirmed</p>
             </div>
-            <Activity className="h-8 w-8 text-emerald-600" />
+            <Activity className="h-8 w-8 text-success-600" />
           </CardContent>
         </Card>
         {[
@@ -1568,12 +1570,12 @@ function ClinicalReviewScreen({
             <CardHeader className="p-4 pb-2">
               <CardTitle className="text-base">{title}</CardTitle>
             </CardHeader>
-            <CardContent className="p-4 pt-0 text-sm text-slate-600">
+            <CardContent className="p-4 pt-0 text-sm text-neutral-600">
               {body}
             </CardContent>
           </Card>
         ))}
-        <Button type="button" className="w-full bg-blue-700" onClick={onFinalize}>
+        <Button type="button" className="w-full bg-secondary-700" onClick={onFinalize}>
           Save & Finalize
         </Button>
         <div className="grid grid-cols-2 gap-3 pb-4">
@@ -1608,15 +1610,15 @@ function HandoverScreen({
     <>
       <Header title="Shift Completion" subtitle="Review handover summary" onBack={onBack} />
       <main className="space-y-5 px-5 py-4">
-        <section className="rounded-2xl bg-blue-700 p-5 text-white">
-          <p className="text-xs text-blue-100">Current Shift Status</p>
+        <section className="rounded-2xl bg-secondary-700 p-5 text-white">
+          <p className="text-xs text-secondary-100">Current Shift Status</p>
           <p className="text-4xl font-bold">
             {hours.toString().padStart(2, "0")}:{minutes.toString().padStart(2, "0")}:30
           </p>
-          <p className="text-xs text-blue-100">{activeShift.department}</p>
+          <p className="text-xs text-secondary-100">{activeShift.department}</p>
         </section>
         <h1 className="text-2xl font-bold">Great job today, Dr. Abodey</h1>
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-neutral-500">
           Your shift is nearing its end. Please review the patient handover summary before clocking out.
         </p>
         <div className="grid grid-cols-2 gap-3">
@@ -1636,8 +1638,8 @@ function HandoverScreen({
               <div
                 key={note}
                 className={cn(
-                  "border-l-4 bg-slate-50 p-3 text-sm",
-                  index === 1 ? "border-rose-500" : "border-emerald-500",
+                  "border-l-4 bg-neutral-50 p-3 text-sm",
+                  index === 1 ? "border-error-500" : "border-success-500",
                 )}
               >
                 {note}
@@ -1645,7 +1647,7 @@ function HandoverScreen({
             ))}
           </CardContent>
         </Card>
-        <Button type="button" className="w-full bg-blue-700" onClick={onConfirm}>
+        <Button type="button" className="w-full bg-secondary-700" onClick={onConfirm}>
           Confirm Handover & Clock-Out
         </Button>
       </main>
@@ -1664,21 +1666,21 @@ function EarningsScreen({
     <>
       <Header title="Earnings" />
       <main className="space-y-5 px-5 py-4">
-        <section className="rounded-2xl bg-blue-700 p-5 text-white">
-          <p className="text-xs text-blue-100">Total Balance</p>
+        <section className="rounded-2xl bg-secondary-700 p-5 text-white">
+          <p className="text-xs text-secondary-100">Total Balance</p>
           <p className="text-3xl font-bold">{formatCurrency(earnings.totalEarnings)}</p>
-          <Button type="button" className="mt-4 bg-white text-blue-800 hover:bg-blue-50">
+          <Button type="button" className="mt-4 bg-white text-secondary-800 hover:bg-secondary-50">
             <CreditCard className="mr-2 h-4 w-4" />
             Withdraw Funds
           </Button>
-          <p className="mt-3 text-xs text-blue-100">Next payout: Friday, 24 Oct</p>
+          <p className="mt-3 text-xs text-secondary-100">Next payout: Friday, 24 Oct</p>
         </section>
         <Metric label="Pending Payouts" value={formatCurrency(42000)} icon={Clock} />
         <Metric label="Monthly Earnings" value={formatCurrency(earnings.monthlyEarnings)} icon={Activity} />
         <section>
           <div className="mb-3 flex items-center justify-between">
             <h2 className="font-bold">Recent Earnings</h2>
-            <button type="button" className="text-xs font-bold text-blue-700">
+            <button type="button" className="text-xs font-bold text-secondary-700">
               View all
             </button>
           </div>
@@ -1688,10 +1690,10 @@ function EarningsScreen({
                 <CardContent className="flex items-center justify-between p-4">
                   <div>
                     <p className="font-bold">{item.hospital}</p>
-                    <p className="text-xs text-slate-500">{item.date}</p>
+                    <p className="text-xs text-neutral-500">{item.date}</p>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold text-emerald-700">
+                    <p className="font-bold text-success-700">
                       {formatCurrency(item.earnings)}
                     </p>
                     <StatusBadge tone="green">Completed</StatusBadge>
@@ -1722,12 +1724,12 @@ function ProfileScreen({
       <Header title="Profile" />
       <main className="space-y-5 px-5 py-4">
         <section className="text-center">
-          <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-3xl bg-slate-200">
-            <User className="h-12 w-12 text-slate-500" />
+          <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-3xl bg-neutral-200">
+            <User className="h-12 w-12 text-neutral-500" />
           </div>
           <h1 className="mt-4 text-xl font-bold">{profile?.name || "Dr. Chidi Okonjo"}</h1>
           <StatusBadge tone="green">Verified Professional</StatusBadge>
-          <p className="mt-2 text-sm text-slate-500">
+          <p className="mt-2 text-sm text-neutral-500">
             {profile?.specialization || "Consultant Cardiologist"} • Senior Registrar
           </p>
         </section>
@@ -1753,7 +1755,7 @@ function ProfileScreen({
           </CardHeader>
           <CardContent className="flex flex-wrap gap-2 p-4 pt-0">
             {["Cardiovascular Medicine", "Interventional Radiology", "Emergency Care", "Diagnostic Ultrasound"].map((item) => (
-              <span key={item} className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700">
+              <span key={item} className="rounded-full bg-success-50 px-3 py-1 text-xs font-bold text-success-700">
                 {item}
               </span>
             ))}
@@ -1766,24 +1768,24 @@ function ProfileScreen({
           <button
             type="button"
             onClick={onLogout}
-            className="flex w-full items-center gap-3 rounded-2xl bg-white p-4 text-left font-bold text-rose-600 shadow-sm"
+            className="flex w-full items-center gap-3 rounded-2xl bg-white p-4 text-left font-bold text-error-600 shadow-sm"
           >
             <LogOut className="h-5 w-5" />
             Logout
           </button>
         </div>
 
-        <section className="flex items-center justify-between rounded-2xl bg-blue-700 p-4 text-white">
+        <section className="flex items-center justify-between rounded-2xl bg-secondary-700 p-4 text-white">
           <div>
             <p className="font-bold">Active for Booking</p>
-            <p className="text-xs text-blue-100">Visible to patients for immediate consultation.</p>
+            <p className="text-xs text-secondary-100">Visible to patients for immediate consultation.</p>
           </div>
           <button
             type="button"
             onClick={onToggleBooking}
             className={cn(
               "flex h-8 w-14 items-center rounded-full p-1 transition",
-              isBookingActive ? "justify-end bg-emerald-400" : "justify-start bg-slate-300",
+              isBookingActive ? "justify-end bg-success-400" : "justify-start bg-neutral-300",
             )}
           >
             <span className="h-6 w-6 rounded-full bg-white" />
@@ -1807,10 +1809,10 @@ function ProfileLink({
       className="flex w-full items-center justify-between rounded-2xl bg-white p-4 text-left shadow-sm"
     >
       <span className="flex items-center gap-3 font-bold">
-        <Icon className="h-5 w-5 text-blue-700" />
+        <Icon className="h-5 w-5 text-secondary-700" />
         {label}
       </span>
-      <ChevronRight className="h-5 w-5 text-slate-400" />
+      <ChevronRight className="h-5 w-5 text-neutral-400" />
     </button>
   );
 }
@@ -1827,7 +1829,7 @@ function NotificationsScreen({ onBack }: { onBack: () => void }) {
               key={filter}
               className={cn(
                 "rounded-full px-4 py-2 text-xs font-bold",
-                index === 0 ? "bg-blue-700 text-white" : "bg-slate-100 text-slate-600",
+                index === 0 ? "bg-secondary-700 text-white" : "bg-neutral-100 text-neutral-600",
               )}
             >
               {filter}
@@ -1841,10 +1843,10 @@ function NotificationsScreen({ onBack }: { onBack: () => void }) {
                 className={cn(
                   "rounded-xl p-2",
                   item.kind === "payment"
-                    ? "bg-emerald-50 text-emerald-700"
+                    ? "bg-success-50 text-success-700"
                     : item.kind === "alert"
-                      ? "bg-rose-50 text-rose-700"
-                      : "bg-blue-50 text-blue-700",
+                      ? "bg-error-50 text-error-700"
+                      : "bg-secondary-50 text-secondary-700",
                 )}
               >
                 {item.kind === "payment" ? (
@@ -1858,9 +1860,9 @@ function NotificationsScreen({ onBack }: { onBack: () => void }) {
               <div className="flex-1">
                 <div className="flex justify-between gap-3">
                   <h2 className="font-bold">{item.title}</h2>
-                  <span className="text-[10px] text-slate-400">{item.meta}</span>
+                  <span className="text-[10px] text-neutral-400">{item.meta}</span>
                 </div>
-                <p className="mt-1 text-sm text-slate-500">{item.body}</p>
+                <p className="mt-1 text-sm text-neutral-500">{item.body}</p>
               </div>
             </CardContent>
           </Card>

@@ -1,4 +1,4 @@
-import { ArrowLeft, Info, MapPin, Monitor, Users } from "lucide-react";
+import { Info, MapPin, Monitor, Users } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
 import { cn } from "@/shared/utils/cn";
 import type { ShiftFormData } from "../types";
@@ -35,10 +35,9 @@ interface Props {
   data: ShiftFormData;
   onUpdate: (patch: Partial<ShiftFormData>) => void;
   onNext: () => void;
-  onBack: () => void;
 }
 
-export function Step1BasicInfo({ data, onUpdate, onNext, onBack }: Props) {
+export function Step1BasicInfo({ data, onUpdate, onNext }: Props) {
   const isStatUrgency = data.urgencyLevel === "stat";
 
   const canProceed =
@@ -50,32 +49,7 @@ export function Step1BasicInfo({ data, onUpdate, onNext, onBack }: Props) {
     data.urgencyLevel;
 
   return (
-    <div className="min-h-screen bg-neutral-50 py-8 px-6">
-      <div className="mx-auto max-w-4xl">
-        {/* Header */}
-        <div className="mb-6 flex items-start justify-between">
-          <button
-            onClick={onBack}
-            className="flex items-center gap-1.5 text-sm font-medium text-neutral-600 transition-colors hover:text-neutral-900"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Dashboard
-          </button>
-          <div className="text-right">
-            <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-neutral-500">
-              Step 1 of 4
-            </p>
-            <h1 className="text-2xl font-bold text-neutral-900">
-              Basic Information
-            </h1>
-          </div>
-        </div>
-
-        {/* Progress bar */}
-        <div className="mb-8 h-1 overflow-hidden rounded-full bg-neutral-200">
-          <div className="h-full w-1/4 rounded-full bg-secondary-600 transition-all" />
-        </div>
-
+    <div className="space-y-6">
         {/* Form card */}
         <div className="space-y-6 rounded-2xl border border-neutral-200 bg-white p-8">
           {/* Role + Specialty */}
@@ -288,7 +262,6 @@ export function Step1BasicInfo({ data, onUpdate, onNext, onBack }: Props) {
             NEXT →
           </Button>
         </div>
-      </div>
     </div>
   );
 }

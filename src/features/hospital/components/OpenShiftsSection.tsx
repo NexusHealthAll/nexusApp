@@ -1,134 +1,104 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus } from "lucide-react";
+import { ChevronRight, Plus } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
+import { Badge, BadgeVariant } from "@/shared/components/ui/Badge";
 import { PATHS } from "@/routes/paths";
 import { useHospitalShift } from "@/features/hospital/shifts/hooks/useHospitalShift";
+import { useCreateShiftModalStore } from "@/features/hospital/shifts/hooks/useCreateShiftModalStore";
+import type { ApiShiftPriority } from "@/features/hospital/shifts/types";
 
-type ApplicationUi = {
-  id: string;
+type OpenShiftUi = {
   shiftId: string;
-  clinicianName?: string;
-  clinicianRole?: string;
-  status?: string;
+  roleTitle: string;
+  dateLabel: string;
+  rateLabel: string;
+  priority: ApiShiftPriority;
+  interestedCount: number;
+  topApplicantName?: string;
 };
 
-type ShiftApplicationsUi = {
-  shiftId: string;
-  applications: ApplicationUi[];
+const priorityBadge: Record<ApiShiftPriority, { variant: BadgeVariant; label: string }> = {
+  stat: { variant: "error", label: "STAT" },
+  urgent: { variant: "warning", label: "Urgent" },
+  normal: { variant: "success", label: "Normal" },
+  scheduled: { variant: "info", label: "Scheduled" },
 };
 
-function badgeForPriority(priority?: string): {
-  badgeColor: string;
-  badgeText: string;
-} {
-  const p = (priority ?? "").toLowerCase();
-  if (p.includes("stat")) {
-    return { badgeColor: "bg-error-100 text-error-700", badgeText: "STAT" };
+function formatRate(s: { rate_kobo_per_hour?: number | null; fixed_rate_kobo?: number | null }): string {
+  if (typeof s.rate_kobo_per_hour === "number" && s.rate_kobo_per_hour > 0) {
+    return `₦${Math.round(s.rate_kobo_per_hour / 100).toLocaleString()}/hr`;
   }
-  if (p.includes("urgent")) {
-    return {
-      badgeColor: "bg-warning-100 text-warning-700",
-      badgeText: "URGENT",
-    };
+  if (typeof s.fixed_rate_kobo === "number" && s.fixed_rate_kobo > 0) {
+    return `₦${Math.round(s.fixed_rate_kobo / 100).toLocaleString()}`;
   }
-  return { badgeColor: "bg-neutral-100 text-neutral-600", badgeText: "OPEN" };
+  return "—";
 }
 
 export function OpenShiftsSection() {
   const navigate = useNavigate();
-  const { getShifts, getShiftApplications, assignClinician } =
-    useHospitalShift();
+  const { getShifts, getShiftApplications } = useHospitalShift();
+  const openCreateShift = useCreateShiftModalStore((s) => s.open);
+  const refreshKey = useCreateShiftModalStore((s) => s.refreshKey);
 
   const [isLoading, setIsLoading] = useState(false);
-  const [groups, setGroups] = useState<ShiftApplicationsUi[]>([]);
-
-  const hasData = groups.some((g) => g.applications.length > 0);
+  const [shifts, setShifts] = useState<OpenShiftUi[]>([]);
 
   const load = async () => {
     setIsLoading(true);
     try {
-      // Backend supports listing by status; for open shifts we likely use `open`.
-      const shiftsRes = await getShifts({
-        status: "open",
-        page: 1,
-        page_size: 5,
-      });
-      const payload = shiftsRes as any;
-      const shiftList = payload?.data ?? payload?.shifts ?? payload ?? [];
-      const list: any[] = Array.isArray(shiftList) ? shiftList.slice(0, 5) : [];
+      const shiftsRes = await getShifts({ status: "open", page: 1, page_size: 5 });
+      const list = shiftsRes.shifts.slice(0, 5);
 
-      if (list.length === 0) {
-        setGroups([]);
-        return;
-      }
-
-      const nextGroups: ShiftApplicationsUi[] = await Promise.all(
-        list.map(async (s: any) => {
-          const shiftId = String(s?.id ?? "");
-          if (!shiftId) return { shiftId: "", applications: [] };
-
+      const nextShifts: OpenShiftUi[] = await Promise.all(
+        list.map(async (s) => {
           const appsRes = await getShiftApplications({
-            shift_id: shiftId,
+            shift_id: s.id,
             page: 1,
             page_size: 50,
           });
-          const appsPayload = appsRes as any;
-          const appsList =
-            appsPayload?.data ?? appsPayload?.applications ?? appsPayload ?? [];
-          const appsArr: any[] = Array.isArray(appsList) ? appsList : [];
 
-          const appsUi: ApplicationUi[] = appsArr
-            .map((a: any) => {
-              const id = String(a?.id ?? a?.application_id ?? "");
-              if (!id) return null;
-              return {
-                id,
-                shiftId,
-                clinicianName:
-                  a?.clinician_name ?? a?.worker_name ?? a?.user?.full_name,
-                clinicianRole:
-                  a?.clinician_role ?? a?.worker_role ?? a?.worker?.role,
-                status: a?.status,
-              } satisfies ApplicationUi;
-            })
-            .filter(Boolean) as ApplicationUi[];
-
-          return { shiftId, applications: appsUi };
+          return {
+            shiftId: s.id,
+            roleTitle: s.role_title,
+            dateLabel: new Date(s.scheduled_start).toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+            }),
+            rateLabel: formatRate(s),
+            priority: s.priority,
+            interestedCount: appsRes.pagination.total_items,
+            topApplicantName: appsRes.applications[0]?.applicant_name,
+          } satisfies OpenShiftUi;
         }),
       );
 
-      setGroups(nextGroups.filter((g) => g.shiftId));
+      setShifts(nextShifts);
     } catch {
-      setGroups([]);
+      setShifts([]);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Load on mount
-  // (We avoid useEffect import churn by lazy-loading on first render via useMemo/side effects is not good; so useEffect properly.)
   // eslint-disable-next-line react-hooks/rules-of-hooks
   useMemo(() => {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const uiGroups = useMemo(() => groups, [groups]);
+  }, [refreshKey]);
 
   return (
-    <div>
+    <div className="rounded-2xl border border-neutral-100 bg-white p-5">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-base font-bold text-neutral-900">
-          Open Shifts Needing Staff
-        </h2>
+        <h2 className="text-base font-bold text-neutral-900">Open Shifts</h2>
         <Button
           size="sm"
-          onClick={() => navigate(PATHS.hospital.shiftCreate)}
+          onClick={openCreateShift}
           className="flex items-center gap-1.5 rounded-lg bg-secondary-600 text-xs font-semibold text-white hover:bg-secondary-700"
         >
           <Plus className="h-3.5 w-3.5" />
-          Post Shift
+          New shift
         </Button>
       </div>
 
@@ -137,12 +107,12 @@ export function OpenShiftsSection() {
           {Array.from({ length: 3 }).map((_, i) => (
             <div
               key={i}
-              className="flex items-center gap-4 rounded-2xl border border-neutral-100 bg-white px-4 py-4 animate-pulse h-[92px]"
+              className="h-[56px] animate-pulse rounded-xl bg-neutral-50"
             />
           ))}
         </div>
-      ) : !hasData ? (
-        <div className="flex min-h-[220px] flex-col items-center justify-center gap-4 rounded-2xl border border-dashed border-neutral-200 bg-white px-6 py-10 text-center">
+      ) : shifts.length === 0 ? (
+        <div className="flex min-h-[220px] flex-col items-center justify-center gap-4 rounded-xl border border-dashed border-neutral-200 px-6 py-10 text-center">
           <svg width="96" height="96" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
             {/* Clipboard body */}
             <rect x="18" y="22" width="54" height="62" rx="10" fill="#EFF6FF" />
@@ -163,86 +133,40 @@ export function OpenShiftsSection() {
             <circle cx="59.5" cy="55.5" r="2" fill="white" fillOpacity="0.7" />
           </svg>
           <div>
-            <p className="text-sm font-semibold text-neutral-800">No applications yet</p>
+            <p className="text-sm font-semibold text-neutral-800">No open shifts</p>
             <p className="mt-1.5 text-xs text-neutral-400 max-w-[240px] mx-auto leading-relaxed">
-              Open shifts will appear here once clinicians apply. Post a shift to get started.
+              Open shifts will appear here once you post one.
             </p>
           </div>
         </div>
       ) : (
-        <div className="space-y-3">
-          {uiGroups.map((g) => {
-            const first = g.applications[0];
-            const badge = badgeForPriority(first?.status ?? "");
+        <div className="divide-y divide-neutral-50">
+          {shifts.map((shift) => {
+            const badge = priorityBadge[shift.priority];
             return (
-              <div
-                key={g.shiftId}
-                className="flex items-center gap-4 rounded-2xl border border-neutral-100 bg-white px-4 py-4"
+              <button
+                key={shift.shiftId}
+                type="button"
+                onClick={() => navigate(PATHS.hospital.shiftDetail(shift.shiftId))}
+                className="flex w-full items-center justify-between gap-3 py-3 text-left first:pt-0 last:pb-0"
               >
-                <div
-                  className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl text-[10px] font-bold ${badge.badgeColor}`}
-                >
-                  {badge.badgeText}
-                </div>
-
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-semibold text-neutral-900">
-                    Shift #{g.shiftId}
+                <div className="min-w-0">
+                  <div className="mb-1 flex items-center gap-2">
+                    <Badge variant={badge.variant}>{badge.label}</Badge>
+                    <span className="text-xs text-neutral-400">
+                      {shift.interestedCount} interested
+                    </span>
+                  </div>
+                  <p className="truncate text-sm font-semibold text-neutral-900">
+                    {shift.roleTitle}
                   </p>
-                  <p className="text-xs text-neutral-500">
-                    {first?.clinicianRole ?? "Clinician"} •{" "}
-                    {g.applications.length} applications
-                  </p>
-                </div>
-
-                <div className="flex-shrink-0 text-center">
-                  <p className="text-sm font-bold text-error-600">
-                    {g.applications.length} Interested
-                  </p>
-                  <p className="text-[10px] text-neutral-400">
-                    {first?.clinicianName
-                      ? `Top match: ${first.clinicianName}`
-                      : "—"}
+                  <p className="truncate text-xs text-neutral-500">
+                    {[shift.dateLabel, shift.rateLabel].filter(Boolean).join(" • ")}
+                    {shift.topApplicantName ? ` • Top: ${shift.topApplicantName}` : ""}
                   </p>
                 </div>
-
-                <div className="flex flex-col items-end gap-2">
-                  <Button
-                    size="sm"
-                    className="flex-shrink-0 rounded-lg text-xs font-semibold uppercase tracking-wide bg-neutral-900 text-white hover:bg-neutral-700"
-                    onClick={async () => {
-                      // Best-effort: assign first clinician. We need clinician_id; application record shape is unknown.
-                      // If backend returns clinician id in a field, extend mapping accordingly.
-                      const clinicianId =
-                        (first as any)?.clinician_id ??
-                        (first as any)?.worker_id ??
-                        "";
-                      if (!clinicianId) {
-                        return;
-                      }
-                      await assignClinician({
-                        shift_id: g.shiftId,
-                        clinician_id: String(clinicianId),
-                      });
-                      await load();
-                    }}
-                    disabled={g.applications.length === 0}
-                  >
-                    Assign
-                  </Button>
-
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="flex-shrink-0 rounded-lg text-xs font-semibold uppercase tracking-wide"
-                    onClick={() => {
-                      navigate(PATHS.hospital.shifts);
-                    }}
-                  >
-                    Review
-                  </Button>
-                </div>
-              </div>
+                <ChevronRight className="h-4 w-4 flex-shrink-0 text-neutral-300" />
+              </button>
             );
           })}
         </div>

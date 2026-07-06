@@ -20,12 +20,18 @@ interface RolePathGroup {
   readonly dashboard: string;
   readonly patients: string;
   readonly doctors: string;
+  readonly workers: string;
   readonly appointments: string;
   readonly analytics: string;
   readonly settings: string;
   readonly help: string;
   readonly shifts: string;
-  readonly shiftCreate: string;
+  readonly shiftDetail: (shiftId: string) => string;
+  readonly findShifts: string;
+  readonly myShifts: string;
+  readonly patientNotes: string;
+  readonly earnings: string;
+  readonly profile: string;
   readonly onboarding: OnboardingPaths;
 }
 
@@ -36,12 +42,18 @@ function buildRolePaths(base: string): RolePathGroup {
     dashboard: `${base}/dashboard`,
     patients: `${base}/patients`,
     doctors: `${base}/doctors`,
+    workers: `${base}/workers`,
     appointments: `${base}/appointments`,
     analytics: `${base}/analytics`,
     settings: `${base}/settings`,
     help: `${base}/help`,
     shifts: `${base}/shifts`,
-    shiftCreate: `${base}/shifts/create`,
+    shiftDetail: (shiftId: string) => `${base}/shifts/${shiftId}`,
+    findShifts: `${base}/find-shifts`,
+    myShifts: `${base}/my-shifts`,
+    patientNotes: `${base}/patient-notes`,
+    earnings: `${base}/earnings`,
+    profile: `${base}/profile`,
     onboarding: {
       root: ob,
       registration: `${ob}/registration`,
