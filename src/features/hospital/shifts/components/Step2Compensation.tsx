@@ -21,22 +21,6 @@ interface Props {
   onBack: () => void;
 }
 
-function StepDashes({ current }: { current: number }) {
-  return (
-    <div className="flex gap-1.5">
-      {[1, 2, 3, 4].map((i) => (
-        <div
-          key={i}
-          className={cn(
-            "h-[3px] w-7 rounded-full",
-            i <= current ? "bg-secondary-600" : "bg-neutral-300",
-          )}
-        />
-      ))}
-    </div>
-  );
-}
-
 export function Step2Compensation({ data, onUpdate, onNext, onBack }: Props) {
   const [showAddBonus, setShowAddBonus] = useState(false);
   const [newBonus, setNewBonus] = useState({
@@ -89,27 +73,7 @@ export function Step2Compensation({ data, onUpdate, onNext, onBack }: Props) {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-50 py-8 px-6">
-      <div className="mx-auto max-w-5xl">
-        {/* Header */}
-        <div className="mb-6 flex items-start justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-neutral-900">
-              Shift Compensation
-            </h1>
-            <p className="mt-1 text-sm text-neutral-500">
-              Define pay structures and bonuses for the clinical rotation.
-            </p>
-          </div>
-          <div className="text-right">
-            <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-neutral-500">
-              Step 2 of 4
-            </p>
-            <StepDashes current={2} />
-          </div>
-        </div>
-        <div className="mb-8 h-px bg-neutral-200" />
-
+    <div>
         <div className="grid grid-cols-[1fr_320px] gap-8 items-start">
           {/* Left: Form */}
           <div className="space-y-8">
@@ -440,7 +404,6 @@ export function Step2Compensation({ data, onUpdate, onNext, onBack }: Props) {
             </div>
           </div>
         </div>
-      </div>
     </div>
   );
 }

@@ -5,9 +5,10 @@ import { Button } from "@/shared/components/ui/Button";
 import { NexusCareLogo } from "@/shared/components/ui/NexusCareLogo";
 import { Mail, Check, AlertCircle } from "lucide-react";
 
-import { useAuthStore } from "@/features/auth/store/authStore";
+import { useAuthStore, type AuthRole } from "@/features/auth/store/authStore";
 import apiClient from "@/lib/apiClient";
 import { ApiError } from "@/lib/apiError";
+import { RoleSelectModal } from "@/features/auth/components/RoleSelectModal";
 
 export function EmailLogin() {
   const navigate = useNavigate();
@@ -18,8 +19,9 @@ export function EmailLogin() {
   const [isValidEmail, setIsValidEmail] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [healthWorkerFallback, setHealthWorkerFallback] = useState(false);
+  const [showRoleModal, setShowRoleModal] = useState(false);
 
-  const { pendingEmail, clearPendingEmail } = useAuthStore();
+  const { pendingEmail, clearPendingEmail, setActiveAuthFlow } = useAuthStore();
 
   // Animation + autofill on mount
   useEffect(() => {
@@ -45,20 +47,15 @@ export function EmailLogin() {
     return () => clearTimeout(timer);
   }, []);
 
-  const activeAuthFlow = useAuthStore.getState().activeAuthFlow;
-
-  const [roleFromStore] = (() => {
-    const role = activeAuthFlow?.role ?? null;
-    return [role] as const;
-  })();
-
+  const activeAuthFlow = useAuthStore((s) => s.activeAuthFlow);
+  const roleFromStore = activeAuthFlow?.role ?? null;
   const roleMissing = !roleFromStore;
 
   const handleSendOTP = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (roleMissing) {
-      setError("Please select your role to continue.");
+      setShowRoleModal(true);
       return;
     }
 
@@ -77,7 +74,11 @@ export function EmailLogin() {
     setHealthWorkerFallback(false);
 
     try {
-      const shouldUseCliniciansOtp = roleFromStore === "health-worker";
+      // Registration uses the clinician-onboarding OTP endpoints; signing in
+      // to an existing account always goes through the normal auth OTP
+      // endpoint, regardless of role.
+      const shouldUseCliniciansOtp =
+        roleFromStore === "health-worker" && activeAuthFlow?.action === "register";
       const otpSendPath = shouldUseCliniciansOtp
         ? "/api/v1/clinicians/otp/send"
         : "/api/v1/auth/otp/send";
@@ -117,6 +118,11 @@ export function EmailLogin() {
     if (e.key === "Enter" && email.trim() && isValidEmail && !isLoading) {
       handleSendOTP(e as any);
     }
+  };
+
+  const handleRoleSelected = (role: AuthRole) => {
+    setActiveAuthFlow({ role, action: "login", origin: "landing" });
+    setShowRoleModal(false);
   };
 
   return (
@@ -304,6 +310,12 @@ export function EmailLogin() {
           </CardContent>
         </Card>
       </div>
+
+      <RoleSelectModal
+        isOpen={showRoleModal}
+        onClose={() => setShowRoleModal(false)}
+        onSelect={handleRoleSelected}
+      />
     </div>
   );
 }

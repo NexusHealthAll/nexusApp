@@ -1,21 +1,40 @@
 import { useCallback, useState } from "react";
 import apiClient from "@/lib/apiClient";
-import type { ShiftFormData } from "../types";
+import type {
+  ApiShiftListResponse,
+  ApiShiftPriority,
+  ApiShiftStatus,
+  ShiftFormData,
+} from "../types";
 
-export type ShiftStatusFilter =
-  | "open"
-  | "assigned"
-  | "upcoming"
-  | "in_progress"
-  | "completed"
-  | "cancelled"
-  | "no_show";
+export type ShiftStatusFilter = ApiShiftStatus;
 
 type ShiftApiError = {
   message: string;
   status?: number;
   data?: unknown;
 };
+
+const urgencyToPriority: Record<string, ApiShiftPriority> = {
+  stat: "stat",
+  urgent: "urgent",
+  standard: "normal",
+  elective: "scheduled",
+};
+
+const roleToCategory: Record<string, string> = {
+  Doctor: "doctor",
+  Nurse: "nurse",
+  "Lab Technician": "lab_technician",
+  Pharmacist: "pharmacist",
+  Radiographer: "radiographer",
+};
+
+function parseDurationHours(duration: string, fallback: number): number {
+  const match = duration.match(/[\d.]+/);
+  if (match) return Number(match[0]);
+  return fallback || 0.1;
+}
 
 function buildShiftPayload(data: ShiftFormData) {
   // Map frontend form model → backend create/preview payload.
@@ -24,17 +43,17 @@ function buildShiftPayload(data: ShiftFormData) {
   return {
     broadcast_consent_confirmed: true,
     department: data.specialty || "",
-    duration_hours: Number(data.duration) || Number(data.expectedHours) || 0.1,
+    duration_hours: parseDurationHours(data.duration, data.expectedHours),
     equipment: (data.equipment || []).map((e) => e.name),
     fixed_rate_kobo: Math.trunc(data.fixedRate * 100),
     job_description: data.jobDescription || "",
     notes: "",
     pay_type: data.payType === "fixed" ? "fixed_rate" : "hourly_rate",
-    priority: "normal",
+    priority: urgencyToPriority[data.urgencyLevel] ?? "normal",
     rate_kobo_per_hour:
       data.payType === "hourly" ? Math.trunc(data.hourlyRate * 100) : 0,
     requirements: data.qualifications || [],
-    role_category: "doctor",
+    role_category: roleToCategory[data.roleNeeded] ?? "doctor",
     role_title: data.roleNeeded || "",
     scheduled_start: new Date(
       `${data.startDate}T${data.startTime}`,
@@ -48,6 +67,44 @@ function buildShiftPayload(data: ShiftFormData) {
   };
 }
 
+export interface ShiftApplication {
+  id: string;
+  shift_id: string;
+  clinician_id: string;
+  applicant_name: string;
+  license_number: string;
+  role: string;
+  years_experience: number;
+  experience_summary?: string | null;
+  status: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface RankedInterestedClinician {
+  clinician_id: string;
+  display_name: string;
+  rating: number;
+  rating_count: number;
+  completed_shifts: number;
+  quals_match: boolean;
+  score: number;
+  acceptance_rate_pct?: number | null;
+  distance_km?: number | null;
+}
+
+export interface ShiftApplicationsResponse {
+  applications: ShiftApplication[];
+  pagination: {
+    current_page: number;
+    page_size: number;
+    total_items: number;
+    total_pages: number;
+    has_next: boolean;
+    has_previous: boolean;
+  };
+}
+
 export type UseHospitalShiftResult = {
   createShift: (payload: ShiftFormData) => Promise<{ id: string }>;
   previewShift: (payload: ShiftFormData) => Promise<unknown>;
@@ -55,13 +112,16 @@ export type UseHospitalShiftResult = {
     status?: ShiftStatusFilter;
     page?: number;
     page_size?: number;
-  }) => Promise<unknown>;
+  }) => Promise<ApiShiftListResponse>;
   getShiftDetails: (shift_id: string) => Promise<unknown>;
   getShiftApplications: (params: {
     shift_id: string;
     page?: number;
     page_size?: number;
-  }) => Promise<unknown>;
+  }) => Promise<ShiftApplicationsResponse>;
+  getInterestedClinicians: (
+    shift_id: string,
+  ) => Promise<RankedInterestedClinician[]>;
   assignClinician: (params: {
     shift_id: string;
     clinician_id: string;
@@ -93,6 +153,7 @@ export function useHospitalShift(): UseHospitalShiftResult {
         );
         return res.data;
       } catch (e) {
+        console.log(e);
         setLastError(e as ShiftApiError);
         throw e;
       }
@@ -125,13 +186,16 @@ export function useHospitalShift(): UseHospitalShiftResult {
     }) => {
       setLastError(null);
       try {
-        const res = await apiClient.get<unknown>("/api/v1/shifts", {
-          params: {
-            status: params.status,
-            page: params.page,
-            page_size: params.page_size,
+        const res = await apiClient.get<ApiShiftListResponse>(
+          "/api/v1/shifts",
+          {
+            params: {
+              status: params.status,
+              page: params.page,
+              page_size: params.page_size,
+            },
           },
-        });
+        );
         return res.data;
       } catch (e) {
         setLastError(e as ShiftApiError);
@@ -161,9 +225,25 @@ export function useHospitalShift(): UseHospitalShiftResult {
     async (params: { shift_id: string; page?: number; page_size?: number }) => {
       setLastError(null);
       try {
-        const res = await apiClient.get<unknown>(
+        const res = await apiClient.get<ShiftApplicationsResponse>(
           `/api/v1/shifts/${encodeURIComponent(params.shift_id)}/applications`,
           { params: { page: params.page, page_size: params.page_size } },
+        );
+        return res.data;
+      } catch (e) {
+        setLastError(e as ShiftApiError);
+        throw e;
+      }
+    },
+    [],
+  );
+
+  const getInterestedClinicians = useCallback(
+    async (shift_id: string) => {
+      setLastError(null);
+      try {
+        const res = await apiClient.get<RankedInterestedClinician[]>(
+          `/api/v1/shifts/${encodeURIComponent(shift_id)}/interested`,
         );
         return res.data;
       } catch (e) {
@@ -238,6 +318,7 @@ export function useHospitalShift(): UseHospitalShiftResult {
     getShifts,
     getShiftDetails,
     getShiftApplications,
+    getInterestedClinicians,
     assignClinician,
     cancelShift,
     rescheduleShift,

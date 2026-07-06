@@ -12,6 +12,7 @@ import { Button } from "@/shared/components/ui/Button";
 import { formatNaira } from "@/shared/utils/currency";
 import { useHospitalShift } from "../hooks/useHospitalShift";
 import { useShiftDraftStore } from "../hooks/useShiftDraftStore";
+import { appToast } from "@/shared/components/feedback/toast";
 import type { ShiftFormData } from "../types";
 
 interface Props {
@@ -125,35 +126,17 @@ export function ShiftPreview({ data, onBack, onBroadcast }: Props) {
     try {
       await createShift(data);
       clearDraft();
-      setBroadcasting(false);
+      appToast.success("Shift broadcasted!", "Your shift is now live and visible to matched clinicians.");
       onBroadcast();
     } catch (error) {
+      appToast.fromError(error, "Failed to broadcast shift. Please try again.");
+    } finally {
       setBroadcasting(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-neutral-50 py-8 px-6">
-      <div className="mx-auto max-w-2xl">
-        {/* Header */}
-        <div className="mb-6 flex items-start justify-between">
-          <div>
-            <p className="mb-0.5 text-xs font-semibold uppercase tracking-widest text-neutral-500">
-              Step 5 of 5
-            </p>
-            <h1 className="text-2xl font-bold text-neutral-900">Preview</h1>
-          </div>
-          <div className="flex gap-1.5 pt-1">
-            {[1, 2, 3, 4].map((i) => (
-              <div
-                key={i}
-                className="h-[3px] w-7 rounded-full bg-secondary-600"
-              />
-            ))}
-          </div>
-        </div>
-        <div className="mb-8 h-px bg-neutral-200" />
-
+    <div>
         {/* Shift preview card */}
         <div className="mb-6 overflow-hidden rounded-2xl border border-neutral-200 bg-white">
           <div className="p-5">
@@ -432,7 +415,6 @@ export function ShiftPreview({ data, onBack, onBroadcast }: Props) {
             clinician is successfully booked.
           </p>
         </div>
-      </div>
     </div>
   );
 }
