@@ -1,6 +1,6 @@
 import { Link, Outlet, useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/features/auth/store/authStore";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { CheckCircle2 } from "lucide-react";
 import { NexusCareLogo } from "@/shared/components/ui/NexusCareLogo";
@@ -53,7 +53,7 @@ export function WaitlistFlowShell() {
     };
   }, [isDropdownOpen]);
 
-  const handleLoginNavigation = (role: "hospital" | "health-worker") => {
+  const handleLoginNavigation = useCallback((role: "hospital" | "health-worker") => {
     const hasToken = !!localStorage.getItem("accessToken");
     if (!hasToken) {
       // Track which auth flow started from (so OTP + redirects can use correct API behavior)
@@ -98,9 +98,9 @@ export function WaitlistFlowShell() {
     }
 
     navigate("/auth/login");
-  };
+  }, [navigate]);
 
-  const handleRegisterNavigation = (role: "hospital" | "health-worker") => {
+  const handleRegisterNavigation = useCallback((role: "hospital" | "health-worker") => {
     if (role === "hospital") {
       // Hospital register currently creates a temp hospital admin user
       // and routes into hospital onboarding.
@@ -137,7 +137,7 @@ export function WaitlistFlowShell() {
 
     // Navigate to email capture. EmailLogin will send clinicians OTP.
     navigate("/auth/login");
-  };
+  }, [navigate]);
 
   const dropdownContent = useMemo(() => {
     const hospitalOpen = openAccordion === "hospital";
@@ -260,7 +260,7 @@ export function WaitlistFlowShell() {
         </div>
       </div>
     );
-  }, [openAccordion, navigate]);
+  }, [openAccordion, handleLoginNavigation, handleRegisterNavigation]);
 
   return (
     <div className="min-h-screen bg-white text-onboarding-textPrimary">

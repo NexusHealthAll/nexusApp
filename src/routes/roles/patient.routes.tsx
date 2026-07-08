@@ -1,5 +1,8 @@
 import type { RouteObject } from "react-router-dom";
 
+// Placeholder dashboard, kept alongside the route config it belongs to
+// rather than split into its own file for one component.
+// eslint-disable-next-line react-refresh/only-export-components
 function PatientDashboard() {
   return (
     <div className="flex flex-col items-center justify-center h-64 gap-3">

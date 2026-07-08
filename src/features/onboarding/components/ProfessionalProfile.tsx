@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/shared/components/ui/Card";
 import { Button } from "@/shared/components/ui/Button";
+import { Select } from "@/shared/components/ui/Select";
 import { NexusCareLogo } from "@/shared/components/ui/NexusCareLogo";
 import { X, Bell, Award, Stethoscope } from "lucide-react";
 
@@ -33,7 +34,7 @@ export function ProfessionalProfile() {
 
     if (!formatted.startsWith("MDCN/R/") && formatted.length > 0) {
       if (formatted.startsWith("MDCN/R")) {
-        formatted = formatted;
+        formatted = formatted.replace("MDCN/R", "MDCN/R/");
       } else if (formatted.startsWith("MDCN")) {
         formatted = formatted.replace("MDCN", "MDCN/R/");
       } else {
@@ -199,33 +200,26 @@ export function ProfessionalProfile() {
                   <Stethoscope className="h-4 w-4" />
                   <span>Years of Experience</span>
                 </label>
-                <div className="flex items-center gap-2.5 rounded-lg bg-onboarding-inputBackground px-3 py-2.5">
-                  <select
-                    value={formData.yearsOfExperience}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        yearsOfExperience: e.target.value,
-                      }))
-                    }
-                    className={`flex-1 bg-transparent text-sm text-neutral-800 outline-none ${
-                      errors.yearsOfExperience ? "text-red-600" : ""
-                    }`}
-                  >
-                    <option value="">Select experience level</option>
-                    <option value="0-1">0-1 years (Fresh Graduate)</option>
-                    <option value="2-5">2-5 years</option>
-                    <option value="6-10">6-10 years</option>
-                    <option value="11-15">11-15 years</option>
-                    <option value="16-20">16-20 years</option>
-                    <option value="20+">20+ years</option>
-                  </select>
-                </div>
-                {errors.yearsOfExperience && (
-                  <p className="text-sm text-red-600">
-                    {errors.yearsOfExperience}
-                  </p>
-                )}
+                <Select
+                  value={formData.yearsOfExperience}
+                  onChange={(value) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      yearsOfExperience: value,
+                    }))
+                  }
+                  placeholder="Select experience level"
+                  className="bg-onboarding-inputBackground"
+                  options={[
+                    { value: "0-1", label: "0-1 years (Fresh Graduate)" },
+                    { value: "2-5", label: "2-5 years" },
+                    { value: "6-10", label: "6-10 years" },
+                    { value: "11-15", label: "11-15 years" },
+                    { value: "16-20", label: "16-20 years" },
+                    { value: "20+", label: "20+ years" },
+                  ]}
+                  error={errors.yearsOfExperience}
+                />
               </div>
 
               {/* Specialties & Expertise */}

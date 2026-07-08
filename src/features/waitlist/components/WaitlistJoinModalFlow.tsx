@@ -3,6 +3,7 @@ import { ArrowLeft, Building2, CheckCircle2, Stethoscope } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/shared/components/ui/Button";
 import { Modal } from "@/shared/components/ui/Modal";
+import { Select } from "@/shared/components/ui/Select";
 import { appToast } from "@/shared/components/feedback/toast";
 import { cn } from "@/shared/utils/cn";
 import {
@@ -281,31 +282,29 @@ export function WaitlistJoinModalFlow() {
             className="h-12 w-full rounded-xl border border-white/55 bg-[linear-gradient(180deg,_rgba(255,255,255,0.95),_rgba(238,245,251,0.88))] px-4 text-sm text-neutral-900 outline-none backdrop-blur transition focus:border-onboarding-primaryBlue"
             placeholder="Hospital name"
           />
-          <select
+          <Select
             value={state.hospitalForm.location}
-            onChange={(event) =>
-              updateHospitalForm({ location: event.target.value })
-            }
-            className="h-12 w-full rounded-xl border border-white/55 bg-[linear-gradient(180deg,_rgba(255,255,255,0.95),_rgba(238,245,251,0.88))] px-4 text-sm text-neutral-900 outline-none backdrop-blur transition focus:border-onboarding-primaryBlue"
-          >
-            <option value="">Select location</option>
-            <option value="Abuja">Abuja</option>
-            <option value="Lagos">Lagos</option>
-            <option value="Kaduna">Kaduna</option>
-            <option value="Port Harcourt">Port Harcourt</option>
-          </select>
-          <select
+            onChange={(value) => updateHospitalForm({ location: value })}
+            placeholder="Select location"
+            className="h-12 rounded-xl border-white/55 bg-[linear-gradient(180deg,_rgba(255,255,255,0.95),_rgba(238,245,251,0.88))] px-4 text-sm text-neutral-900 backdrop-blur transition focus-visible:ring-onboarding-primaryBlue"
+            options={[
+              { value: "Abuja", label: "Abuja" },
+              { value: "Lagos", label: "Lagos" },
+              { value: "Kaduna", label: "Kaduna" },
+              { value: "Port Harcourt", label: "Port Harcourt" },
+            ]}
+          />
+          <Select
             value={state.hospitalForm.roleCategory}
-            onChange={(event) =>
-              updateHospitalForm({ roleCategory: event.target.value })
-            }
-            className="h-12 w-full rounded-xl border border-white/55 bg-[linear-gradient(180deg,_rgba(255,255,255,0.95),_rgba(238,245,251,0.88))] px-4 text-sm text-neutral-900 outline-none backdrop-blur transition focus:border-onboarding-primaryBlue"
-          >
-            <option value="">Select role category</option>
-            <option value="Operations Lead">Operations Lead</option>
-            <option value="Clinical Director">Clinical Director</option>
-            <option value="HR Manager">HR Manager</option>
-          </select>
+            onChange={(value) => updateHospitalForm({ roleCategory: value })}
+            placeholder="Select role category"
+            className="h-12 rounded-xl border-white/55 bg-[linear-gradient(180deg,_rgba(255,255,255,0.95),_rgba(238,245,251,0.88))] px-4 text-sm text-neutral-900 backdrop-blur transition focus-visible:ring-onboarding-primaryBlue"
+            options={[
+              { value: "Operations Lead", label: "Operations Lead" },
+              { value: "Clinical Director", label: "Clinical Director" },
+              { value: "HR Manager", label: "HR Manager" },
+            ]}
+          />
 
           <Button
             type="submit"

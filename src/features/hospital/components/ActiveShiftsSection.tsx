@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { Badge } from "@/shared/components/ui/Badge";
+import { EmptyState } from "@/shared/components/ui/EmptyState";
 import { useHospitalShift } from "@/features/hospital/shifts/hooks/useHospitalShift";
 import { useCreateShiftModalStore } from "@/features/hospital/shifts/hooks/useCreateShiftModalStore";
+import { formatTime } from "@/shared/utils/date";
 import type { ApiShift } from "@/features/hospital/shifts/types";
 
 type ActiveShiftStatus = "in-progress" | "upcoming";
@@ -40,12 +42,6 @@ function computeStartsIn(
   return { hours, mins };
 }
 
-function formatTime(iso: string): string {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "—";
-  return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-}
-
 function toUi(shifts: ApiShift[], status: ActiveShiftStatus): ActiveShiftUi[] {
   return shifts.slice(0, 6).map((s) => {
     if (status === "upcoming") {
@@ -65,8 +61,8 @@ function toUi(shifts: ApiShift[], status: ActiveShiftStatus): ActiveShiftUi[] {
       status,
       roleTitle: s.role_title,
       specialty: s.specialty ?? s.department ?? undefined,
-      timeStart: formatTime(s.scheduled_start),
-      timeEnd: formatTime(s.scheduled_end),
+      timeStart: formatTime(s.scheduled_start, { hour: "2-digit", minute: "2-digit" }),
+      timeEnd: formatTime(s.scheduled_end, { hour: "2-digit", minute: "2-digit" }),
     } satisfies ActiveShiftUi;
   });
 }
@@ -133,38 +129,37 @@ export function ActiveShiftsSection() {
           ))}
         </div>
       ) : shifts.length === 0 ? (
-        <div className="flex min-h-[220px] flex-col items-center justify-center gap-4 rounded-xl border border-dashed border-neutral-200 px-6 py-10 text-center">
-          <svg width="96" height="96" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-            {/* Background card */}
-            <rect x="8" y="18" width="80" height="62" rx="12" fill="#F0FDF4" />
-            <rect x="8" y="18" width="80" height="62" rx="12" stroke="#BBF7D0" strokeWidth="1.5" strokeDasharray="4 3" />
-            {/* Calendar header */}
-            <rect x="8" y="18" width="80" height="20" rx="12" fill="#6EE7B7" />
-            <rect x="8" y="30" width="80" height="8" fill="#6EE7B7" />
-            {/* Header dots */}
-            <circle cx="24" cy="28" r="3.5" fill="white" fillOpacity="0.6" />
-            <circle cx="48" cy="28" r="3.5" fill="white" fillOpacity="0.6" />
-            <circle cx="72" cy="28" r="3.5" fill="white" fillOpacity="0.6" />
-            {/* Row lines */}
-            <line x1="20" y1="50" x2="76" y2="50" stroke="#D1FAE5" strokeWidth="1" />
-            <line x1="20" y1="62" x2="76" y2="62" stroke="#D1FAE5" strokeWidth="1" />
-            {/* Empty placeholder bars */}
-            <rect x="20" y="54" width="18" height="3.5" rx="1.75" fill="#D1FAE5" />
-            <rect x="42" y="54" width="30" height="3.5" rx="1.75" fill="#D1FAE5" />
-            <rect x="20" y="65" width="24" height="3.5" rx="1.75" fill="#D1FAE5" />
-            <rect x="48" y="65" width="20" height="3.5" rx="1.75" fill="#D1FAE5" />
-            {/* Moon badge */}
-            <circle cx="74" cy="20" r="14" fill="#ECFDF5" />
-            <circle cx="74" cy="20" r="14" stroke="#6EE7B7" strokeWidth="1.5" />
-            <path d="M76 12C72.134 12 69 15.134 69 19C69 22.866 72.134 26 76 26C77.657 26 79.172 25.414 80.356 24.443C79.507 24.799 78.578 25 77.6 25C73.84 25 70.8 21.96 70.8 18.2C70.8 15.14 72.773 12.537 75.536 11.617C75.69 11.54 75.845 12 76 12Z" fill="#34D399" />
-          </svg>
-          <div>
-            <p className="text-sm font-semibold text-neutral-800">No active shifts right now</p>
-            <p className="mt-1.5 text-xs text-neutral-400 max-w-[220px] mx-auto leading-relaxed">
-              Active and upcoming shifts will appear here once they're scheduled.
-            </p>
-          </div>
-        </div>
+        <EmptyState
+          className="min-h-[220px]"
+          icon={
+            <svg width="96" height="96" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              {/* Background card */}
+              <rect x="8" y="18" width="80" height="62" rx="12" fill="#F0FDF4" />
+              <rect x="8" y="18" width="80" height="62" rx="12" stroke="#BBF7D0" strokeWidth="1.5" strokeDasharray="4 3" />
+              {/* Calendar header */}
+              <rect x="8" y="18" width="80" height="20" rx="12" fill="#6EE7B7" />
+              <rect x="8" y="30" width="80" height="8" fill="#6EE7B7" />
+              {/* Header dots */}
+              <circle cx="24" cy="28" r="3.5" fill="white" fillOpacity="0.6" />
+              <circle cx="48" cy="28" r="3.5" fill="white" fillOpacity="0.6" />
+              <circle cx="72" cy="28" r="3.5" fill="white" fillOpacity="0.6" />
+              {/* Row lines */}
+              <line x1="20" y1="50" x2="76" y2="50" stroke="#D1FAE5" strokeWidth="1" />
+              <line x1="20" y1="62" x2="76" y2="62" stroke="#D1FAE5" strokeWidth="1" />
+              {/* Empty placeholder bars */}
+              <rect x="20" y="54" width="18" height="3.5" rx="1.75" fill="#D1FAE5" />
+              <rect x="42" y="54" width="30" height="3.5" rx="1.75" fill="#D1FAE5" />
+              <rect x="20" y="65" width="24" height="3.5" rx="1.75" fill="#D1FAE5" />
+              <rect x="48" y="65" width="20" height="3.5" rx="1.75" fill="#D1FAE5" />
+              {/* Moon badge */}
+              <circle cx="74" cy="20" r="14" fill="#ECFDF5" />
+              <circle cx="74" cy="20" r="14" stroke="#6EE7B7" strokeWidth="1.5" />
+              <path d="M76 12C72.134 12 69 15.134 69 19C69 22.866 72.134 26 76 26C77.657 26 79.172 25.414 80.356 24.443C79.507 24.799 78.578 25 77.6 25C73.84 25 70.8 21.96 70.8 18.2C70.8 15.14 72.773 12.537 75.536 11.617C75.69 11.54 75.845 12 76 12Z" fill="#34D399" />
+            </svg>
+          }
+          title="No active shifts right now"
+          description="Active and upcoming shifts will appear here once they're scheduled."
+        />
       ) : (
         <div className="divide-y divide-neutral-50">
           {shifts.map((shift) => (

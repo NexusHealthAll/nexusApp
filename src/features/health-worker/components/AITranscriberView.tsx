@@ -13,9 +13,15 @@ import {
   Pause
 } from 'lucide-react';
 
+interface TranscribedNotes {
+  chiefComplaint: string;
+  assessment: string;
+  plan: string;
+}
+
 interface AITranscriberViewProps {
   patientId: string;
-  onSaveNotes: (notes: any) => void;
+  onSaveNotes: (notes: TranscribedNotes) => void;
   onCompleteConsultation: () => void;
 }
 

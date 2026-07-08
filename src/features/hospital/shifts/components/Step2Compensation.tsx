@@ -11,7 +11,7 @@ import {
 import { Button } from "@/shared/components/ui/Button";
 import { cn } from "@/shared/utils/cn";
 import { formatNaira } from "@/shared/utils/currency";
-import type { ShiftBonus, ShiftFormData } from "../types";
+import { URGENCY_BONUS_PCT, type ShiftBonus, type ShiftFormData } from "../types";
 import { useShiftDraftStore } from "../hooks/useShiftDraftStore";
 
 interface Props {
@@ -33,11 +33,19 @@ export function Step2Compensation({ data, onUpdate, onNext, onBack }: Props) {
 
   const baseEarnings =
     data.payType === "hourly"
-      ? data.hourlyRate * data.expectedHours
+      ? data.hourlyRate * data.duration
       : data.fixedRate;
 
   const bonusTotal = data.bonuses.reduce((sum, b) => sum + b.amount, 0);
-  const grandTotal = baseEarnings + bonusTotal;
+  const urgencyBonusPct = URGENCY_BONUS_PCT[data.urgencyLevel] ?? 0;
+  const urgencyBonusAmount = Math.round((baseEarnings * urgencyBonusPct) / 100);
+  const discountPct = data.discountPct ?? 0;
+  const preDiscountTotal = baseEarnings + bonusTotal + urgencyBonusAmount;
+  const discountAmount = Math.round((preDiscountTotal * discountPct) / 100);
+  const grandTotal = preDiscountTotal - discountAmount;
+
+  const canProceed =
+    data.payType === "hourly" ? data.hourlyRate > 0 : data.fixedRate > 0;
 
   const handleAddBonus = () => {
     if (!newBonus.name || !newBonus.amount) return;
@@ -148,10 +156,11 @@ export function Step2Compensation({ data, onUpdate, onNext, onBack }: Props) {
                       <input
                         type="number"
                         min={0}
-                        value={data.hourlyRate}
+                        value={data.hourlyRate || ""}
                         onChange={(e) =>
-                          onUpdate({ hourlyRate: Number(e.target.value) })
+                          onUpdate({ hourlyRate: Number(e.target.value) || 0 })
                         }
+                        placeholder="0"
                         className="w-full bg-transparent text-sm text-neutral-900 focus:outline-none"
                       />
                     </div>
@@ -160,18 +169,13 @@ export function Step2Compensation({ data, onUpdate, onNext, onBack }: Props) {
                     <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-neutral-500">
                       Expected Hours
                     </label>
-                    <div className="flex items-center gap-2 rounded-lg border border-neutral-200 bg-neutral-50 px-4 py-2.5">
-                      <input
-                        type="number"
-                        min={1}
-                        max={24}
-                        value={data.expectedHours}
-                        onChange={(e) =>
-                          onUpdate({ expectedHours: Number(e.target.value) })
-                        }
-                        className="w-full bg-transparent text-sm text-neutral-900 focus:outline-none"
-                      />
-                      <span className="text-sm text-neutral-500">Hours</span>
+                    <div className="flex items-center gap-2 rounded-lg border border-neutral-200 bg-neutral-100 px-4 py-2.5">
+                      <span className="text-sm text-neutral-700">
+                        {data.duration || 0}
+                      </span>
+                      <span className="text-sm text-neutral-500">
+                        Hours (from shift duration)
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -194,6 +198,36 @@ export function Step2Compensation({ data, onUpdate, onNext, onBack }: Props) {
                   </div>
                 </div>
               )}
+
+              <div className="mt-4">
+                <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-neutral-500">
+                  Discount (%){" "}
+                  <span className="normal-case font-normal text-neutral-400">
+                    — optional
+                  </span>
+                </label>
+                <div className="flex max-w-[160px] items-center gap-2 rounded-lg border border-neutral-200 bg-neutral-50 px-4 py-2.5">
+                  <input
+                    type="number"
+                    min={0}
+                    max={100}
+                    value={data.discountPct ?? ""}
+                    onChange={(e) => {
+                      const raw = e.target.value;
+                      if (raw === "") {
+                        onUpdate({ discountPct: undefined });
+                        return;
+                      }
+                      const val = Number(raw);
+                      if (Number.isNaN(val)) return;
+                      onUpdate({ discountPct: Math.min(100, Math.max(0, val)) });
+                    }}
+                    placeholder="0"
+                    className="w-full bg-transparent text-sm text-neutral-900 focus:outline-none"
+                  />
+                  <span className="text-sm text-neutral-500">%</span>
+                </div>
+              </div>
             </div>
 
             {/* Incentives & Bonuses */}
@@ -323,7 +357,7 @@ export function Step2Compensation({ data, onUpdate, onNext, onBack }: Props) {
               {data.payType === "hourly" && (
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-secondary-200">
-                    Base ({data.expectedHours} hrs × ₦
+                    Base ({data.duration || 0} hrs × ₦
                     {data.hourlyRate.toLocaleString()})
                   </span>
                   <span className="font-semibold">
@@ -350,6 +384,26 @@ export function Step2Compensation({ data, onUpdate, onNext, onBack }: Props) {
                   </span>
                 </div>
               ))}
+              {urgencyBonusPct > 0 && (
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-secondary-200">
+                    Urgency Bonus (+{urgencyBonusPct}%)
+                  </span>
+                  <span className="font-semibold">
+                    {formatNaira(urgencyBonusAmount)}
+                  </span>
+                </div>
+              )}
+              {discountAmount > 0 && (
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-secondary-200">
+                    Discount ({discountPct}%)
+                  </span>
+                  <span className="font-semibold">
+                    -{formatNaira(discountAmount)}
+                  </span>
+                </div>
+              )}
             </div>
 
             <div className="mb-4 border-t border-white/20 pt-4">
@@ -374,7 +428,8 @@ export function Step2Compensation({ data, onUpdate, onNext, onBack }: Props) {
 
             <Button
               onClick={onNext}
-              className="mb-3 w-full rounded-xl bg-secondary-600 font-semibold uppercase tracking-wide text-white hover:bg-secondary-500"
+              disabled={!canProceed}
+              className="mb-3 w-full rounded-xl bg-secondary-600 font-semibold uppercase tracking-wide text-white hover:bg-secondary-500 disabled:opacity-50"
             >
               NEXT STEP →
             </Button>

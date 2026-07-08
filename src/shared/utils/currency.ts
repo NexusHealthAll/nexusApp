@@ -51,3 +51,11 @@ export function formatDisplayCurrency(amount: number): string {
   }
   return `₦${amount.toLocaleString()}`;
 }
+
+/**
+ * Same compact formatting as `formatDisplayCurrency`, for amounts that are
+ * denominated in kobo (the backend's currency unit) rather than naira.
+ */
+export function formatKobo(kobo: number): string {
+  return formatDisplayCurrency(kobo / 100);
+}

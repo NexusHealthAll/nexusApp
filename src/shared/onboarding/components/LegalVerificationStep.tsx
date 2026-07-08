@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, CheckCheck, FilePlus2, UploadCloud } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
+import { Select } from "@/shared/components/ui/Select";
 import { useRoleBasePath } from "@/shared/onboarding/hooks/useRoleBasePath";
 import { OnboardingNavbar } from "./OnboardingNavbar";
 import { StepTracker } from "@/shared/components/ui/StepTracker";
@@ -189,16 +190,17 @@ export function LegalVerificationStep() {
                 <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-neutral-500">
                   Issuing Authority
                 </label>
-                <select
+                <Select
                   value={issuingAuthority}
-                  onChange={(e) => setIssuingAuthority(e.target.value)}
-                  className="w-full rounded-lg bg-white/70 px-3 py-2.5 text-sm text-neutral-800 outline-none"
-                >
-                  <option>Ministry of Health (Federal)</option>
-                  <option>Ministry of Health (State)</option>
-                  <option>NAFDAC</option>
-                  <option>NMA</option>
-                </select>
+                  onChange={setIssuingAuthority}
+                  className="bg-white/70"
+                  options={[
+                    { value: "Ministry of Health (Federal)", label: "Ministry of Health (Federal)" },
+                    { value: "Ministry of Health (State)", label: "Ministry of Health (State)" },
+                    { value: "NAFDAC", label: "NAFDAC" },
+                    { value: "NMA", label: "NMA" },
+                  ]}
+                />
               </div>
             </div>
           </div>

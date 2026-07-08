@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/Card';
 import { Button } from '@/shared/components/ui/Button';
 import { Search, Plus, Filter } from 'lucide-react';
+import { formatDate } from '@/shared/utils/date';
 
 // Mock data - replace with actual API data
 const mockPatients = [
@@ -134,11 +135,11 @@ export function PatientList() {
                       {new Date().getFullYear() - new Date(patient.dateOfBirth).getFullYear()}
                     </td>
                     <td className="px-6 py-4 text-sm text-neutral-900">
-                      {new Date(patient.lastVisit).toLocaleDateString()}
+                      {formatDate(patient.lastVisit)}
                     </td>
                     <td className="px-6 py-4 text-sm text-neutral-900">
-                      {patient.upcomingAppointment 
-                        ? new Date(patient.upcomingAppointment).toLocaleDateString()
+                      {patient.upcomingAppointment
+                        ? formatDate(patient.upcomingAppointment)
                         : 'None scheduled'
                       }
                     </td>

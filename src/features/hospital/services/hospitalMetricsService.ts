@@ -1,4 +1,5 @@
 import apiClient from "@/lib/apiClient";
+import { formatKobo } from "@/shared/utils/currency";
 import type { BadgeVariant } from "@/shared/components/ui/Badge";
 import type {
   ApiShift,
@@ -86,13 +87,6 @@ function shiftAmountKobo(s: ApiShift): number {
   return s.fixed_rate_kobo ?? 0;
 }
 
-function formatNaira(kobo: number): string {
-  const naira = kobo / 100;
-  if (naira >= 1_000_000) return `₦${(naira / 1_000_000).toFixed(1)}M`;
-  if (naira >= 1_000) return `₦${Math.round(naira / 1000)}k`;
-  return `₦${Math.round(naira).toLocaleString()}`;
-}
-
 function monthKey(iso: string): string {
   const d = new Date(iso);
   return `${d.getFullYear()}-${d.getMonth()}`;
@@ -165,7 +159,7 @@ export class HospitalMetricsService {
       shiftsFilledTotal: thisMonthShifts.length,
       openShifts,
       activeNow,
-      payrollThisWeek: formatNaira(payrollThisWeekKobo),
+      payrollThisWeek: formatKobo(payrollThisWeekKobo),
     };
   }
 
@@ -254,7 +248,7 @@ export class HospitalMetricsService {
       fillRate: fillRate.avgFillRate,
       avgTimeToFill: timeToFillHours.length > 0 ? `${avgHours.toFixed(1)}h` : "—",
       statAvgTimeToFill: statHours.length > 0 ? `${avgStatHours.toFixed(1)}h` : "—",
-      totalPayroll: formatNaira(monthPayrollKobo),
+      totalPayroll: formatKobo(monthPayrollKobo),
       totalPayrollMonthLabel: now.toLocaleDateString("en-US", {
         month: "long",
         year: "numeric",

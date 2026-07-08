@@ -5,10 +5,16 @@ import { Button } from "@/shared/components/ui/Button";
 import { Badge, BadgeVariant } from "@/shared/components/ui/Badge";
 import { FilterTabs } from "@/shared/components/ui/FilterTabs";
 import { SearchInput } from "@/shared/components/ui/SearchInput";
-import { Skeleton } from "@/shared/components/ui/Skeleton";
+import { Table, type TableColumn } from "@/shared/components/ui/Table";
+import { EmptyState } from "@/shared/components/ui/EmptyState";
 import { PATHS } from "@/routes/paths";
+import { formatDateTime } from "@/shared/utils/date";
 import { useHospitalShift } from "@/features/hospital/shifts/hooks/useHospitalShift";
 import { useCreateShiftModalStore } from "@/features/hospital/shifts/hooks/useCreateShiftModalStore";
+import { CreateShiftButton } from "@/features/hospital/shifts/components/CreateShiftButton";
+import { useWalletFunding } from "@/features/hospital/hooks/useWalletFunding";
+import { useHospitalApprovalStatus } from "@/features/hospital/hooks/useHospitalApprovalStatus";
+import { WalletFundingBanner } from "@/features/hospital/components/WalletFundingBanner";
 import type { ApiShiftPriority, ApiShiftStatus } from "@/features/hospital/shifts/types";
 
 type ShiftTab = "all" | "in_progress" | "open" | "upcoming" | "completed";
@@ -51,30 +57,6 @@ const statusBadge: Record<ApiShiftStatus, { variant: BadgeVariant; label: string
   no_show: { variant: "error", label: "No Show" },
 };
 
-function formatDateTime(start: string, end: string) {
-  const s = new Date(start);
-  const e = new Date(end);
-  const validStart = !Number.isNaN(s.getTime()) ? s : undefined;
-  const validEnd = !Number.isNaN(e.getTime()) ? e : undefined;
-
-  const dateLabel = validStart
-    ? validStart.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      })
-    : "—";
-
-  const fmtTime = (d?: Date) =>
-    d ? d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }) : undefined;
-
-  const timeLabel = validStart
-    ? `${fmtTime(validStart)}${validEnd ? `–${fmtTime(validEnd)}` : ""}`
-    : "—";
-
-  return { dateLabel, timeLabel };
-}
-
 function formatRate(s: { rate_kobo_per_hour?: number | null; fixed_rate_kobo?: number | null }): string {
   if (typeof s.rate_kobo_per_hour === "number" && s.rate_kobo_per_hour > 0) {
     return `₦${Math.round(s.rate_kobo_per_hour / 100).toLocaleString()}/hr`;
@@ -88,8 +70,9 @@ function formatRate(s: { rate_kobo_per_hour?: number | null; fixed_rate_kobo?: n
 export function ShiftSchedulePage() {
   const navigate = useNavigate();
   const { getShifts, getShiftApplications } = useHospitalShift();
-  const openCreateShift = useCreateShiftModalStore((s) => s.open);
   const refreshKey = useCreateShiftModalStore((s) => s.refreshKey);
+  const { isLoading: isWalletLoading, isFunded } = useWalletFunding();
+  const { isLoading: isApprovalLoading, isApproved } = useHospitalApprovalStatus();
 
   const [activeTab, setActiveTab] = useState<ShiftTab>("all");
   const [search, setSearch] = useState("");
@@ -166,6 +149,91 @@ export function ShiftSchedulePage() {
     });
   }, [rows, activeTab, search]);
 
+  const shiftColumns: TableColumn<ShiftRow>[] = [
+    {
+      key: "id",
+      header: "Shift ID",
+      render: (row) => (
+        <span className="font-medium text-neutral-500">{row.id.slice(0, 8)}…</span>
+      ),
+    },
+    {
+      key: "role",
+      header: "Role",
+      render: (row) => (
+        <div>
+          <p className="font-semibold text-neutral-900">{row.roleTitle}</p>
+          {row.specialty && (
+            <p className="text-xs text-neutral-400">{row.specialty}</p>
+          )}
+        </div>
+      ),
+    },
+    {
+      key: "dateTime",
+      header: "Date & Time",
+      render: (row) => (
+        <div className="text-neutral-600">
+          <p>{row.dateLabel}</p>
+          <p className="text-xs text-neutral-400">{row.timeLabel}</p>
+        </div>
+      ),
+    },
+    {
+      key: "rate",
+      header: "Rate",
+      render: (row) => (
+        <span className="font-medium text-neutral-800">{row.rateLabel}</span>
+      ),
+    },
+    {
+      key: "urgency",
+      header: "Urgency",
+      render: (row) => {
+        const urgency = priorityBadge[row.priority];
+        return <Badge variant={urgency.variant}>{urgency.label}</Badge>;
+      },
+    },
+    {
+      key: "interested",
+      header: "Interested",
+      render: (row) => <span className="text-neutral-600">{row.interested}</span>,
+    },
+    {
+      key: "status",
+      header: "Status",
+      render: (row) => {
+        const status = statusBadge[row.status];
+        return <Badge variant={status.variant}>{status.label}</Badge>;
+      },
+    },
+    {
+      key: "worker",
+      header: "Worker",
+      render: (row) =>
+        row.isAssigned ? (
+          <Badge variant="info">Assigned</Badge>
+        ) : (
+          <span className="text-neutral-300">—</span>
+        ),
+    },
+    {
+      key: "actions",
+      header: "Actions",
+      headerClassName: "text-right",
+      className: "text-right",
+      render: (row) => (
+        <button
+          onClick={() => navigate(PATHS.hospital.shiftDetail(row.id))}
+          className="inline-flex items-center gap-1 text-xs font-semibold text-secondary-700 hover:text-secondary-900"
+        >
+          <Eye className="h-3.5 w-3.5" />
+          View
+        </button>
+      ),
+    },
+  ];
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -182,16 +250,16 @@ export function ShiftSchedulePage() {
             <Download className="h-3.5 w-3.5" />
             Export
           </Button>
-          <Button
-            size="sm"
-            onClick={openCreateShift}
-            className="flex items-center gap-1.5 rounded-lg bg-secondary-600 text-xs font-semibold text-white hover:bg-secondary-700"
-          >
+          <CreateShiftButton className="flex items-center gap-1.5 rounded-lg bg-secondary-600 text-xs font-semibold text-white hover:bg-secondary-700">
             <Plus className="h-3.5 w-3.5" />
             New Shift
-          </Button>
+          </CreateShiftButton>
         </div>
       </div>
+
+      {!isApprovalLoading && isApproved && !isWalletLoading && !isFunded && (
+        <WalletFundingBanner />
+      )}
 
       <div className="rounded-2xl border border-neutral-100 bg-white p-5">
         <div className="mb-4 flex flex-wrap items-center gap-3">
@@ -204,93 +272,19 @@ export function ShiftSchedulePage() {
           />
         </div>
 
-        {isLoading ? (
-          <div className="space-y-2">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Skeleton key={i} className="h-12 w-full rounded-lg" />
-            ))}
-          </div>
-        ) : filteredRows.length === 0 ? (
-          <div className="flex min-h-[200px] flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-neutral-200 py-10 text-center">
-            <p className="text-sm font-semibold text-neutral-800">No shifts found</p>
-            <p className="max-w-[240px] text-xs text-neutral-400">
-              Try a different filter or search term, or create a new shift.
-            </p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[900px] text-sm">
-              <thead>
-                <tr className="text-left text-xs font-semibold text-neutral-400">
-                  <th className="pb-3 font-medium">Shift ID</th>
-                  <th className="pb-3 font-medium">Role</th>
-                  <th className="pb-3 font-medium">Date & Time</th>
-                  <th className="pb-3 font-medium">Rate</th>
-                  <th className="pb-3 font-medium">Urgency</th>
-                  <th className="pb-3 font-medium">Interested</th>
-                  <th className="pb-3 font-medium">Status</th>
-                  <th className="pb-3 font-medium">Worker</th>
-                  <th className="pb-3 text-right font-medium">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredRows.map((row) => {
-                  const urgency = priorityBadge[row.priority];
-                  const status = statusBadge[row.status];
-                  return (
-                    <tr key={row.id} className="border-t border-neutral-50">
-                      <td className="py-3 pr-4 font-medium text-neutral-500">
-                        {row.id.slice(0, 8)}…
-                      </td>
-                      <td className="py-3 pr-4">
-                        <p className="font-semibold text-neutral-900">
-                          {row.roleTitle}
-                        </p>
-                        {row.specialty && (
-                          <p className="text-xs text-neutral-400">
-                            {row.specialty}
-                          </p>
-                        )}
-                      </td>
-                      <td className="py-3 pr-4 text-neutral-600">
-                        <p>{row.dateLabel}</p>
-                        <p className="text-xs text-neutral-400">{row.timeLabel}</p>
-                      </td>
-                      <td className="py-3 pr-4 font-medium text-neutral-800">
-                        {row.rateLabel}
-                      </td>
-                      <td className="py-3 pr-4">
-                        <Badge variant={urgency.variant}>{urgency.label}</Badge>
-                      </td>
-                      <td className="py-3 pr-4 text-neutral-600">
-                        {row.interested}
-                      </td>
-                      <td className="py-3 pr-4">
-                        <Badge variant={status.variant}>{status.label}</Badge>
-                      </td>
-                      <td className="py-3 pr-4">
-                        {row.isAssigned ? (
-                          <Badge variant="info">Assigned</Badge>
-                        ) : (
-                          <span className="text-neutral-300">—</span>
-                        )}
-                      </td>
-                      <td className="py-3 text-right">
-                        <button
-                          onClick={() => navigate(PATHS.hospital.shiftDetail(row.id))}
-                          className="inline-flex items-center gap-1 text-xs font-semibold text-secondary-700 hover:text-secondary-900"
-                        >
-                          <Eye className="h-3.5 w-3.5" />
-                          View
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
+        <Table
+          columns={shiftColumns}
+          data={filteredRows}
+          keyExtractor={(row) => row.id}
+          isLoading={isLoading}
+          className="min-w-[900px]"
+          emptyState={
+            <EmptyState
+              title="No shifts found"
+              description="Try a different filter or search term, or create a new shift."
+            />
+          }
+        />
       </div>
     </div>
   );

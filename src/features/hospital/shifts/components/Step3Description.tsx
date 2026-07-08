@@ -8,6 +8,7 @@ import {
   X,
 } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
+import { appToast } from "@/shared/components/feedback/toast";
 import { ShiftService } from "../services/shiftService";
 import type { ShiftDeliverable, ShiftEquipment, ShiftFormData } from "../types";
 
@@ -80,10 +81,15 @@ export function Step3Description({ data, onUpdate, onNext, onBack }: Props) {
 
   const handleSaveDraft = async () => {
     setSaving(true);
-    await ShiftService.saveDraft(data);
-    setSaving(false);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+    try {
+      await ShiftService.saveDraft(data);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch (err) {
+      appToast.fromError(err, "Failed to save draft. Please try again.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (

@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-type AuthUser = {
+export type AuthUser = {
   id: string;
   hospital_id?: string;
   email?: string;
