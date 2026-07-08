@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/shared/components/ui/Button";
+import { formatTime } from "@/shared/utils/date";
 import {
   Clock,
   Plus,
@@ -142,7 +143,7 @@ export function ActiveShiftOverlay({
               <span>{isPaused ? "Shift Paused" : "Shift Active"}</span>
             </div>
             <div>
-              Started: {new Date(shiftData.startTime).toLocaleTimeString()}
+              Started: {formatTime(shiftData.startTime)}
             </div>
             <div>Rate: ₦{shiftData.hourlyRate.toLocaleString()}/hour</div>
           </div>

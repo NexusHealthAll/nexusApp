@@ -1,3 +1,8 @@
+> **Superseded/historical.** Describes an earlier medical-staff dashboard
+> (`MedicalStaffDashboard`, `useMedicalStaffData`, `medicalStaffService`)
+> that has since been removed as dead code — the live `/medical-staff/dashboard`
+> route renders `HealthWorkerDashboard` instead. Kept for historical context only.
+
 # Medical Staff Flow - Nexus Care
 
 ## Overview

@@ -10,10 +10,11 @@ import {
 } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
 import { formatNaira } from "@/shared/utils/currency";
+import { formatDate, formatTime } from "@/shared/utils/date";
 import { useHospitalShift } from "../hooks/useHospitalShift";
 import { useShiftDraftStore } from "../hooks/useShiftDraftStore";
 import { appToast } from "@/shared/components/feedback/toast";
-import type { ShiftFormData } from "../types";
+import { URGENCY_BONUS_PCT, type ShiftFormData } from "../types";
 
 interface Props {
   data: ShiftFormData;
@@ -24,10 +25,10 @@ interface Props {
 function scheduleDisplay(
   startDate: string,
   startTime: string,
-  duration: string,
+  duration: number,
 ): string {
   if (!startDate || !startTime || !duration) return "TBD";
-  const hours = parseInt(duration) || 0;
+  const hours = duration || 0;
   const [h] = startTime.split(":").map(Number);
   const endHour = (h + hours) % 24;
   const fmt = (hour: number) => {
@@ -38,10 +39,7 @@ function scheduleDisplay(
   const label =
     startDate === today
       ? "Today"
-      : new Date(startDate + "T00:00:00").toLocaleDateString("en-US", {
-          month: "short",
-          day: "numeric",
-        });
+      : formatDate(startDate + "T00:00:00", { month: "short", day: "numeric" });
   return `${label} ${fmt(h)}-${fmt(endHour)}`;
 }
 
@@ -116,10 +114,15 @@ export function ShiftPreview({ data, onBack, onBroadcast }: Props) {
 
   const baseEarnings =
     data.payType === "hourly"
-      ? data.hourlyRate * data.expectedHours
+      ? data.hourlyRate * data.duration
       : data.fixedRate;
   const bonusTotal = data.bonuses.reduce((sum, b) => sum + b.amount, 0);
-  const grandTotal = baseEarnings + bonusTotal;
+  const urgencyBonusPct = URGENCY_BONUS_PCT[data.urgencyLevel] ?? 0;
+  const urgencyBonusAmount = Math.round((baseEarnings * urgencyBonusPct) / 100);
+  const discountPct = data.discountPct ?? 0;
+  const preDiscountTotal = baseEarnings + bonusTotal + urgencyBonusAmount;
+  const discountAmount = Math.round((preDiscountTotal * discountPct) / 100);
+  const grandTotal = preDiscountTotal - discountAmount;
 
   const handleBroadcast = async () => {
     setBroadcasting(true);
@@ -227,10 +230,11 @@ export function ShiftPreview({ data, onBack, onBroadcast }: Props) {
                 label="Date"
                 value={
                   data.startDate
-                    ? new Date(data.startDate + "T00:00:00").toLocaleDateString(
-                        "en-US",
-                        { month: "long", day: "numeric", year: "numeric" },
-                      )
+                    ? formatDate(data.startDate + "T00:00:00", {
+                        month: "long",
+                        day: "numeric",
+                        year: "numeric",
+                      })
                     : ""
                 }
               />
@@ -238,16 +242,14 @@ export function ShiftPreview({ data, onBack, onBroadcast }: Props) {
                 label="Time"
                 value={
                   data.startTime
-                    ? new Date(
-                        `1970-01-01T${data.startTime}`,
-                      ).toLocaleTimeString("en-US", {
-                        hour: "numeric",
-                        minute: "2-digit",
-                      })
+                    ? formatTime(`1970-01-01T${data.startTime}`)
                     : ""
                 }
               />
-              <InfoRow label="Duration" value={data.duration} />
+              <InfoRow
+                label="Duration"
+                value={data.duration ? `${data.duration} hrs` : ""}
+              />
               <InfoRow
                 label="Urgency"
                 value={urgencyLabel(data.urgencyLevel)}
@@ -269,7 +271,7 @@ export function ShiftPreview({ data, onBack, onBroadcast }: Props) {
                   />
                   <InfoRow
                     label="Expected Hours"
-                    value={`${data.expectedHours} hrs`}
+                    value={`${data.duration || 0} hrs`}
                   />
                   <InfoRow label="Base Pay" value={formatNaira(baseEarnings)} />
                 </>
@@ -287,6 +289,18 @@ export function ShiftPreview({ data, onBack, onBroadcast }: Props) {
                   value={formatNaira(b.amount)}
                 />
               ))}
+              {urgencyBonusPct > 0 && (
+                <InfoRow
+                  label={`Urgency Bonus (+${urgencyBonusPct}%)`}
+                  value={formatNaira(urgencyBonusAmount)}
+                />
+              )}
+              {discountAmount > 0 && (
+                <InfoRow
+                  label={`Discount (${discountPct}%)`}
+                  value={`-${formatNaira(discountAmount)}`}
+                />
+              )}
               <div className="flex items-center justify-between pt-3">
                 <span className="text-xs font-bold uppercase tracking-wider text-secondary-700">
                   Grand Total

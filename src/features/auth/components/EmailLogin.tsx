@@ -5,10 +5,9 @@ import { Button } from "@/shared/components/ui/Button";
 import { NexusCareLogo } from "@/shared/components/ui/NexusCareLogo";
 import { Mail, Check, AlertCircle } from "lucide-react";
 
-import { useAuthStore, type AuthRole } from "@/features/auth/store/authStore";
+import { useAuthStore } from "@/features/auth/store/authStore";
 import apiClient from "@/lib/apiClient";
 import { ApiError } from "@/lib/apiError";
-import { RoleSelectModal } from "@/features/auth/components/RoleSelectModal";
 
 export function EmailLogin() {
   const navigate = useNavigate();
@@ -19,9 +18,8 @@ export function EmailLogin() {
   const [isValidEmail, setIsValidEmail] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [healthWorkerFallback, setHealthWorkerFallback] = useState(false);
-  const [showRoleModal, setShowRoleModal] = useState(false);
 
-  const { pendingEmail, clearPendingEmail, setActiveAuthFlow } = useAuthStore();
+  const { pendingEmail, clearPendingEmail } = useAuthStore();
 
   // Animation + autofill on mount
   useEffect(() => {
@@ -45,19 +43,13 @@ export function EmailLogin() {
       if (emailInput) emailInput.focus();
     }, 300);
     return () => clearTimeout(timer);
-  }, []);
+  }, [pendingEmail, clearPendingEmail]);
 
   const activeAuthFlow = useAuthStore((s) => s.activeAuthFlow);
   const roleFromStore = activeAuthFlow?.role ?? null;
-  const roleMissing = !roleFromStore;
 
-  const handleSendOTP = async (e: React.FormEvent) => {
+  const handleSendOTP = async (e: React.SyntheticEvent) => {
     e.preventDefault();
-
-    if (roleMissing) {
-      setShowRoleModal(true);
-      return;
-    }
 
     if (!email.trim()) {
       setError("Email address is required");
@@ -116,13 +108,8 @@ export function EmailLogin() {
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && email.trim() && isValidEmail && !isLoading) {
-      handleSendOTP(e as any);
+      handleSendOTP(e);
     }
-  };
-
-  const handleRoleSelected = (role: AuthRole) => {
-    setActiveAuthFlow({ role, action: "login", origin: "landing" });
-    setShowRoleModal(false);
   };
 
   return (
@@ -310,12 +297,6 @@ export function EmailLogin() {
           </CardContent>
         </Card>
       </div>
-
-      <RoleSelectModal
-        isOpen={showRoleModal}
-        onClose={() => setShowRoleModal(false)}
-        onSelect={handleRoleSelected}
-      />
     </div>
   );
 }

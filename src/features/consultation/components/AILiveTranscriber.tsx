@@ -18,17 +18,17 @@ import {
   Brain,
 } from "lucide-react";
 
-interface AILiveTranscriberProps {
-  patientId: string;
-  onSaveNotes?: (notes: any) => void;
-  onCompleteConsultation?: () => void;
-  onClose?: () => void;
-}
-
 interface SOAPNotes {
   chiefComplaint: string;
   historyOfPresentIllness: string;
   assessment: string;
+}
+
+interface AILiveTranscriberProps {
+  patientId: string;
+  onSaveNotes?: (notes: SOAPNotes) => void;
+  onCompleteConsultation?: () => void;
+  onClose?: () => void;
 }
 
 // Mock patient data

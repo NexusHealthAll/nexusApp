@@ -1,12 +1,9 @@
-import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { Bell, ChevronRight, HelpCircle, Menu, Mic, Plus, Search, User } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
 import { AppProfile } from "@/types";
-import {
-  HospitalProfileService,
-} from "@/features/hospital/services/hospitalProfileService";
-import { useCreateShiftModalStore } from "@/features/hospital/shifts/hooks/useCreateShiftModalStore";
+import { useHospitalProfile } from "@/features/hospital/hooks/useHospitalProfile";
+import { CreateShiftButton } from "@/features/hospital/shifts/components/CreateShiftButton";
 import { authUtils } from "@/features/auth/utils/authUtils";
 import { useRecordPatientModalStore } from "@/features/health-worker/hooks/useRecordPatientModalStore";
 
@@ -82,19 +79,9 @@ const profileContent: Record<
 
 function HospitalTopNavigation({ onMenuClick }: { onMenuClick: () => void }) {
   const location = useLocation();
-  const [abbreviation, setAbbreviation] = useState<string | null>(null);
-  const openCreateShift = useCreateShiftModalStore((s) => s.open);
+  const { profile: hospitalProfile } = useHospitalProfile();
+  const abbreviation = hospitalProfile?.abbreviation ?? null;
   const content = profileContent.hospital;
-
-  useEffect(() => {
-    let cancelled = false;
-    HospitalProfileService.getProfile().then((data) => {
-      if (!cancelled) setAbbreviation(data?.abbreviation ?? null);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   return (
     <header className="flex h-16 items-center justify-between gap-4 border-b border-neutral-200 bg-white px-4 lg:px-6">
@@ -133,14 +120,10 @@ function HospitalTopNavigation({ onMenuClick }: { onMenuClick: () => void }) {
           <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-error-500" />
         </button>
 
-        <Button
-          size="sm"
-          onClick={openCreateShift}
-          className="hidden items-center gap-1.5 rounded-lg bg-gradient-to-r from-secondary-800 to-secondary-600 text-xs font-semibold text-white hover:opacity-90 sm:flex"
-        >
+        <CreateShiftButton className="hidden items-center gap-1.5 rounded-lg bg-gradient-to-r from-secondary-800 to-secondary-600 text-xs font-semibold text-white hover:opacity-90 sm:flex">
           <Plus className="h-3.5 w-3.5" />
           New Shift
-        </Button>
+        </CreateShiftButton>
       </div>
     </header>
   );

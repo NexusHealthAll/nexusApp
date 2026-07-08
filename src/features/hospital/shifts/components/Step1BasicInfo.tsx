@@ -1,6 +1,9 @@
+import { useEffect, useState } from "react";
 import { Info, MapPin, Monitor, Users } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
+import { Select } from "@/shared/components/ui/Select";
 import { cn } from "@/shared/utils/cn";
+import { roleToCategory, useHospitalShift } from "../hooks/useHospitalShift";
 import type { ShiftFormData } from "../types";
 
 const ROLES = [
@@ -21,8 +24,6 @@ const SPECIALTIES = [
   "Obstetrics & Gynecology",
   "Radiology",
 ];
-
-const DURATIONS = ["4 hours", "6 hours", "8 hours", "12 hours", "24 hours"];
 
 const URGENCY_LEVELS = [
   { value: "stat", label: "STAT (within 1 hour) - +20% bonus" },
@@ -45,8 +46,53 @@ export function Step1BasicInfo({ data, onUpdate, onNext }: Props) {
     data.specialty &&
     data.startDate &&
     data.startTime &&
-    data.duration &&
+    data.duration > 0 &&
     data.urgencyLevel;
+
+  const handleDurationChange = (raw: string) => {
+    if (raw === "") {
+      onUpdate({ duration: 0 });
+      return;
+    }
+    const val = Number(raw);
+    if (Number.isNaN(val) || val <= 0) return;
+    onUpdate({ duration: val });
+  };
+
+  const { getMatchedProfessionalsCount } = useHospitalShift();
+  const [matchedCount, setMatchedCount] = useState<number | null>(null);
+  const [matchedLoading, setMatchedLoading] = useState(false);
+  const [matchedError, setMatchedError] = useState(false);
+
+  useEffect(() => {
+    if (!data.roleNeeded) {
+      setMatchedCount(null);
+      setMatchedError(false);
+      return;
+    }
+    let cancelled = false;
+    setMatchedLoading(true);
+    setMatchedError(false);
+    getMatchedProfessionalsCount({
+      role_category: roleToCategory[data.roleNeeded] ?? data.roleNeeded,
+      specialty: data.specialty || undefined,
+    })
+      .then((count) => {
+        if (!cancelled) setMatchedCount(count);
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setMatchedError(true);
+          setMatchedCount(null);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setMatchedLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [data.roleNeeded, data.specialty, getMatchedProfessionalsCount]);
 
   return (
     <div className="space-y-6">
@@ -54,50 +100,25 @@ export function Step1BasicInfo({ data, onUpdate, onNext }: Props) {
         <div className="space-y-6 rounded-2xl border border-neutral-200 bg-white p-8">
           {/* Role + Specialty */}
           <div className="grid grid-cols-2 gap-6">
-            <div>
-              <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-neutral-500">
-                Role Needed <span className="text-error-500">*</span>
-              </label>
-              <div className="relative">
-                <select
-                  value={data.roleNeeded}
-                  onChange={(e) => onUpdate({ roleNeeded: e.target.value })}
-                  className="w-full appearance-none rounded-lg border border-neutral-200 bg-neutral-50 px-4 py-2.5 pr-10 text-sm text-neutral-900 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-secondary-500"
-                >
-                  <option value="">Select role...</option>
-                  {ROLES.map((r) => (
-                    <option key={r} value={r}>
-                      {r}
-                    </option>
-                  ))}
-                </select>
-                <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400">
-                  ▾
-                </span>
-              </div>
-            </div>
-            <div>
-              <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-neutral-500">
-                Specialty <span className="text-error-500">*</span>
-              </label>
-              <div className="relative">
-                <select
-                  value={data.specialty}
-                  onChange={(e) => onUpdate({ specialty: e.target.value })}
-                  className="w-full appearance-none rounded-lg border border-neutral-200 bg-neutral-50 px-4 py-2.5 pr-10 text-sm text-neutral-900 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-secondary-500"
-                >
-                  <option value="">Select specialty...</option>
-                  {SPECIALTIES.map((s) => (
-                    <option key={s} value={s}>
-                      {s}
-                    </option>
-                  ))}
-                </select>
-                <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400">
-                  ▾
-                </span>
-              </div>
-            </div>
+            <Select
+              label="Role Needed"
+              required
+              value={data.roleNeeded}
+              onChange={(value) => onUpdate({ roleNeeded: value })}
+              placeholder="Select role..."
+              options={ROLES.map((role) => ({ value: role, label: role }))}
+            />
+            <Select
+              label="Specialty"
+              required
+              value={data.specialty}
+              onChange={(value) => onUpdate({ specialty: value })}
+              placeholder="Select specialty..."
+              options={SPECIALTIES.map((specialty) => ({
+                value: specialty,
+                label: specialty,
+              }))}
+            />
           </div>
 
           {/* Shift Type */}
@@ -164,50 +185,32 @@ export function Step1BasicInfo({ data, onUpdate, onNext }: Props) {
             </div>
             <div>
               <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-neutral-500">
-                Duration <span className="text-error-500">*</span>
+                Duration (hours) <span className="text-error-500">*</span>
               </label>
-              <div className="relative">
-                <select
-                  value={data.duration}
-                  onChange={(e) => onUpdate({ duration: e.target.value })}
-                  className="w-full appearance-none rounded-lg border border-neutral-200 bg-neutral-50 px-4 py-2.5 pr-10 text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-secondary-500"
-                >
-                  <option value="">Select duration...</option>
-                  {DURATIONS.map((d) => (
-                    <option key={d} value={d}>
-                      {d}
-                    </option>
-                  ))}
-                </select>
-                <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400">
-                  ▾
-                </span>
+              <div className="flex items-center gap-2 rounded-lg border border-neutral-200 bg-neutral-50 px-4 py-2.5 focus-within:ring-2 focus-within:ring-secondary-500">
+                <input
+                  type="number"
+                  min={1}
+                  step={0.5}
+                  value={data.duration || ""}
+                  onChange={(e) => handleDurationChange(e.target.value)}
+                  placeholder="e.g. 8"
+                  className="w-full bg-transparent text-sm text-neutral-900 focus:outline-none"
+                />
+                <span className="text-sm text-neutral-500">hrs</span>
               </div>
             </div>
           </div>
 
           {/* Urgency Level */}
           <div>
-            <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-neutral-500">
-              Urgency Level
-            </label>
-            <div className="relative">
-              <select
-                value={data.urgencyLevel}
-                onChange={(e) => onUpdate({ urgencyLevel: e.target.value })}
-                className="w-full appearance-none rounded-lg border border-neutral-200 bg-neutral-50 px-4 py-2.5 pr-10 text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-secondary-500"
-              >
-                <option value="">Select urgency level...</option>
-                {URGENCY_LEVELS.map((u) => (
-                  <option key={u.value} value={u.value}>
-                    {u.label}
-                  </option>
-                ))}
-              </select>
-              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400">
-                ▾
-              </span>
-            </div>
+            <Select
+              label="Urgency Level"
+              value={data.urgencyLevel}
+              onChange={(value) => onUpdate({ urgencyLevel: value })}
+              placeholder="Select urgency level..."
+              options={URGENCY_LEVELS}
+            />
             {isStatUrgency && (
               <div className="mt-3 flex items-start gap-3 rounded-lg border-l-4 border-secondary-500 bg-secondary-50 px-4 py-3">
                 <Info className="mt-0.5 h-4 w-4 flex-shrink-0 text-secondary-600" />
@@ -246,7 +249,9 @@ export function Step1BasicInfo({ data, onUpdate, onNext }: Props) {
                   Available Now
                 </p>
               </div>
-              <p className="text-4xl font-bold">14</p>
+              <p className="text-4xl font-bold">
+                {matchedLoading ? "…" : matchedError ? "—" : (matchedCount ?? "—")}
+              </p>
               <p className="mt-0.5 text-[10px] uppercase tracking-widest opacity-70">
                 Matched Professionals
               </p>

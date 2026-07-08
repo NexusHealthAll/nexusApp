@@ -25,6 +25,7 @@ export interface ApiShift {
   role_title: string;
   department?: string | null;
   specialty?: string | null;
+  shift_label?: string | null;
   shift_type: ApiShiftType;
   status: ApiShiftStatus;
   priority: ApiShiftPriority;
@@ -74,6 +75,14 @@ export interface ShiftBonus {
   amount: number;
 }
 
+/** Percentage bonus applied to base earnings based on the shift's urgency level. */
+export const URGENCY_BONUS_PCT: Record<string, number> = {
+  stat: 20,
+  urgent: 10,
+  standard: 0,
+  elective: 0,
+};
+
 export interface ShiftEquipment {
   id: string;
   name: string;
@@ -93,15 +102,17 @@ export interface ShiftFormData {
   shiftType: "in-person" | "virtual";
   startDate: string;
   startTime: string;
-  duration: string;
+  /** Shift length in hours, set in Step 1 and reused as the pay-calc hours in Step 2. */
+  duration: number;
   urgencyLevel: string;
 
   // Step 2 – Compensation
   payType: "hourly" | "fixed";
   hourlyRate: number;
-  expectedHours: number;
   fixedRate: number;
   bonuses: ShiftBonus[];
+  /** Optional discount percentage applied to the compensation total, if any. */
+  discountPct?: number;
 
   // Step 3 – Description
   jobDescription: string;

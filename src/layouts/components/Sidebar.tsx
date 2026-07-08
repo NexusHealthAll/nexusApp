@@ -23,11 +23,10 @@ import {
 import { cn } from "@/shared/utils/cn";
 import { AppProfile } from "@/types";
 import { NexusCareLogo } from "@/shared/components/ui/NexusCareLogo";
+import { Badge, type BadgeVariant } from "@/shared/components/ui/Badge";
 import { authUtils } from "@/features/auth/utils/authUtils";
-import {
-  HospitalProfile,
-  HospitalProfileService,
-} from "@/features/hospital/services/hospitalProfileService";
+import { useHospitalProfile } from "@/features/hospital/hooks/useHospitalProfile";
+import type { HospitalRegistrationStatus } from "@/features/hospital/services/hospitalProfileService";
 import { HospitalMetricsService } from "@/features/hospital/services/hospitalMetricsService";
 import {
   HealthWorkerProfile,
@@ -103,6 +102,15 @@ const profileBasePath: Record<AppProfile, string> = {
   patient: "/patient",
 };
 
+const registrationStatusBadge: Record<
+  HospitalRegistrationStatus,
+  { variant: BadgeVariant; label: string }
+> = {
+  pending: { variant: "warning", label: "Pending Review" },
+  approved: { variant: "success", label: "Approved" },
+  rejected: { variant: "error", label: "Rejected" },
+};
+
 interface SidebarProps {
   isOpen: boolean;
   onClose: () => void;
@@ -118,7 +126,7 @@ export function Sidebar({ isOpen, onClose, profile }: SidebarProps) {
   const isHospital = profile === "hospital";
   const isMedicalStaff = profile === "medical-staff";
 
-  const [hospitalProfile, setHospitalProfile] = useState<HospitalProfile | null>(null);
+  const { profile: hospitalProfile } = useHospitalProfile(isHospital);
   const [shiftsBadge, setShiftsBadge] = useState<number | null>(null);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
 
@@ -129,9 +137,6 @@ export function Sidebar({ isOpen, onClose, profile }: SidebarProps) {
   useEffect(() => {
     if (!isHospital) return;
     let cancelled = false;
-    HospitalProfileService.getProfile().then((data) => {
-      if (!cancelled) setHospitalProfile(data);
-    });
     HospitalMetricsService.getOverviewStats().then((data) => {
       if (!cancelled) setShiftsBadge(data.openShifts);
     });
@@ -197,13 +202,21 @@ export function Sidebar({ isOpen, onClose, profile }: SidebarProps) {
           <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg bg-primary-100">
             <Building2 className="h-4 w-4 text-primary-700" />
           </div>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <p className="text-sm font-bold text-primary-700">
               {hospitalProfile.abbreviation}
             </p>
-            <p className="text-xs leading-snug text-primary-600/80">
+            <p className="truncate text-xs leading-snug text-primary-600/80">
               {hospitalProfile.name}
             </p>
+            {hospitalProfile.adminRegistrationStatus && (
+              <Badge
+                variant={registrationStatusBadge[hospitalProfile.adminRegistrationStatus].variant}
+                className="mt-1.5"
+              >
+                {registrationStatusBadge[hospitalProfile.adminRegistrationStatus].label}
+              </Badge>
+            )}
           </div>
         </div>
       )}

@@ -3,6 +3,7 @@ import { Sidebar } from "./components/Sidebar";
 import { TopNavigation } from "./components/TopNavigation";
 import { AppProfile } from "@/types";
 import { CreateShiftModal } from "@/features/hospital/shifts/components/CreateShiftModal";
+import { HospitalApprovalPendingBanner } from "@/features/hospital/components/HospitalApprovalPendingBanner";
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -56,6 +57,8 @@ export function MainLayout({ children, profile }: MainLayoutProps) {
           profile={profile}
           onMenuClick={() => setSidebarOpen(true)}
         />
+
+        {profile === "hospital" && <HospitalApprovalPendingBanner />}
 
         {/* Page Content */}
         <main className="flex-1 overflow-y-auto">

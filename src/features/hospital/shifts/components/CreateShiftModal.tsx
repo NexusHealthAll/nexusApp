@@ -20,11 +20,10 @@ const defaultFormData: ShiftFormData = {
   shiftType: "in-person",
   startDate: "",
   startTime: "",
-  duration: "",
+  duration: 0,
   urgencyLevel: "",
   payType: "hourly",
-  hourlyRate: 8000,
-  expectedHours: 8,
+  hourlyRate: 0,
   fixedRate: 0,
   bonuses: [
     {

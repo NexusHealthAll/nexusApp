@@ -1,3 +1,8 @@
+> **Superseded/historical.** Describes integration work against
+> `medicalStaffService.ts` and the medical-staff dashboard, both of which
+> have since been removed as dead code (see `docs/architecture.md`). Kept
+> for historical context only — do not treat as current API documentation.
+
 # Medical Staff API Integration - Complete ✅
 
 ## Overview

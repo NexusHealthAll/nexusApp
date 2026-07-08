@@ -5,7 +5,9 @@ export const useLocationTracker = () => {
     latitude: number | null;
     longitude: number | null;
   }>({ latitude: null, longitude: null });
-  const [error, setError] = useState<any>(null);
+  const [error, setError] = useState<GeolocationPositionError | { message: string } | null>(
+    null,
+  );
 
   useEffect(() => {
     // 1. Check if the browser supports the Geolocation API

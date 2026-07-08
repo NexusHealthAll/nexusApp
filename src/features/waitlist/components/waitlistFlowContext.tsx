@@ -193,6 +193,9 @@ export function WaitlistFlowProvider({ children }: { children: ReactNode }) {
   );
 }
 
+// Context + its accessor hook are intentionally co-located; splitting into a
+// separate file for fast-refresh purity isn't worth the indirection here.
+// eslint-disable-next-line react-refresh/only-export-components
 export function useWaitlistFlow() {
   const context = useContext(WaitlistFlowContext);
 

@@ -1,17 +1,21 @@
 import apiClient from "@/lib/apiClient";
 import { useAuthStore } from "@/features/auth/store/authStore";
 
+export type HospitalRegistrationStatus = "pending" | "approved" | "rejected";
+
 export interface HospitalProfile {
   abbreviation: string;
   name: string;
   adminName: string;
   adminRole: string;
   adminInitials: string;
+  adminRegistrationStatus: HospitalRegistrationStatus | null;
 }
 
 interface HospitalResponse {
   id: string;
   name: string;
+  admin_registration_status: HospitalRegistrationStatus | null;
 }
 
 function deriveAbbreviation(name: string): string {
@@ -38,6 +42,10 @@ function deriveInitials(name: string): string {
  * `hospital_id` embedded in the logged-in user's auth session. There is no
  * dedicated "abbreviation" field on the backend Hospital model, so it's
  * derived client-side from the hospital name.
+ *
+ * `admin_registration_status` is also read from this response — it's the
+ * same field `POST /api/v1/shifts` checks server-side (must be "approved")
+ * before allowing shift creation; see `useHospitalApprovalStatus`.
  */
 export class HospitalProfileService {
   static async getProfile(): Promise<HospitalProfile | null> {
@@ -61,6 +69,7 @@ export class HospitalProfileService {
       adminName,
       adminRole: "Hospital Admin",
       adminInitials: deriveInitials(adminName),
+      adminRegistrationStatus: hospital.admin_registration_status,
     };
   }
 }

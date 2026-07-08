@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/Card';
 import { Button } from '@/shared/components/ui/Button';
 import { Search, Plus, Filter, Calendar, Clock } from 'lucide-react';
+import { formatTime } from '@/shared/utils/date';
 
 // Mock data - replace with actual API data
 const mockAppointments = [
@@ -134,10 +135,7 @@ export function AppointmentList() {
                         <Clock className="h-4 w-4 text-neutral-400" />
                         <div>
                           <div className="text-sm font-medium text-neutral-900">
-                            {new Date(appointment.dateTime).toLocaleTimeString([], { 
-                              hour: '2-digit', 
-                              minute: '2-digit' 
-                            })}
+                            {formatTime(appointment.dateTime, { hour: '2-digit', minute: '2-digit' })}
                           </div>
                           <div className="text-xs text-neutral-500">
                             {appointment.duration} min

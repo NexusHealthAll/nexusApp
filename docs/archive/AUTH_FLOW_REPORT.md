@@ -1,3 +1,9 @@
+> **Archived design doc.** This was the design/requirements spec for the
+> role-based auth + onboarding refactor. Kept for historical context on
+> *why* the flow is shaped this way — cross-check `src/features/auth/` and
+> `src/routes/` for current behavior rather than assuming every detail here
+> shipped exactly as written.
+
 # Auth + Onboarding Role-Based Flow Report
 
 ## Goal

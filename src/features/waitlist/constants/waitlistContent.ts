@@ -28,7 +28,7 @@ export interface WaitlistInsight {
   title: string;
   description: string;
   icon: LucideIcon;
-  image: any; // Replace with actual image type if available
+  image: string;
 }
 
 export const waitlistNavItems = [

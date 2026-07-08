@@ -13,11 +13,7 @@ import {
   HealthWorkerService,
 } from "@/features/health-worker/services/healthWorkerService";
 import { Skeleton } from "@/shared/components/ui/Skeleton";
-
-function formatNaira(value: number): string {
-  if (value >= 1000) return `₦${Math.round(value / 1000)}k`;
-  return `₦${value}`;
-}
+import { formatDisplayCurrency } from "@/shared/utils/currency";
 
 export function MonthlyEarningsChart({ workerId }: { workerId: string }) {
   const [points, setPoints] = useState<EarningsSeriesPoint[]>([]);
@@ -77,12 +73,12 @@ export function MonthlyEarningsChart({ workerId }: { workerId: string }) {
               <YAxis
                 axisLine={false}
                 tickLine={false}
-                tickFormatter={formatNaira}
+                tickFormatter={formatDisplayCurrency}
                 tick={{ fill: "#94a3b8", fontSize: 12 }}
                 width={48}
               />
               <Tooltip
-                formatter={(value) => formatNaira(Number(value))}
+                formatter={(value) => formatDisplayCurrency(Number(value))}
                 contentStyle={{
                   borderRadius: 12,
                   border: "1px solid #f1f5f9",

@@ -1,3 +1,9 @@
+> **Archived milestone doc.** `healthWorkerService.ts` is still live, but
+> this describes its state as of an earlier integration milestone. Verify
+> current endpoint behavior against
+> `src/features/health-worker/services/healthWorkerService.ts` rather than
+> assuming every detail here still matches.
+
 # Health Worker API Integration - Complete ✅
 
 ## Overview

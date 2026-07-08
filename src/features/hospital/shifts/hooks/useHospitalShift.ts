@@ -1,10 +1,12 @@
 import { useCallback, useState } from "react";
 import apiClient from "@/lib/apiClient";
-import type {
-  ApiShiftListResponse,
-  ApiShiftPriority,
-  ApiShiftStatus,
-  ShiftFormData,
+import {
+  URGENCY_BONUS_PCT,
+  type ApiShift,
+  type ApiShiftListResponse,
+  type ApiShiftPriority,
+  type ApiShiftStatus,
+  type ShiftFormData,
 } from "../types";
 
 export type ShiftStatusFilter = ApiShiftStatus;
@@ -22,7 +24,7 @@ const urgencyToPriority: Record<string, ApiShiftPriority> = {
   elective: "scheduled",
 };
 
-const roleToCategory: Record<string, string> = {
+export const roleToCategory: Record<string, string> = {
   Doctor: "doctor",
   Nurse: "nurse",
   "Lab Technician": "lab_technician",
@@ -30,20 +32,15 @@ const roleToCategory: Record<string, string> = {
   Radiographer: "radiographer",
 };
 
-function parseDurationHours(duration: string, fallback: number): number {
-  const match = duration.match(/[\d.]+/);
-  if (match) return Number(match[0]);
-  return fallback || 0.1;
-}
-
 function buildShiftPayload(data: ShiftFormData) {
   // Map frontend form model → backend create/preview payload.
   // Note: some fields in the backend payload were described as numbers in kobo.
   // We forward what we can; the exact backend schema may evolve.
+  const statBonus = data.bonuses.find((b) => b.id === "stat");
   return {
     broadcast_consent_confirmed: true,
     department: data.specialty || "",
-    duration_hours: parseDurationHours(data.duration, data.expectedHours),
+    duration_hours: data.duration || 0,
     equipment: (data.equipment || []).map((e) => e.name),
     fixed_rate_kobo: Math.trunc(data.fixedRate * 100),
     job_description: data.jobDescription || "",
@@ -61,9 +58,9 @@ function buildShiftPayload(data: ShiftFormData) {
     shift_label: data.specialty || "Shift",
     shift_type: data.shiftType === "in-person" ? "in_person" : "virtual",
     specialty: data.specialty || "",
-    stat_bonus_kobo: 0,
+    stat_bonus_kobo: statBonus ? Math.trunc(statBonus.amount * 100) : 0,
     tasks: data.tasks || [],
-    urgency_bonus_pct: 0,
+    urgency_bonus_pct: URGENCY_BONUS_PCT[data.urgencyLevel] ?? 0,
   };
 }
 
@@ -108,12 +105,16 @@ export interface ShiftApplicationsResponse {
 export type UseHospitalShiftResult = {
   createShift: (payload: ShiftFormData) => Promise<{ id: string }>;
   previewShift: (payload: ShiftFormData) => Promise<unknown>;
+  getMatchedProfessionalsCount: (params: {
+    role_category: string;
+    specialty?: string;
+  }) => Promise<number>;
   getShifts: (params: {
     status?: ShiftStatusFilter;
     page?: number;
     page_size?: number;
   }) => Promise<ApiShiftListResponse>;
-  getShiftDetails: (shift_id: string) => Promise<unknown>;
+  getShiftDetails: (shift_id: string) => Promise<ApiShift>;
   getShiftApplications: (params: {
     shift_id: string;
     page?: number;
@@ -153,7 +154,6 @@ export function useHospitalShift(): UseHospitalShiftResult {
         );
         return res.data;
       } catch (e) {
-        console.log(e);
         setLastError(e as ShiftApiError);
         throw e;
       }
@@ -170,6 +170,31 @@ export function useHospitalShift(): UseHospitalShiftResult {
           buildShiftPayload(payload),
         );
         return res.data;
+      } catch (e) {
+        setLastError(e as ShiftApiError);
+        throw e;
+      }
+    },
+    [],
+  );
+
+  // GET /api/v1/shifts/matches/count?role_category=..&specialty=..
+  // Response: { count: number } — number of available clinicians matching the
+  // role/specialty selected so far in Step 1, before the shift is created.
+  const getMatchedProfessionalsCount = useCallback(
+    async (params: { role_category: string; specialty?: string }) => {
+      setLastError(null);
+      try {
+        const res = await apiClient.get<{ count: number }>(
+          "/api/v1/shifts/matches/count",
+          {
+            params: {
+              role_category: params.role_category,
+              specialty: params.specialty,
+            },
+          },
+        );
+        return res.data.count;
       } catch (e) {
         setLastError(e as ShiftApiError);
         throw e;
@@ -209,7 +234,7 @@ export function useHospitalShift(): UseHospitalShiftResult {
     async (shift_id: string) => {
       setLastError(null);
       try {
-        const res = await apiClient.get<unknown>(
+        const res = await apiClient.get<ApiShift>(
           `/api/v1/shifts/${encodeURIComponent(shift_id)}`,
         );
         return res.data;
@@ -315,6 +340,7 @@ export function useHospitalShift(): UseHospitalShiftResult {
   return {
     createShift,
     previewShift,
+    getMatchedProfessionalsCount,
     getShifts,
     getShiftDetails,
     getShiftApplications,

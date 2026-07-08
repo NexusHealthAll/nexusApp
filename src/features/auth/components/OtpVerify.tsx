@@ -5,7 +5,7 @@ import { Button } from "@/shared/components/ui/Button";
 import { NexusCareLogo } from "@/shared/components/ui/NexusCareLogo";
 import { ArrowLeft } from "lucide-react";
 
-import { useAuthStore } from "@/features/auth/store/authStore";
+import { useAuthStore, type AuthUser } from "@/features/auth/store/authStore";
 import apiClient from "@/lib/apiClient";
 import { ApiError } from "@/lib/apiError";
 
@@ -127,7 +127,7 @@ export function OtpVerify() {
         message?: string;
         access_token?: string;
         refresh_token?: string;
-        user?: any;
+        user?: AuthUser;
         token?: string;
         clinician_id?: string;
         [k: string]: unknown;

@@ -4,6 +4,7 @@ import { Star } from "lucide-react";
 import { AvatarInitials } from "@/shared/components/ui/AvatarInitials";
 import { Badge } from "@/shared/components/ui/Badge";
 import { Skeleton } from "@/shared/components/ui/Skeleton";
+import { EmptyState } from "@/shared/components/ui/EmptyState";
 import { PATHS } from "@/routes/paths";
 import {
   WorkerRecord,
@@ -62,14 +63,11 @@ export function WorkforcePool() {
           ))}
         </div>
       ) : preview.length === 0 ? (
-        <div className="flex min-h-[160px] flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-neutral-200 py-8 text-center">
-          <p className="text-sm font-semibold text-neutral-800">
-            No clinicians yet
-          </p>
-          <p className="max-w-[220px] text-xs text-neutral-400">
-            Your workforce pool will populate as clinicians join.
-          </p>
-        </div>
+        <EmptyState
+          className="min-h-[160px]"
+          title="No clinicians yet"
+          description="Your workforce pool will populate as clinicians join."
+        />
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full min-w-[640px] text-sm">

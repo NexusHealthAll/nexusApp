@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Info, Loader2, AlertCircle, ChevronDown } from "lucide-react";
+import { Select } from "@/shared/components/ui/Select";
 import { HospitalOnboardingLayout } from "./HospitalOnboardingLayout";
 import { useOnboarding } from "../context/OnboardingContext";
 import { hospitalOnboardingService } from "../services/hospitalOnboardingService";
@@ -394,17 +395,14 @@ export function LocationGeofencingStep() {
                 <label className="block text-[10px] font-semibold uppercase tracking-widest text-neutral-500 mb-1.5">
                   State <span className="text-red-500">*</span>
                 </label>
-                <select
+                <Select
                   value={local.state}
-                  onChange={(e) => handle("state", e.target.value)}
+                  onChange={(value) => handle("state", value)}
+                  placeholder="Select State"
+                  error={errors.state}
                   className={selectCls}
-                >
-                  <option value="">Select State</option>
-                  {NIGERIA_STATES.map((s) => (
-                    <option key={s}>{s}</option>
-                  ))}
-                </select>
-                {errors.state && <p className={fieldError}>{errors.state}</p>}
+                  options={NIGERIA_STATES.map((s) => ({ value: s, label: s }))}
+                />
               </div>
             </div>
 

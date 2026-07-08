@@ -2,7 +2,9 @@ import type { RouteObject } from "react-router-dom";
 import { Navigate } from "react-router-dom";
 import { ProtectedRoute } from "@/features/auth/components";
 
-// Simple admin dashboard placeholder
+// Simple admin dashboard placeholder, kept alongside the route config it
+// belongs to rather than split into its own file for one component.
+// eslint-disable-next-line react-refresh/only-export-components
 function AdminDashboard() {
   return (
     <ProtectedRoute requiredRole="hospital_admin">
