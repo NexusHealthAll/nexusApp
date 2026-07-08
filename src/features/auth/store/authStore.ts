@@ -114,9 +114,11 @@ export const useAuthStore = create<AuthStoreState>((set) => ({
     localStorage.removeItem("refreshToken");
     localStorage.removeItem("userData");
 
-    // clinician onboarding context
-    localStorage.removeItem("clinicianId");
-
-    set({ accessToken: "", refreshToken: "", user: null, clinicianId: "" });
+    // Deliberately NOT clearing clinicianId here: it's pending-registration
+    // context (same category as pendingEmail), not session state. It needs
+    // to survive the register -> login hop, which passes through
+    // PublicOnlyAuthRoute's "no session yet" cleanup that calls this. It's
+    // cleared explicitly via clearClinicianId() when actually consumed.
+    set({ accessToken: "", refreshToken: "", user: null });
   },
 }));

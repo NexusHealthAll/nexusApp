@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/shared/components/ui/Card";
 import { Button } from "@/shared/components/ui/Button";
 import { NexusCareLogo } from "@/shared/components/ui/NexusCareLogo";
-import { Mail, Check, AlertCircle } from "lucide-react";
+import { Mail, Check, AlertCircle, CheckCircle2 } from "lucide-react";
 
 import { useAuthStore } from "@/features/auth/store/authStore";
 import apiClient from "@/lib/apiClient";
@@ -11,6 +11,10 @@ import { ApiError } from "@/lib/apiError";
 
 export function EmailLogin() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const justRegistered = Boolean(
+    (location.state as { justRegistered?: boolean } | null)?.justRegistered,
+  );
 
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -141,6 +145,20 @@ export function EmailLogin() {
           </div>
 
           <CardContent className="px-6 py-8 flex-1 flex flex-col justify-center">
+            {justRegistered && (
+              <div className="mb-8 flex items-start gap-3 rounded-xl border border-green-200 bg-green-50 px-4 py-3">
+                <CheckCircle2 className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-600" />
+                <div>
+                  <p className="text-sm font-semibold text-green-800">
+                    Account created
+                  </p>
+                  <p className="text-sm text-green-700">
+                    Log in with the email you just verified to finish setting
+                    up your profile.
+                  </p>
+                </div>
+              </div>
+            )}
             {/* Welcome Section with staggered animation */}
             <div
               className={`text-center mb-12 transition-all duration-700 delay-200 ease-out ${

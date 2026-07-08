@@ -4,28 +4,14 @@ import { Card, CardContent } from "@/shared/components/ui/Card";
 import { Button } from "@/shared/components/ui/Button";
 import { NexusCareLogo } from "@/shared/components/ui/NexusCareLogo";
 import { Bell, Building, CheckCircle, Loader2 } from "lucide-react";
+import { useAuthStore } from "@/features/auth/store/authStore";
+import apiClient from "@/lib/apiClient";
+import { ApiError } from "@/lib/apiError";
 
-// Nigerian banks for demo
-const nigerianBanks = [
-  { code: "044", name: "Access Bank" },
-  { code: "014", name: "Afribank Nigeria Plc" },
-  { code: "023", name: "Citibank Nigeria Limited" },
-  { code: "050", name: "Ecobank Nigeria Plc" },
-  { code: "011", name: "First Bank of Nigeria Limited" },
-  { code: "214", name: "First City Monument Bank Limited" },
-  { code: "070", name: "Fidelity Bank Plc" },
-  { code: "058", name: "Guaranty Trust Bank Plc" },
-  { code: "030", name: "Heritage Banking Company Ltd" },
-  { code: "082", name: "Keystone Bank Limited" },
-  { code: "076", name: "Polaris Bank Limited" },
-  { code: "221", name: "Stanbic IBTC Bank Limited" },
-  { code: "068", name: "Standard Chartered Bank Nigeria Limited" },
-  { code: "232", name: "Sterling Bank Plc" },
-  { code: "033", name: "United Bank For Africa Plc" },
-  { code: "032", name: "Union Bank of Nigeria Plc" },
-  { code: "035", name: "Wema Bank Plc" },
-  { code: "057", name: "Zenith Bank Plc" },
-];
+interface Bank {
+  code: string;
+  name: string;
+}
 
 interface PayoutData {
   bankCode: string;
@@ -35,6 +21,12 @@ interface PayoutData {
 
 export function PayoutSetup() {
   const navigate = useNavigate();
+  const clinicianId = useAuthStore((s) => s.clinicianId);
+
+  const [banks, setBanks] = useState<Bank[]>([]);
+  const [banksLoading, setBanksLoading] = useState(true);
+  const [banksError, setBanksError] = useState(false);
+
   const [formData, setFormData] = useState<PayoutData>({
     bankCode: "",
     accountNumber: "",
@@ -44,52 +36,80 @@ export function PayoutSetup() {
   const [isVerifying, setIsVerifying] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
   const [errors, setErrors] = useState<Partial<PayoutData>>({});
+  const [submitError, setSubmitError] = useState("");
 
-  // Simulate account name lookup when bank and account number are provided
   useEffect(() => {
-    if (formData.bankCode && formData.accountNumber.length === 10) {
-      verifyAccountDetails();
-    } else {
+    let cancelled = false;
+    (async () => {
+      setBanksLoading(true);
+      setBanksError(false);
+      try {
+        const { data } = await apiClient.get<{
+          data?: { bankCode: string; name: string }[];
+        }>("/api/v1/banks");
+        const list = (data.data ?? []).map((b) => ({
+          code: b.bankCode,
+          name: b.name,
+        }));
+        if (!cancelled) setBanks(list);
+      } catch {
+        if (!cancelled) setBanksError(true);
+      } finally {
+        if (!cancelled) setBanksLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Resolve the account name once a bank + full account number are entered.
+  useEffect(() => {
+    if (!(formData.bankCode && formData.accountNumber.length === 10)) {
       setFormData((prev) => ({ ...prev, accountName: "" }));
       setIsVerified(false);
+      return;
     }
+
+    let cancelled = false;
+    (async () => {
+      setIsVerifying(true);
+      setIsVerified(false);
+      try {
+        const { data } = await apiClient.post<{ account_name: string }>(
+          "/api/v1/banks/resolve",
+          {
+            account_number: formData.accountNumber,
+            bank_code: formData.bankCode,
+          },
+        );
+        if (!cancelled) {
+          setFormData((prev) => ({ ...prev, accountName: data.account_name }));
+          setIsVerified(true);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setFormData((prev) => ({
+            ...prev,
+            accountName:
+              err instanceof ApiError ? err.message : "Verification failed",
+          }));
+          setIsVerified(false);
+        }
+      } finally {
+        if (!cancelled) setIsVerifying(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData.bankCode, formData.accountNumber]);
 
-  const verifyAccountDetails = async () => {
-    setIsVerifying(true);
-    setIsVerified(false);
-
-    try {
-      // Simulate Paystack account verification API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      // Mock account name based on account number (for demo)
-      const mockNames = [
-        "Dr. Adebayo Johnson",
-        "Dr. Fatima Abdullahi",
-        "Dr. Chinedu Okafor",
-        "Dr. Aisha Mohammed",
-        "Dr. Olumide Adeyemi",
-      ];
-
-      const randomName =
-        mockNames[Math.floor(Math.random() * mockNames.length)];
-
-      setFormData((prev) => ({ ...prev, accountName: randomName }));
-      setIsVerified(true);
-    } catch (error) {
-      console.error("Account verification error:", error);
-      setFormData((prev) => ({ ...prev, accountName: "Verification failed" }));
-    } finally {
-      setIsVerifying(false);
-    }
-  };
-
   const handleAccountNumberChange = (value: string) => {
-    // Only allow numbers and limit to 10 digits
     const cleaned = value.replace(/\D/g, "").slice(0, 10);
     setFormData((prev) => ({ ...prev, accountNumber: cleaned }));
-
     if (errors.accountNumber) {
       setErrors((prev) => ({ ...prev, accountNumber: undefined }));
     }
@@ -97,79 +117,54 @@ export function PayoutSetup() {
 
   const validateForm = (): boolean => {
     const newErrors: Partial<PayoutData> = {};
-
-    if (!formData.bankCode) {
-      newErrors.bankCode = "Please select a bank";
-    }
-
+    if (!formData.bankCode) newErrors.bankCode = "Please select a bank";
     if (!formData.accountNumber) {
       newErrors.accountNumber = "Account number is required";
     } else if (formData.accountNumber.length !== 10) {
       newErrors.accountNumber = "Account number must be 10 digits";
     }
-
-    if (!isVerified) {
-      newErrors.accountName = "Account verification is required";
-    }
-
+    if (!isVerified) newErrors.accountName = "Account verification is required";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleComplete = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitError("");
 
+    if (!clinicianId) {
+      setSubmitError(
+        "We couldn't find your clinician account for this session. Please log in again to continue.",
+      );
+      return;
+    }
     if (!validateForm()) return;
 
     setIsLoading(true);
-
     try {
-      // Simulate final setup
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      const { data } = await apiClient.post<{
+        account_name: string;
+        account_number_masked: string;
+        bank_code: string;
+      }>(`/api/v1/clinicians/${encodeURIComponent(clinicianId)}/bank-account`, {
+        account_number: formData.accountNumber,
+        bank_code: formData.bankCode,
+      });
 
-      // Store payout data
-      localStorage.setItem("payoutData", JSON.stringify(formData));
-
-      // Mark onboarding as complete
-      localStorage.setItem("onboardingComplete", "true");
-
-      // Create final user profile
-      const professionalData = JSON.parse(
-        localStorage.getItem("professionalData") || "{}",
+      const bankName = banks.find((b) => b.code === formData.bankCode)?.name;
+      navigate("/medical-staff/onboarding/pending", {
+        state: {
+          bankName,
+          accountNumberMasked: data.account_number_masked,
+          accountName: data.account_name,
+        },
+      });
+    } catch (err) {
+      setSubmitError(
+        err instanceof ApiError
+          ? err.message
+          : "Network error — please check your connection and try again.",
       );
-      const selectedRole =
-        localStorage.getItem("selectedRole") || "health-worker";
-      const userData = {
-        id: `user_${Date.now()}`,
-        fullName: formData.accountName,
-        email: localStorage.getItem("pendingEmail") || "",
-        role:
-          selectedRole === "health-worker" ? "medical-staff" : "hospital_admin",
-        professional: professionalData,
-        payout: formData,
-        onboardingComplete: true,
-        createdAt: new Date().toISOString(),
-      };
-
-      // Store complete user data and auth token
-      const authToken = `token_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      localStorage.setItem("authToken", authToken);
-      localStorage.setItem("userData", JSON.stringify(userData));
-
-      // Clean up temporary data
-      localStorage.removeItem("emailVerified");
-      localStorage.removeItem("selectedRole");
-      localStorage.removeItem("professionalData");
-      localStorage.removeItem("payoutData");
-
-      // Navigate based on role
-      if (selectedRole === "health-worker") {
-        navigate("/medical-staff/dashboard");
-      } else {
-        navigate("/hospital/dashboard");
-      }
-    } catch (error) {
-      console.error("Onboarding completion error:", error);
     } finally {
       setIsLoading(false);
     }
@@ -187,12 +182,7 @@ export function PayoutSetup() {
                 onClick={() => navigate(-1)}
                 className="rounded-full p-2 text-slate-600 hover:bg-slate-100"
               >
-                <svg
-                  className="h-4 w-4"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                >
+                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                   <path
                     strokeWidth="2"
                     strokeLinecap="round"
@@ -211,17 +201,15 @@ export function PayoutSetup() {
           {/* Step Indicator */}
           <div className="space-y-3">
             <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">
-              STEP 03 OF 04
+              STEP 04 OF 04
             </p>
             <h1 className="text-2xl font-bold text-onboarding-textPrimary">
               Payout Setup
             </h1>
-
-            {/* Progress Bar */}
             <div className="w-full bg-slate-200 rounded-full h-1">
               <div
                 className="bg-gradient-to-r from-onboarding-primaryGreen to-onboarding-primaryBlue h-1 rounded-full"
-                style={{ width: "75%" }}
+                style={{ width: "100%" }}
               ></div>
             </div>
           </div>
@@ -230,9 +218,8 @@ export function PayoutSetup() {
         {/* Content */}
         <Card className="bg-white rounded-t-none rounded-b-2xl border-t-0 shadow-md">
           <CardContent className="p-6 space-y-6">
-            {/* Description */}
             <p className="text-onboarding-textSecondary leading-relaxed">
-              Link your bank account to receive instant payments via Paystack.
+              Link your bank account to receive instant payments.
             </p>
             <form onSubmit={handleComplete} className="space-y-6">
               {/* Bank Selection */}
@@ -241,12 +228,19 @@ export function PayoutSetup() {
                   Select Bank
                 </label>
                 <BankDropdown
+                  banks={banks}
+                  loading={banksLoading}
                   value={formData.bankCode}
                   onChange={(code) =>
                     setFormData((prev) => ({ ...prev, bankCode: code }))
                   }
                   error={!!errors.bankCode}
                 />
+                {banksError && (
+                  <p className="text-sm text-red-600">
+                    Couldn't load the bank list. Please refresh and try again.
+                  </p>
+                )}
                 {errors.bankCode && (
                   <p className="text-sm text-red-600">{errors.bankCode}</p>
                 )}
@@ -269,11 +263,7 @@ export function PayoutSetup() {
                     maxLength={10}
                   />
                   <div className="flex-shrink-0">
-                    <svg
-                      className="h-4 w-4 text-secondary-600"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
+                    <svg className="h-4 w-4 text-secondary-600" fill="currentColor" viewBox="0 0 20 20">
                       <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" />
                     </svg>
                   </div>
@@ -298,15 +288,11 @@ export function PayoutSetup() {
                   {isVerifying ? (
                     <div className="flex items-center space-x-2 text-onboarding-textSecondary">
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      <span className="text-sm">
-                        Verifying account details...
-                      </span>
+                      <span className="text-sm">Verifying account details...</span>
                     </div>
                   ) : formData.accountName ? (
                     <div className="flex items-center space-x-2">
-                      {isVerified && (
-                        <CheckCircle className="h-4 w-4 text-green-600" />
-                      )}
+                      {isVerified && <CheckCircle className="h-4 w-4 text-green-600" />}
                       <span
                         className={`text-sm ${isVerified ? "text-green-800 font-semibold" : "text-neutral-800"}`}
                       >
@@ -324,6 +310,10 @@ export function PayoutSetup() {
                 )}
               </div>
 
+              {submitError && (
+                <p className="text-sm text-red-600 text-center">{submitError}</p>
+              )}
+
               {/* Complete Setup Button */}
               <Button
                 type="submit"
@@ -331,7 +321,7 @@ export function PayoutSetup() {
                 isLoading={isLoading}
                 className="w-full rounded-lg bg-gradient-to-r from-onboarding-primaryGreen to-onboarding-primaryBlue py-3 text-sm font-semibold uppercase tracking-widest text-white transition-all shadow-md hover:shadow-lg disabled:opacity-50"
               >
-                {isLoading ? "Completing Setup..." : "Link Account & Continue"}
+                {isLoading ? "Linking Account..." : "Link Account & Continue"}
               </Button>
             </form>
 
@@ -343,12 +333,11 @@ export function PayoutSetup() {
                 </div>
                 <div>
                   <h4 className="font-semibold text-slate-900 mb-1">
-                    Secure & Encrypted
+                    Secure &amp; Encrypted
                   </h4>
                   <p className="text-sm text-slate-600">
-                    Your banking information is encrypted and processed securely
-                    through Paystack. We never store your sensitive financial
-                    data.
+                    Your banking information is encrypted at rest and never
+                    stored in plain text.
                   </p>
                 </div>
               </div>
@@ -361,10 +350,14 @@ export function PayoutSetup() {
 }
 
 function BankDropdown({
+  banks,
+  loading,
   value,
   onChange,
   error,
 }: {
+  banks: Bank[];
+  loading: boolean;
   value: string;
   onChange: (code: string) => void;
   error?: boolean;
@@ -383,35 +376,30 @@ function BankDropdown({
     return () => document.removeEventListener("mousedown", handleOutside);
   }, []);
 
-  const selected = nigerianBanks.find((b) => b.code === value);
+  const selected = banks.find((b) => b.code === value);
 
   return (
     <div ref={containerRef} className="relative w-full">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className={`flex items-center gap-2.5 rounded-lg bg-onboarding-inputBackground px-3 py-2.5 w-full text-left ${
+        disabled={loading}
+        className={`flex items-center gap-2.5 rounded-lg bg-onboarding-inputBackground px-3 py-2.5 w-full text-left disabled:opacity-60 ${
           error ? "ring-1 ring-red-400" : ""
         }`}
       >
         <Building className="h-4 w-4 flex-shrink-0 text-secondary-600" />
-        <span
-          className={`flex-1 text-sm ${selected ? "text-neutral-800" : "text-neutral-400"}`}
-        >
-          {selected ? selected.name : "Choose your bank"}
+        <span className={`flex-1 text-sm ${selected ? "text-neutral-800" : "text-neutral-400"}`}>
+          {loading ? "Loading banks..." : selected ? selected.name : "Choose your bank"}
         </span>
-        <svg
-          className="h-4 w-4 text-neutral-500"
-          viewBox="0 0 20 20"
-          fill="currentColor"
-        >
+        <svg className="h-4 w-4 text-neutral-500" viewBox="0 0 20 20" fill="currentColor">
           <path d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 011.08 1.04l-4.25 4.25a.75.75 0 01-1.06 0L5.21 8.27a.75.75 0 01.02-1.06z" />
         </svg>
       </button>
 
-      {open && (
+      {open && !loading && (
         <div className="absolute left-0 right-0 z-50 mt-2 max-h-56 w-full overflow-auto rounded-lg border border-slate-100 bg-white shadow-lg">
-          {nigerianBanks.map((bank) => (
+          {banks.map((bank) => (
             <button
               key={bank.code}
               type="button"

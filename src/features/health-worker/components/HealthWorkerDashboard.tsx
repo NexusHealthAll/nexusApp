@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { ComponentType, ReactNode } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Activity,
   AlertTriangle,
@@ -700,10 +701,29 @@ function HomeScreen({
   onMarketplace: () => void;
   onOpenShift: (shift: AvailableShift) => void;
 }) {
+  const navigate = useNavigate();
+
   return (
     <>
       <Header onNotifications={onNotifications} />
       <main className="space-y-5 px-5 py-4">
+        <button
+          type="button"
+          onClick={() => navigate("/medical-staff/onboarding/profile")}
+          className="flex w-full items-start gap-3 rounded-lg border border-warning-200 bg-warning-50 p-3 text-left transition-colors hover:bg-warning-100"
+        >
+          <ShieldCheck className="mt-0.5 h-4 w-4 flex-shrink-0 text-warning-600" />
+          <span>
+            <span className="block text-sm font-semibold text-warning-800">
+              Complete your professional profile
+            </span>
+            <span className="block text-sm text-warning-900">
+              Verify your license, identity, and payout details to start
+              receiving shifts.
+            </span>
+          </span>
+        </button>
+
         <section className="flex items-start justify-between">
           <div>
             <p className="text-[10px] font-bold uppercase tracking-wide text-neutral-500">

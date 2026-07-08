@@ -133,8 +133,12 @@ export function OtpVerify() {
         [k: string]: unknown;
       }>(otpVerifyPath, { code: codeToVerify, email });
 
-      // Save auth session (access/refresh tokens + user)
-      // API returns: access_token, refresh_token, user
+      // Save auth session (access/refresh tokens + user).
+      // Only the real login/verify response (access_token + refresh_token +
+      // user) is a usable session — the clinician-registration endpoint
+      // returns a token of its own that isn't a full session (no refresh
+      // token, different claims shape), so registration deliberately does
+      // NOT set a session here; the user logs in for real afterwards.
       if (body.access_token && body.refresh_token && body.user) {
         useAuthStore.getState().setAuthSession({
           accessToken: body.access_token,
@@ -144,14 +148,6 @@ export function OtpVerify() {
       } else if (body.token) {
         // Backward compatibility with older token field
         localStorage.setItem("authToken", body.token as string);
-      }
-
-      if (body?.access_token && flowForOtpVerify?.role === "health-worker") {
-        useAuthStore.getState().setAuthSession({
-          accessToken: body.access_token,
-          refreshToken: "",
-          user: { id: body?.clinician_id || "" },
-        });
       }
 
       localStorage.setItem("emailVerified", "true");
@@ -194,9 +190,17 @@ export function OtpVerify() {
           return;
         }
 
-        // health-worker/register => proceed to health-worker onboarding
+        // health-worker/register => account created, but the registration
+        // response isn't a usable session (see note above). Send them to a
+        // real login instead of straight into the app; keep the clinician
+        // id around so the post-login onboarding steps know which profile
+        // to complete, and prefill the email on the login screen.
+        if (body.clinician_id) {
+          useAuthStore.getState().setClinicianId(body.clinician_id);
+        }
         clearFlow();
-        navigate("/auth/onboarding/professional-profile");
+        useAuthStore.getState().setPendingEmail(email);
+        navigate("/auth/login", { state: { justRegistered: true } });
         return;
       }
 

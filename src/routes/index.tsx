@@ -22,6 +22,12 @@ import {
   VerificationStatusStep,
 } from "@/features/hospital/onboarding/components";
 import { OnboardingProvider } from "@/features/hospital/onboarding/context/OnboardingContext";
+import {
+  ProfessionalProfile,
+  IdentityVerification,
+  PayoutSetup,
+  VerificationPending,
+} from "@/features/onboarding/components";
 
 function buildRoleTree(
   basePath: string,
@@ -29,8 +35,10 @@ function buildRoleTree(
   pageRoutes: RouteObject[],
   standaloneRoutes: RouteObject[] = [],
 ): RouteObject[] {
+  // ProtectedRoute's requiredRole matches the backend's UserRole enum
+  // ("health_worker"), not the frontend-only "medical-staff" AppProfile label.
   const requiredRole =
-    profile === "medical-staff" ? "medical-staff" : "hospital_admin";
+    profile === "medical-staff" ? "health_worker" : "hospital_admin";
 
   // Onboarding routes are public — no auth check required
   const onboardingRoutes = buildOnboardingRoutes(profile).map((route) => ({
@@ -124,12 +132,56 @@ const hospitalOnboardingRoutes: RouteObject[] = [
   },
 ];
 
+/**
+ * Health-worker onboarding (professional profile, identity, payout) runs
+ * *after* a real login, using the session it establishes — unlike the
+ * hospital onboarding above, these are genuinely protected routes, not
+ * PublicOnlyAuthRoute. See OtpVerify's health-worker/register branch: it
+ * sends the user to /auth/login first rather than chaining straight into
+ * onboarding with the registration endpoint's non-session token.
+ */
+const medicalStaffOnboardingRoutes: RouteObject[] = [
+  {
+    path: "/medical-staff/onboarding/profile",
+    element: (
+      <ProtectedRoute requiredRole="health_worker">
+        <ProfessionalProfile />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/medical-staff/onboarding/identity",
+    element: (
+      <ProtectedRoute requiredRole="health_worker">
+        <IdentityVerification />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/medical-staff/onboarding/payout",
+    element: (
+      <ProtectedRoute requiredRole="health_worker">
+        <PayoutSetup />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/medical-staff/onboarding/pending",
+    element: (
+      <ProtectedRoute requiredRole="health_worker">
+        <VerificationPending />
+      </ProtectedRoute>
+    ),
+  },
+];
+
 export const appRoutes: RouteObject[] = [
   ...authRoutes,
   ...adminRoutes,
 
   // Hospital-specific onboarding (new sidebar layout) — must come before buildRoleTree
   ...hospitalOnboardingRoutes,
+  ...medicalStaffOnboardingRoutes,
 
   ...buildRoleTree(
     "/hospital",
