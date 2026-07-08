@@ -2,7 +2,9 @@ import { useEffect, useMemo, useState } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuthStore } from "@/features/auth/store/authStore";
 
-type UserRole = "medical-staff" | "hospital_admin";
+// Matches the backend's UserRole enum ("health_worker" | "hospital_admin"),
+// not the frontend-only "medical-staff" AppProfile/URL-section label.
+type UserRole = "health_worker" | "hospital_admin";
 
 type ProtectedRouteProps = {
   children: React.ReactNode;
@@ -19,7 +21,7 @@ type UserData = {
 };
 
 function isKnownRole(role: unknown): role is UserRole {
-  return role === "medical-staff" || role === "hospital_admin";
+  return role === "health_worker" || role === "hospital_admin";
 }
 
 function purgeAuth() {
@@ -42,7 +44,7 @@ function getCanonicalDashboardPath(role: UserRole) {
 
 function getRoleFromPath(pathname: string): UserRole | null {
   if (pathname.startsWith("/hospital/")) return "hospital_admin";
-  if (pathname.startsWith("/medical-staff/")) return "medical-staff";
+  if (pathname.startsWith("/medical-staff/")) return "health_worker";
   return null;
 }
 

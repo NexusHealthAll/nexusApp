@@ -8,10 +8,6 @@ import {
   EmailVerificationSuccess,
   PublicOnlyAuthRoute,
 } from "@/features/auth/components";
-import {
-  ProfessionalProfile,
-  PayoutSetup,
-} from "@/features/onboarding/components";
 import { WaitlistLandingStep } from "@/features/waitlist/components/WaitlistLandingStep";
 import { WaitlistSuccessStep } from "@/features/waitlist/components/WaitlistSuccessStep";
 import { LandingPage } from "@/pages/landing";
@@ -60,35 +56,6 @@ export const authRoutes: RouteObject[] = [
             <RoleSelection />
           </PublicOnlyAuthRoute>
         ),
-      },
-      {
-        path: "onboarding",
-        children: [
-          {
-            index: true,
-            element: <Navigate to="professional-profile" replace />,
-          },
-          {
-            path: "professional-profile",
-            element: (
-              <PublicOnlyAuthRoute>
-                <ProfessionalProfile />
-              </PublicOnlyAuthRoute>
-            ),
-          },
-          {
-            path: "payout-setup",
-            element: (
-              <PublicOnlyAuthRoute>
-                <PayoutSetup />
-              </PublicOnlyAuthRoute>
-            ),
-          },
-          {
-            path: "*",
-            element: <Navigate to="professional-profile" replace />,
-          },
-        ],
       },
       { path: "*", element: <Navigate to="login" replace /> },
     ],

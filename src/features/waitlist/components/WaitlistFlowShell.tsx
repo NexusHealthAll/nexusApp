@@ -89,7 +89,7 @@ export function WaitlistFlowShell() {
         return;
       }
 
-      if (currentRole === "medical-staff") {
+      if (currentRole === "health_worker") {
         navigate("/medical-staff/dashboard");
         return;
       }

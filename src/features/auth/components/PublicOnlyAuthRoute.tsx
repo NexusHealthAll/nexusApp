@@ -3,7 +3,9 @@ import { useEffect, useState } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuthStore } from "@/features/auth/store/authStore";
 
-type KnownRole = "medical-staff" | "hospital_admin";
+// Matches the backend's UserRole enum, not the frontend-only "medical-staff"
+// AppProfile/URL-section label.
+type KnownRole = "health_worker" | "hospital_admin";
 
 type UserData = {
   role?: string;
@@ -24,7 +26,7 @@ function getRoleFromStorage(): {
   try {
     const userData = JSON.parse(userDataStr) as UserData;
     const role = userData?.role;
-    if (role === "medical-staff" || role === "hospital_admin") {
+    if (role === "health_worker" || role === "hospital_admin") {
       return { role, validUserData: true };
     }
 
