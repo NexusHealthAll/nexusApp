@@ -3,7 +3,7 @@ import { ArrowLeft, Calendar, LogOut, Settings } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
 import { Select } from "@/shared/components/ui/Select";
 import { cn } from "@/shared/utils/cn";
-import type { AuthUser } from "@/features/auth/store/authStore";
+import type { AuthUser } from "@/shared/auth/store/authStore";
 import { Avatar } from "../DashboardChrome";
 
 export interface ProfileEditableFields {

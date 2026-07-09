@@ -5,7 +5,7 @@ import { Button } from "@/shared/components/ui/Button";
 import { Select } from "@/shared/components/ui/Select";
 import { NexusCareLogo } from "@/shared/components/ui/NexusCareLogo";
 import { X, Bell, Award, User } from "lucide-react";
-import { useAuthStore } from "@/features/auth/store/authStore";
+import { useAuthStore } from "@/shared/auth/store/authStore";
 import apiClient from "@/lib/apiClient";
 import { ApiError } from "@/lib/apiError";
 

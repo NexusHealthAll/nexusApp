@@ -4,23 +4,24 @@ This project follows a **feature-first** directory structure for better scalabil
 
 ```
 src/
-├── features/           # Feature-based modules
-│   ├── auth/           # Login, signup, OTP verification, role selection
-│   ├── onboarding/      # Multi-step onboarding flow (shared steps)
-│   ├── hospital/        # Hospital dashboard, shifts, workers, analytics
-│   ├── health-worker/   # Health-worker dashboard, active shifts, consultations
-│   ├── medical-staff/   # Medical-staff routes (renders health-worker components)
-│   ├── patient/         # Patient views
-│   └── waitlist/        # Pre-launch landing/waitlist flow
-├── layouts/            # Layout components (MainLayout, RoleLayout)
-├── routes/             # Route configuration (see Routing section below)
-├── shared/             # Shared components and utilities
-├── lib/                # apiClient (axios instance) and ApiError
-├── types/              # Small set of cross-cutting TypeScript types
-└── styles/             # Global styles
+├── features/            # Feature-based modules — only two, one per role
+│   ├── hospital/         # Hospital dashboard, shifts, workers, analytics, onboarding
+│   └── health-worker/    # Health-worker dashboard, active shifts, consultations, appointments
+├── layouts/             # Layout components (MainLayout, RoleLayout)
+├── routes/              # Route configuration (see Routing section below)
+├── shared/              # Shared components, utilities, and cross-role domains
+│   ├── auth/             # Login, signup, OTP verification, role selection
+│   ├── onboarding/       # Onboarding: generic steps at the root, hospital/ and
+│   │                     #   health-worker/ subfolders for role-specific steps
+│   ├── patients/         # Patient-records list shared by hospital + health-worker
+│   ├── waitlist/         # Pre-launch landing/waitlist flow
+│   └── components/ui/    # Design-system primitives (see docs/components.md)
+├── lib/                 # apiClient (axios instance) and ApiError
+├── types/               # Small set of cross-cutting TypeScript types
+└── styles/              # Global styles
 ```
 
-Each `features/<domain>/` module groups its own `components/`, `hooks/`, `services/`, and `types.ts` — keep feature-specific code inside its feature folder rather than in `shared/`. Only put something in `shared/` once a second feature actually needs it.
+Each `features/<role>/` module groups its own `components/`, `hooks/`, `services/`, and `types.ts` for that role. A folder only belongs under `features/` if it's exclusive to hospital or health-worker — anything used by both (or by neither, like auth/waitlist) lives in `shared/` instead. There is no "patient" role/app in this codebase — it was scaffolded early on but never wired to a real signup path, and has been removed.
 
 ---
 
@@ -35,7 +36,6 @@ src/routes/
 └── roles/
     ├── hospital.routes.tsx      # Page routes for /hospital/*
     ├── medical-staff.routes.tsx # Page routes for /medical-staff/*
-    ├── patient.routes.tsx       # Page routes for /patient/*
     └── onboarding.routes.tsx    # Conditional onboarding factory
 ```
 
@@ -47,9 +47,8 @@ Each role lives under its own prefix:
 |---|---|---|
 | Hospital | `/hospital` | `/hospital/dashboard` |
 | Medical Staff | `/medical-staff` | `/medical-staff/dashboard` |
-| Patient | `/patient` | `/patient/dashboard` |
 
-`/` and any unknown URL redirect to `/patient/dashboard` (set via `DEFAULT_REDIRECT` in `paths.ts`).
+Any unmatched URL redirects to `/auth/login` (the catch-all `*` route in `src/routes/index.tsx`).
 
 Within each prefix, the tree is:
 
@@ -72,10 +71,10 @@ Within each prefix, the tree is:
 Open the relevant file in `src/routes/roles/` and append a `RouteObject` entry:
 
 ```tsx
-// src/routes/roles/patient.routes.tsx
-export const patientPageRoutes: RouteObject[] = [
+// src/routes/roles/hospital.routes.tsx
+export const hospitalPageRoutes: RouteObject[] = [
   { path: "dashboard",     element: <DashboardOverview /> },
-  { path: "appointments",  element: <AppointmentList /> },
+  { path: "patients",      element: <PatientList /> },
   // Add your new page here:
   { path: "prescriptions", element: <Prescriptions /> },
 ];
@@ -83,9 +82,9 @@ export const patientPageRoutes: RouteObject[] = [
 
 The path is **relative** to the role prefix — no leading slash needed.
 
-### Adding a page to all roles
+### Adding a page to both roles
 
-Add the same entry to all three `*.routes.tsx` files. If the page component is shared, import it from `src/features/`.
+Add the same entry to both `hospital.routes.tsx` and `medical-staff.routes.tsx`. If the page component is shared by both roles, import it from `src/shared/` (e.g. `PatientList` lives in `src/shared/patients/components/`); if it's exclusive to one role, import it from that role's `src/features/<role>/` folder.
 
 ### Adding a new role
 
@@ -108,30 +107,41 @@ Always use `PATHS` instead of hard-coded strings:
 import { PATHS } from "@/routes/paths";
 
 // correct
-navigate(PATHS.patient.appointments);          // "/patient/appointments"
+navigate(PATHS.medicalStaff.earnings);          // "/medical-staff/earnings"
 navigate(PATHS.hospital.onboarding.legalVerification); // "/hospital/onboarding/legal-verification"
 
 // avoid
-navigate("/patient/appointments");
+navigate("/medical-staff/earnings");
 ```
 
 ---
 
 ## Onboarding Flow
 
-Onboarding routes are conditionally registered per role by `buildOnboardingRoutes(profile)` in `src/routes/roles/onboarding.routes.tsx`. Each role gets only the steps that apply to it:
+`src/shared/onboarding/` is the single home for onboarding, split three ways:
+
+```
+src/shared/onboarding/
+├── components/          # Generic steps registered by onboarding.routes.tsx (below)
+├── hooks/useRoleBasePath.ts
+├── hospital/             # Hospital's own onboarding (registration, geofencing, identity, status)
+│   ├── components/ context/ services/
+└── health-worker/        # Health-worker's own onboarding (professional profile, identity, payout)
+    └── components/
+```
+
+`onboarding.routes.tsx`'s `buildOnboardingRoutes(profile)` conditionally registers the generic `components/` steps per role:
 
 | Role | Steps |
 |---|---|
 | `hospital` | registration → legal-verification → onboarding-status → verification-pending → accreditation-granted |
 | `medical-staff` | registration → verification-pending → accreditation-granted |
-| `patient` | registration → accreditation-granted |
 
-Onboarding step components live in `src/features/onboarding/components/OnboardingFlow.tsx` and use `useRoleBasePath()` to navigate to the correct next step regardless of which role prefix they're rendered under.
+Those step components use `useRoleBasePath()` to navigate to the correct next step regardless of which role prefix they're rendered under.
 
 ### Adding an onboarding step
 
-1. Create and export a new step component from `OnboardingFlow.tsx`.
+1. Create and export a new step component in `src/shared/onboarding/components/`.
 2. Add its slug to the `OnboardingSlug` union in `onboarding.routes.tsx`.
 3. Add the step config to whichever role(s) need it in `profileOnboardingSteps`:
 

@@ -5,7 +5,7 @@ import { Button } from "@/shared/components/ui/Button";
 import { NexusCareLogo } from "@/shared/components/ui/NexusCareLogo";
 import { ArrowLeft } from "lucide-react";
 
-import { useAuthStore, type AuthUser } from "@/features/auth/store/authStore";
+import { useAuthStore, type AuthUser } from "@/shared/auth/store/authStore";
 import apiClient from "@/lib/apiClient";
 import { ApiError } from "@/lib/apiError";
 

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { Navigate, useLocation } from "react-router-dom";
-import { useAuthStore } from "@/features/auth/store/authStore";
+import { useAuthStore } from "@/shared/auth/store/authStore";
 
 // Matches the backend's UserRole enum, not the frontend-only "medical-staff"
 // AppProfile/URL-section label.

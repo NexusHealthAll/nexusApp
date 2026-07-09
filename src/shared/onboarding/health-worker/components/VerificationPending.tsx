@@ -2,7 +2,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/shared/components/ui/Button";
 import { NexusCareLogo } from "@/shared/components/ui/NexusCareLogo";
 import { Bell, Landmark, CheckCircle2, RefreshCw, UserCheck, Rocket } from "lucide-react";
-import { useAuthStore } from "@/features/auth/store/authStore";
+import { useAuthStore } from "@/shared/auth/store/authStore";
 
 interface PayoutState {
   bankName?: string;

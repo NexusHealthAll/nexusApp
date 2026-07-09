@@ -1,7 +1,7 @@
 import type { RouteObject } from "react-router-dom";
 import { HealthWorkerDashboard } from "@/features/health-worker/components/HealthWorkerDashboard";
-import { ConsultationWrapper } from "@/features/appointments/components/ConsultationWrapper";
-import { PatientList } from "@/features/patient/components/PatientList";
+import { ConsultationWrapper } from "@/features/health-worker/appointments/components/ConsultationWrapper";
+import { PatientList } from "@/shared/patients/components/PatientList";
 import { AppointmentList } from "@/features/hospital/components/AppointmentList";
 
 export const medicalStaffPageRoutes: RouteObject[] = [

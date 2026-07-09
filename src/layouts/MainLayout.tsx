@@ -18,11 +18,6 @@ const profileLayoutStyles: Record<
     shell: "bg-secondary-50/40",
     content: "mx-auto bg-onboarding-mainBackground p-4 lg:p-6",
   },
-  patient: {
-    shell: "bg-success-50/40",
-    content:
-      "mx-auto max-w-6xl rounded-2xl border border-success-100 bg-white p-4 lg:p-6",
-  },
   "medical-staff": {
     shell: "bg-primary-50/40",
     content: "mx-auto bg-neutral-50 p-4 lg:p-6",

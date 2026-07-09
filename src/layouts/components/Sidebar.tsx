@@ -3,14 +3,11 @@ import { ComponentType, useEffect, useState } from "react";
 import {
   BarChart2,
   CalendarClock,
-  Calendar,
   ChevronDown,
   ChevronUp,
   FileText,
   LayoutDashboard,
-  MessageSquare,
   Search,
-  Stethoscope,
   Users,
   Building2,
   Settings,
@@ -24,7 +21,7 @@ import { cn } from "@/shared/utils/cn";
 import { AppProfile } from "@/types";
 import { NexusCareLogo } from "@/shared/components/ui/NexusCareLogo";
 import { Badge, type BadgeVariant } from "@/shared/components/ui/Badge";
-import { authUtils } from "@/features/auth/utils/authUtils";
+import { authUtils } from "@/shared/auth/utils/authUtils";
 import { useHospitalProfile } from "@/features/hospital/hooks/useHospitalProfile";
 import type { HospitalRegistrationStatus } from "@/features/hospital/services/hospitalProfileService";
 import { HospitalMetricsService } from "@/features/hospital/services/hospitalMetricsService";
@@ -53,13 +50,6 @@ const profileNavigationItems: Record<AppProfile, NavigationItem[]> = {
     // { name: "Staff Rosters", href: "/doctors", icon: ClipboardList },
     // { name: "Messages", href: "/messages", icon: MessageSquare },
   ],
-  patient: [
-    { name: "My Dashboard", href: "/dashboard", icon: LayoutDashboard },
-    { name: "My Appointments", href: "/appointments", icon: Calendar },
-    { name: "Care Team", href: "/doctors", icon: Stethoscope },
-    { name: "Messages", href: "/analytics", icon: MessageSquare },
-    { name: "Settings", href: "/settings", icon: Settings },
-  ],
   "medical-staff": [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
     { name: "Find Shifts", href: "/find-shifts", icon: Search },
@@ -75,7 +65,6 @@ const profileBottomNavigationItems: Record<AppProfile, NavigationItem[]> = {
     { name: "Settings", href: "/settings", icon: Settings },
     { name: "Support", href: "/help", icon: HelpCircle },
   ],
-  patient: [{ name: "Support", href: "/help", icon: HelpCircle }],
   "medical-staff": [{ name: "Settings", href: "/settings", icon: Settings }],
 };
 
@@ -86,10 +75,6 @@ const profileStyles: Record<AppProfile, { active: string; brandText: string }> =
       "bg-gradient-to-r from-secondary-700 to-secondary-500 text-white shadow-sm",
     brandText: "text-secondary-700",
   },
-  patient: {
-    active: "bg-success-50 text-success-700 border-r-2 border-success-600",
-    brandText: "text-success-700",
-  },
   "medical-staff": {
     active: "bg-primary-700 text-white shadow-sm",
     brandText: "text-primary-700",
@@ -99,7 +84,6 @@ const profileStyles: Record<AppProfile, { active: string; brandText: string }> =
 const profileBasePath: Record<AppProfile, string> = {
   hospital: "/hospital",
   "medical-staff": "/medical-staff",
-  patient: "/patient",
 };
 
 const registrationStatusBadge: Record<

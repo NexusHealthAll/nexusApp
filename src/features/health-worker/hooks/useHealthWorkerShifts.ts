@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import apiClient from "@/lib/apiClient";
-import { useAuthStore } from "@/features/auth/store/authStore";
+import { useAuthStore } from "@/shared/auth/store/authStore";
 import type {
   ApiPayType,
   ApiShiftPriority,

@@ -12,8 +12,8 @@ import { cn } from "@/shared/utils/cn";
 import { appToast } from "@/shared/components/feedback/toast";
 import apiClient from "@/lib/apiClient";
 import { ApiError } from "@/lib/apiError";
-import { useAuthStore } from "@/features/auth/store/authStore";
-import type { AuthUser } from "@/features/auth/store/authStore";
+import { useAuthStore } from "@/shared/auth/store/authStore";
+import type { AuthUser } from "@/shared/auth/store/authStore";
 import { useHospitalShift } from "@/features/hospital/shifts/hooks/useHospitalShift";
 import type { ApiShift } from "@/features/hospital/shifts/types";
 import {

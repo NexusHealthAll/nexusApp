@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
 import { EmptyState } from "@/shared/components/ui/EmptyState";
-import type { AuthUser } from "@/features/auth/store/authStore";
+import type { AuthUser } from "@/shared/auth/store/authStore";
 import type { MyApplicationEntry, EarningsSummary } from "../../hooks/useHealthWorkerShifts";
 import { Metric, StatusBadge, formatKobo } from "../DashboardChrome";
 

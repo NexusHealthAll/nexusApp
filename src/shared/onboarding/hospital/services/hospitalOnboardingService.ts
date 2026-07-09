@@ -1,5 +1,5 @@
 import type { OnboardingFormData } from "../context/OnboardingContext";
-import { authUtils } from "@/features/auth/utils/authUtils";
+import { authUtils } from "@/shared/auth/utils/authUtils";
 import apiClient from "@/lib/apiClient";
 import { type ApiFieldError } from "@/lib/apiError";
 

@@ -13,7 +13,7 @@ import {
   Sparkles,
 } from "lucide-react";
 
-import { useAuthStore } from "@/features/auth/store/authStore";
+import { useAuthStore } from "@/shared/auth/store/authStore";
 
 export function EmailVerificationSuccess() {
   const navigate = useNavigate();

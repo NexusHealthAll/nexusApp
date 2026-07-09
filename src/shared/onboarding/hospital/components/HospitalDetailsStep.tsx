@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { BadgeCheck, ShieldCheck, Mail, Phone, User } from "lucide-react";
 import { HospitalOnboardingLayout } from "./HospitalOnboardingLayout";
 import { useOnboarding } from "../context/OnboardingContext";
-import { authUtils } from "@/features/auth/utils/authUtils";
+import { authUtils } from "@/shared/auth/utils/authUtils";
 
 const inputCls =
   "w-full rounded-lg bg-[#DAE8F3] border border-transparent px-3.5 py-2.5 text-sm text-neutral-800 outline-none " +

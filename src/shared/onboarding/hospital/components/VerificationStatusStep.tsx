@@ -10,8 +10,8 @@ import {
 } from "lucide-react";
 import { HospitalOnboardingLayout } from "./HospitalOnboardingLayout";
 import { useOnboarding } from "../context/OnboardingContext";
-import { authUtils } from "@/features/auth/utils/authUtils";
-import { useAuthStore } from "@/features/auth/store/authStore";
+import { authUtils } from "@/shared/auth/utils/authUtils";
+import { useAuthStore } from "@/shared/auth/store/authStore";
 
 export function VerificationStatusStep() {
   const navigate = useNavigate();

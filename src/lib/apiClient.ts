@@ -14,7 +14,7 @@
 
 import axios, { type AxiosRequestConfig, type AxiosResponse } from "axios";
 import { ApiError, parseFieldErrors } from "./apiError";
-import { useAuthStore } from "@/features/auth/store/authStore";
+import { useAuthStore } from "@/shared/auth/store/authStore";
 
 // ── Instance ─────────────────────────────────────────────────────────────────
 

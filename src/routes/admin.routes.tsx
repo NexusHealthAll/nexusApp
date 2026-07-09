@@ -1,6 +1,6 @@
 import type { RouteObject } from "react-router-dom";
 import { Navigate } from "react-router-dom";
-import { ProtectedRoute } from "@/features/auth/components";
+import { ProtectedRoute } from "@/shared/auth/components";
 
 // Simple admin dashboard placeholder, kept alongside the route config it
 // belongs to rather than split into its own file for one component.
