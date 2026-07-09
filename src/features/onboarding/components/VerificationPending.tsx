@@ -2,6 +2,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/shared/components/ui/Button";
 import { NexusCareLogo } from "@/shared/components/ui/NexusCareLogo";
 import { Bell, Landmark, CheckCircle2, RefreshCw, UserCheck, Rocket } from "lucide-react";
+import { useAuthStore } from "@/features/auth/store/authStore";
 
 interface PayoutState {
   bankName?: string;
@@ -103,7 +104,13 @@ export function VerificationPending() {
           </div>
 
           <Button
-            onClick={() => navigate("/medical-staff/dashboard")}
+            onClick={() => {
+              // Onboarding is fully consumed at this point — clear the
+              // pending clinicianId so future logins go straight to the
+              // dashboard instead of back into the onboarding wizard.
+              useAuthStore.getState().clearClinicianId();
+              navigate("/medical-staff/dashboard");
+            }}
             className="w-full rounded-lg bg-gradient-to-r from-onboarding-primaryGreen to-onboarding-primaryBlue py-3 text-sm font-semibold uppercase tracking-widest text-white transition-all shadow-md hover:shadow-lg"
           >
             Go to Dashboard

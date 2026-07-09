@@ -107,7 +107,21 @@ export function ProfessionalProfile() {
           specialty: formData.specialty,
         },
       );
-      navigate("/medical-staff/onboarding/identity");
+
+      const { accessToken, refreshToken, user } = useAuthStore.getState();
+      if (user) {
+        useAuthStore.getState().setAuthSession({
+          accessToken,
+          refreshToken,
+          user: {
+            ...user,
+            first_name: formData.firstName.trim(),
+            last_name: formData.lastName.trim(),
+          },
+        });
+      }
+
+      navigate("/medical-staff/onboarding/payout");
     } catch (err) {
       setSubmitError(
         err instanceof ApiError
@@ -145,7 +159,7 @@ export function ProfessionalProfile() {
           {/* Step Indicator */}
           <div className="space-y-3">
             <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">
-              STEP 02 OF 04
+              STEP 03 OF 04
             </p>
             <h1 className="text-2xl font-bold text-onboarding-textPrimary">
               Professional Identity
@@ -155,7 +169,7 @@ export function ProfessionalProfile() {
             <div className="w-full bg-slate-200 rounded-full h-1">
               <div
                 className="bg-gradient-to-r from-onboarding-primaryGreen to-onboarding-primaryBlue h-1 rounded-full"
-                style={{ width: "50%" }}
+                style={{ width: "75%" }}
               ></div>
             </div>
           </div>

@@ -3,7 +3,9 @@ const APP_SHELL = [
   "/",
   "/medical-staff/dashboard",
   "/manifest.webmanifest",
-  "/logo.png"
+  "/logo.png",
+  "/icons/icon-192.png",
+  "/icons/icon-512.png"
 ];
 
 self.addEventListener("install", (event) => {

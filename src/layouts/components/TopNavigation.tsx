@@ -1,11 +1,12 @@
 import { useLocation } from "react-router-dom";
-import { Bell, ChevronRight, HelpCircle, Menu, Mic, Plus, Search, User } from "lucide-react";
+import { Bell, ChevronRight, Download, HelpCircle, Menu, Mic, Plus, Search, User } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
 import { AppProfile } from "@/types";
 import { useHospitalProfile } from "@/features/hospital/hooks/useHospitalProfile";
 import { CreateShiftButton } from "@/features/hospital/shifts/components/CreateShiftButton";
 import { authUtils } from "@/features/auth/utils/authUtils";
 import { useRecordPatientModalStore } from "@/features/health-worker/hooks/useRecordPatientModalStore";
+import { useInstallPrompt } from "@/features/health-worker/hooks/useInstallPrompt";
 
 function getPageTitle(pathname: string): string {
   if (pathname.includes("/onboarding")) return "Onboarding";
@@ -132,6 +133,7 @@ function HospitalTopNavigation({ onMenuClick }: { onMenuClick: () => void }) {
 function MedicalStaffTopNavigation({ onMenuClick }: { onMenuClick: () => void }) {
   const location = useLocation();
   const openRecordPatient = useRecordPatientModalStore((s) => s.open);
+  const { canInstall, promptInstall } = useInstallPrompt();
   const firstName =
     authUtils.getCurrentUser()?.fullName?.split(" ")[0] ?? "Dr.";
 
@@ -158,6 +160,17 @@ function MedicalStaffTopNavigation({ onMenuClick }: { onMenuClick: () => void })
       </div>
 
       <div className="flex flex-shrink-0 items-center gap-3">
+        {canInstall && (
+          <Button
+            size="sm"
+            onClick={promptInstall}
+            className="hidden items-center gap-1.5 rounded-lg border border-secondary-200 bg-white text-xs font-semibold text-secondary-700 hover:bg-secondary-50 sm:flex"
+          >
+            <Download className="h-3.5 w-3.5" />
+            Install App
+          </Button>
+        )}
+
         <button className="relative flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full border border-neutral-200 text-neutral-500 hover:text-neutral-700">
           <Bell className="h-4 w-4" />
           <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-error-500" />

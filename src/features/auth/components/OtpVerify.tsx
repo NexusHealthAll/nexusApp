@@ -157,6 +157,24 @@ export function OtpVerify() {
         body.user?.role ?? useAuthStore.getState().user?.role ?? null;
 
       if (!flowForOtpVerify) {
+        // No stored flow context — most commonly the second, real login right
+        // after a fresh clinician registration (activeAuthFlow is cleared
+        // once the registration OTP is verified). Route by the verified role
+        // instead: health workers with a pending clinicianId still need to
+        // complete onboarding before landing on the dashboard.
+        if (userRole === "hospital_admin") {
+          navigate("/hospital/dashboard");
+          return;
+        }
+        if (userRole === "health_worker") {
+          const pendingClinicianId = useAuthStore.getState().clinicianId;
+          navigate(
+            pendingClinicianId
+              ? "/medical-staff/onboarding/identity"
+              : "/medical-staff/dashboard",
+          );
+          return;
+        }
         navigate("/auth/verification-success");
         return;
       }
@@ -186,7 +204,12 @@ export function OtpVerify() {
       if (role === "health-worker") {
         if (action === "login") {
           clearFlow();
-          navigate("/medical-staff/dashboard");
+          const pendingClinicianId = useAuthStore.getState().clinicianId;
+          navigate(
+            pendingClinicianId
+              ? "/medical-staff/onboarding/identity"
+              : "/medical-staff/dashboard",
+          );
           return;
         }
 

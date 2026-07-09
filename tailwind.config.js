@@ -31,6 +31,30 @@ export default {
           900: "#134e4a",
           950: "#042f2e",
         },
+        // Health-worker app brand blue, matched to the Figma "Nexus Care" designs
+        // (#0041a2 primary CTA / #0257d3 active nav state).
+        brand: {
+          50: "#eef5ff",
+          100: "#e8f5ff",
+          200: "#c9ddff",
+          300: "#a3c2ff",
+          400: "#6f9aff",
+          500: "#3f74f0",
+          600: "#0257d3",
+          700: "#0041a2",
+          800: "#003380",
+          900: "#002563",
+          950: "#001433",
+          // Search/input surface fill from the Figma "Input" component (#d6e5ef) —
+          // a distinct, slightly darker tint than the brand-100 pill background.
+          input: "#d6e5ef",
+        },
+        // Health-worker app text hierarchy, matched to exact Figma text fills.
+        ink: {
+          900: "#0f1d25", // headings
+          700: "#424752", // body copy
+          500: "#727783", // captions / uppercase labels
+        },
         neutral: {
           50: "#f8fafc",
           100: "#f1f5f9",

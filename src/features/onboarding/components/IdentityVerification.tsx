@@ -71,7 +71,7 @@ export function IdentityVerification() {
         `/api/v1/clinicians/${encodeURIComponent(clinicianId)}/identity/validate`,
         { type: "NIN", otp: otp.trim() },
       );
-      navigate("/medical-staff/onboarding/payout");
+      navigate("/medical-staff/onboarding/profile");
     } catch (err) {
       setError(
         err instanceof ApiError
@@ -108,7 +108,7 @@ export function IdentityVerification() {
 
           <div className="space-y-3">
             <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">
-              STEP 03 OF 04
+              STEP 02 OF 04
             </p>
             <h1 className="text-2xl font-bold text-onboarding-textPrimary">
               Identity Verification
@@ -116,7 +116,7 @@ export function IdentityVerification() {
             <div className="w-full bg-slate-200 rounded-full h-1">
               <div
                 className="bg-gradient-to-r from-onboarding-primaryGreen to-onboarding-primaryBlue h-1 rounded-full"
-                style={{ width: "75%" }}
+                style={{ width: "50%" }}
               ></div>
             </div>
           </div>
