@@ -1,5 +1,5 @@
 import apiClient from "@/lib/apiClient";
-import { useAuthStore } from "@/features/auth/store/authStore";
+import { useAuthStore } from "@/shared/auth/store/authStore";
 
 export type HospitalRegistrationStatus = "pending" | "approved" | "rejected";
 

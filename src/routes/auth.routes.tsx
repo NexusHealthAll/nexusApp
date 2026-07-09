@@ -7,9 +7,9 @@ import {
   RoleSelection,
   EmailVerificationSuccess,
   PublicOnlyAuthRoute,
-} from "@/features/auth/components";
-import { WaitlistLandingStep } from "@/features/waitlist/components/WaitlistLandingStep";
-import { WaitlistSuccessStep } from "@/features/waitlist/components/WaitlistSuccessStep";
+} from "@/shared/auth/components";
+import { WaitlistLandingStep } from "@/shared/waitlist/components/WaitlistLandingStep";
+import { WaitlistSuccessStep } from "@/shared/waitlist/components/WaitlistSuccessStep";
 import { LandingPage } from "@/pages/landing";
 
 export const authRoutes: RouteObject[] = [

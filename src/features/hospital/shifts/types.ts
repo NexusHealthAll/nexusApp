@@ -35,6 +35,8 @@ export interface ApiShift {
   actual_start?: string | null;
   actual_end?: string | null;
   assigned_clinician_id?: string | null;
+  /** Static formatted meeting URL for virtual shifts — not a real video-SDK session. */
+  virtual_link?: string | null;
   pay_type: ApiPayType;
   rate_kobo_per_hour?: number | null;
   fixed_rate_kobo?: number | null;

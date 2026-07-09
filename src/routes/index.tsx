@@ -8,26 +8,25 @@ import {
   hospitalStandaloneRoutes,
 } from "./roles/hospital.routes";
 import { medicalStaffPageRoutes } from "./roles/medical-staff.routes";
-import { patientPageRoutes } from "./roles/patient.routes";
 import { authRoutes } from "./auth.routes";
 import { adminRoutes } from "./admin.routes";
 import {
   ProtectedRoute,
   PublicOnlyAuthRoute,
-} from "@/features/auth/components";
+} from "@/shared/auth/components";
 import {
   HospitalDetailsStep,
   LocationGeofencingStep,
   IdentityVerificationStep,
   VerificationStatusStep,
-} from "@/features/hospital/onboarding/components";
-import { OnboardingProvider } from "@/features/hospital/onboarding/context/OnboardingContext";
+} from "@/shared/onboarding/hospital/components";
+import { OnboardingProvider } from "@/shared/onboarding/hospital/context/OnboardingContext";
 import {
   ProfessionalProfile,
   IdentityVerification,
   PayoutSetup,
   VerificationPending,
-} from "@/features/onboarding/components";
+} from "@/shared/onboarding/health-worker/components";
 
 function buildRoleTree(
   basePath: string,
@@ -190,7 +189,6 @@ export const appRoutes: RouteObject[] = [
     hospitalStandaloneRoutes,
   ),
   ...buildRoleTree("/medical-staff", "medical-staff", medicalStaffPageRoutes),
-  ...buildRoleTree("/patient", "patient", patientPageRoutes),
 
   { path: "*", element: <Navigate to="/auth/login" replace /> },
 ];

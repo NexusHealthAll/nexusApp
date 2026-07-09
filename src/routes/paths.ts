@@ -68,7 +68,6 @@ function buildRolePaths(base: string): RolePathGroup {
 export const PATHS = {
   hospital: buildRolePaths("/hospital"),
   medicalStaff: buildRolePaths("/medical-staff"),
-  patient: buildRolePaths("/patient"),
 } as const;
 
 /** App-level default landing route. */

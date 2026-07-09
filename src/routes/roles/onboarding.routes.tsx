@@ -32,10 +32,6 @@ const profileOnboardingSteps: Record<AppProfile, OnboardingStepConfig[]> = {
     { slug: "verification-pending", element: <VerificationPendingStep /> },
     { slug: "accreditation-granted", element: <AccreditationGrantedStep /> },
   ],
-  patient: [
-    { slug: "registration", element: <HospitalRegistrationStep /> },
-    { slug: "accreditation-granted", element: <AccreditationGrantedStep /> },
-  ],
 };
 
 export function buildOnboardingRoutes(profile: AppProfile): RouteObject[] {

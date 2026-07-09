@@ -1,4 +1,4 @@
-export type AppProfile = "hospital" | "medical-staff" | "patient";
+export type AppProfile = "hospital" | "medical-staff";
 
 export type OnboardingStep =
   | "hospital-registration"

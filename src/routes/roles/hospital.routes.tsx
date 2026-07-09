@@ -1,6 +1,6 @@
 import type { RouteObject } from "react-router-dom";
 import { DashboardOverview } from "@/features/hospital/components/DashboardOverview";
-import { PatientList } from "@/features/patient/components/PatientList";
+import { PatientList } from "@/shared/patients/components/PatientList";
 import { DoctorList } from "@/features/hospital/components/DoctorList";
 import { AppointmentList } from "@/features/hospital/components/AppointmentList";
 import { HospitalAnalyticsPage } from "@/features/hospital/analytics/components/HospitalAnalyticsPage";
