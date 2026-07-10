@@ -27,6 +27,7 @@ import {
   PayoutSetup,
   VerificationPending,
 } from "@/shared/onboarding/health-worker/components";
+import { InstallGate } from "@/features/health-worker/components/InstallGate";
 
 function buildRoleTree(
   basePath: string,
@@ -45,13 +46,22 @@ function buildRoleTree(
     path: `${basePath}/${route.path}`,
   }));
 
+  // Health workers must use the installed PWA — InstallGate hard-blocks
+  // browser-tab access to every post-login medical-staff route (prod only).
+  const roleLayout =
+    profile === "medical-staff" ? (
+      <InstallGate>
+        <RoleLayout profile={profile} />
+      </InstallGate>
+    ) : (
+      <RoleLayout profile={profile} />
+    );
+
   // All other role routes remain protected
   const protectedTree: RouteObject = {
     path: `${basePath}/*`,
     element: (
-      <ProtectedRoute requiredRole={requiredRole}>
-        <RoleLayout profile={profile} />
-      </ProtectedRoute>
+      <ProtectedRoute requiredRole={requiredRole}>{roleLayout}</ProtectedRoute>
     ),
     children: [
       { index: true, element: <Navigate to="dashboard" replace /> },
@@ -141,36 +151,47 @@ const hospitalOnboardingRoutes: RouteObject[] = [
  */
 const medicalStaffOnboardingRoutes: RouteObject[] = [
   {
-    path: "/medical-staff/onboarding/profile",
+    // Pathless layout: these steps run post-login, so they sit behind the
+    // same installed-app requirement as the dashboard (see InstallGate).
     element: (
-      <ProtectedRoute requiredRole="health_worker">
-        <ProfessionalProfile />
-      </ProtectedRoute>
+      <InstallGate>
+        <Outlet />
+      </InstallGate>
     ),
-  },
-  {
-    path: "/medical-staff/onboarding/identity",
-    element: (
-      <ProtectedRoute requiredRole="health_worker">
-        <IdentityVerification />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: "/medical-staff/onboarding/payout",
-    element: (
-      <ProtectedRoute requiredRole="health_worker">
-        <PayoutSetup />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: "/medical-staff/onboarding/pending",
-    element: (
-      <ProtectedRoute requiredRole="health_worker">
-        <VerificationPending />
-      </ProtectedRoute>
-    ),
+    children: [
+      {
+        path: "/medical-staff/onboarding/profile",
+        element: (
+          <ProtectedRoute requiredRole="health_worker">
+            <ProfessionalProfile />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/medical-staff/onboarding/identity",
+        element: (
+          <ProtectedRoute requiredRole="health_worker">
+            <IdentityVerification />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/medical-staff/onboarding/payout",
+        element: (
+          <ProtectedRoute requiredRole="health_worker">
+            <PayoutSetup />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/medical-staff/onboarding/pending",
+        element: (
+          <ProtectedRoute requiredRole="health_worker">
+            <VerificationPending />
+          </ProtectedRoute>
+        ),
+      },
+    ],
   },
 ];
 

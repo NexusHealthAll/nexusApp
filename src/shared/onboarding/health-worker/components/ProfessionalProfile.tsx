@@ -8,6 +8,7 @@ import { X, Bell, Award, User } from "lucide-react";
 import { useAuthStore } from "@/shared/auth/store/authStore";
 import apiClient from "@/lib/apiClient";
 import { ApiError } from "@/lib/apiError";
+import { InstallPromptBanner } from "@/features/health-worker/components/InstallPromptBanner";
 
 const ROLE_OPTIONS = [
   { value: "doctor", label: "Doctor" },
@@ -139,6 +140,8 @@ export function ProfessionalProfile() {
   return (
     <div className="min-h-screen bg-[#F3FAFF] flex items-center justify-center p-4">
       <div className="w-full max-w-md">
+        <InstallPromptBanner className="mb-4" />
+
         {/* Header */}
         <div className="bg-white rounded-t-2xl px-6 py-4 border-b border-slate-100">
           <div className="flex items-center justify-between mb-4">
