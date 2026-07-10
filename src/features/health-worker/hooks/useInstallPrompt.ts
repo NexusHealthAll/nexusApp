@@ -1,34 +1,11 @@
-import { useCallback, useEffect, useState } from "react";
-
-interface BeforeInstallPromptEvent extends Event {
-  prompt: () => Promise<void>;
-  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
-}
+import { useCallback } from "react";
+import { useInstallPromptStore } from "./useInstallPromptStore";
 
 export function useInstallPrompt() {
-  const [deferredPrompt, setDeferredPrompt] =
-    useState<BeforeInstallPromptEvent | null>(null);
-  const [isInstalled, setIsInstalled] = useState(
-    () => window.matchMedia("(display-mode: standalone)").matches,
-  );
-
-  useEffect(() => {
-    const onBeforeInstallPrompt = (e: Event) => {
-      e.preventDefault();
-      setDeferredPrompt(e as BeforeInstallPromptEvent);
-    };
-    const onAppInstalled = () => {
-      setIsInstalled(true);
-      setDeferredPrompt(null);
-    };
-
-    window.addEventListener("beforeinstallprompt", onBeforeInstallPrompt);
-    window.addEventListener("appinstalled", onAppInstalled);
-    return () => {
-      window.removeEventListener("beforeinstallprompt", onBeforeInstallPrompt);
-      window.removeEventListener("appinstalled", onAppInstalled);
-    };
-  }, []);
+  const deferredPrompt = useInstallPromptStore((s) => s.deferredPrompt);
+  const isInstalled = useInstallPromptStore((s) => s.isInstalled);
+  const isIos = useInstallPromptStore((s) => s.isIos);
+  const setDeferredPrompt = useInstallPromptStore((s) => s.setDeferredPrompt);
 
   const promptInstall = useCallback(async () => {
     if (!deferredPrompt) return false;
@@ -36,11 +13,15 @@ export function useInstallPrompt() {
     const { outcome } = await deferredPrompt.userChoice;
     setDeferredPrompt(null);
     return outcome === "accepted";
-  }, [deferredPrompt]);
+  }, [deferredPrompt, setDeferredPrompt]);
 
   return {
     canInstall: !!deferredPrompt && !isInstalled,
     isInstalled,
+    // iOS Safari never fires `beforeinstallprompt` — this is how consumers
+    // (e.g. InstallPromptBanner) know to show manual "Add to Home Screen"
+    // instructions instead of a native install button.
+    isIos: isIos && !isInstalled,
     promptInstall,
   };
 }

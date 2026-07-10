@@ -26,6 +26,8 @@ import {
 } from "../hooks/useHealthWorkerShifts";
 import type { PatientRecord } from "../types";
 import { Avatar } from "./DashboardChrome";
+import { InstallPromptBanner } from "./InstallPromptBanner";
+import { UpdateAvailableToast } from "./UpdateAvailableToast";
 import { HomeScreen } from "./screens/HomeScreen";
 import { MarketplaceScreen } from "./screens/MarketplaceScreen";
 import { ShiftDetailScreen } from "./screens/ShiftDetailScreen";
@@ -151,7 +153,10 @@ function Shell({
                 </button>
               </header>
             )}
-            <div className="px-4 md:px-8">{children}</div>
+            <div className="px-4 md:px-8">
+              {showTopBar && <InstallPromptBanner className="mb-4" />}
+              {children}
+            </div>
           </div>
         </div>
 
@@ -177,6 +182,8 @@ function Shell({
             })}
           </nav>
         )}
+
+        <UpdateAvailableToast />
       </div>
     </div>
   );
