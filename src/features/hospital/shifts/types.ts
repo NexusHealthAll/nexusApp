@@ -100,10 +100,13 @@ export interface ShiftDeliverable {
 export interface ShiftFormData {
   // Step 1 – Basic Information
   roleNeeded: string;
+  department: string;
   specialty: string;
   shiftType: "in-person" | "virtual";
   startDate: string;
   startTime: string;
+  /** End time (HH:mm); duration is derived from start → end. */
+  endTime: string;
   /** Shift length in hours, set in Step 1 and reused as the pay-calc hours in Step 2. */
   duration: number;
   urgencyLevel: string;
@@ -125,4 +128,7 @@ export interface ShiftFormData {
 
   // Step 4 – Requirements
   qualifications: string[];
+  minExperience: string;
+  languages: string;
+  certificates: string[];
 }

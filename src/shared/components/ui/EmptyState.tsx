@@ -1,5 +1,5 @@
 import { Inbox } from "lucide-react";
-import type { ReactNode } from "react";
+import type { ComponentType, ReactNode } from "react";
 import { cn } from "@/shared/utils/cn";
 
 interface EmptyStateProps {
@@ -13,6 +13,39 @@ interface EmptyStateProps {
 }
 
 const defaultIcon = <Inbox className="h-10 w-10 text-neutral-300" />;
+
+type EmptyStateTone = "secondary" | "primary" | "warning" | "neutral";
+
+const iconTones: Record<EmptyStateTone, { bubble: string; icon: string }> = {
+  secondary: { bubble: "bg-secondary-50", icon: "text-secondary-500" },
+  primary: { bubble: "bg-primary-50", icon: "text-primary-500" },
+  warning: { bubble: "bg-warning-50", icon: "text-warning-500" },
+  neutral: { bubble: "bg-neutral-100", icon: "text-neutral-400" },
+};
+
+/**
+ * Tinted icon bubble for EmptyState's `icon` slot, so feature empty states
+ * share one look: `icon={<EmptyStateIcon icon={Users} />}`.
+ */
+export function EmptyStateIcon({
+  icon: Icon,
+  tone = "secondary",
+}: {
+  icon: ComponentType<{ className?: string }>;
+  tone?: EmptyStateTone;
+}) {
+  const tones = iconTones[tone];
+  return (
+    <span
+      className={cn(
+        "mb-1 flex h-14 w-14 items-center justify-center rounded-2xl",
+        tones.bubble,
+      )}
+    >
+      <Icon className={cn("h-6 w-6", tones.icon)} />
+    </span>
+  );
+}
 
 /**
  * Shared "no data" placeholder for tables and API-backed lists — a

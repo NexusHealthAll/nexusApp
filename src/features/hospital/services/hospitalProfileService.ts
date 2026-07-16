@@ -18,6 +18,37 @@ interface HospitalResponse {
   admin_registration_status: HospitalRegistrationStatus | null;
 }
 
+export interface HospitalDetails {
+  id: string;
+  name: string;
+  registrationNumber: string;
+  email: string;
+  address: string;
+  phoneNumber: string;
+  verificationStatus: string;
+  adminRegistrationStatus: HospitalRegistrationStatus | null;
+  logoUrl: string | null;
+}
+
+interface HospitalDetailsResponse {
+  id: string;
+  name: string;
+  registration_number: string;
+  email: string;
+  address: string;
+  phone_number: string;
+  verification_status: string;
+  admin_registration_status: HospitalRegistrationStatus | null;
+  logo_url: string | null;
+}
+
+export interface UpdateHospitalPatch {
+  name?: string;
+  email?: string;
+  address?: string;
+  phone_number?: string;
+}
+
 function deriveAbbreviation(name: string): string {
   const words = name.split(/\s+/).filter(Boolean);
   if (words.length <= 1) return name.slice(0, 4).toUpperCase();
@@ -71,5 +102,39 @@ export class HospitalProfileService {
       adminInitials: deriveInitials(adminName),
       adminRegistrationStatus: hospital.admin_registration_status,
     };
+  }
+
+  /** Full hospital record for the Hospital Profile page (GET /hospitals/:id). */
+  static async getHospitalDetails(): Promise<HospitalDetails | null> {
+    const hospitalId = useAuthStore.getState().user?.hospital_id;
+    if (!hospitalId) return null;
+
+    const res = await apiClient.get<HospitalDetailsResponse>(
+      `/api/v1/hospitals/${encodeURIComponent(hospitalId)}`,
+    );
+    const h = res.data;
+    return {
+      id: h.id,
+      name: h.name,
+      registrationNumber: h.registration_number,
+      email: h.email,
+      address: h.address,
+      phoneNumber: h.phone_number,
+      verificationStatus: h.verification_status,
+      adminRegistrationStatus: h.admin_registration_status,
+      logoUrl: h.logo_url,
+    };
+  }
+
+  /** PATCH /hospitals/:id — only name/email/address/phone are updatable. */
+  static async updateHospitalDetails(
+    patch: UpdateHospitalPatch,
+  ): Promise<void> {
+    const hospitalId = useAuthStore.getState().user?.hospital_id;
+    if (!hospitalId) throw new Error("No hospital on the current session");
+    await apiClient.patch(
+      `/api/v1/hospitals/${encodeURIComponent(hospitalId)}`,
+      patch,
+    );
   }
 }
