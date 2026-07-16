@@ -24,6 +24,22 @@ export interface FillRatePoint {
   filled: number;
 }
 
+export interface DashboardHeroStats {
+  weeklyRevenue: string;
+  fillRatePct: number;
+  openShifts: number;
+  urgentOpenShifts: number;
+  needsAttentionToday: number;
+}
+
+export interface SpendVsFillRatePoint {
+  week: string;
+  /** Naira spent in the week (kobo / 100). */
+  spending: number;
+  /** Fill rate for shifts scheduled in the week, in percent. */
+  fillRate: number;
+}
+
 export interface RoleHiredSlice {
   role: string;
   percentage: number;
@@ -160,6 +176,188 @@ export class HospitalMetricsService {
       openShifts,
       activeNow,
       payrollThisWeek: formatKobo(payrollThisWeekKobo),
+    };
+  }
+
+  /** Headline stats for the redesigned dashboard's four metric cards. */
+  static async getDashboardHeroStats(): Promise<DashboardHeroStats> {
+    const [openShifts, shifts, fillRate] = await Promise.all([
+      this.countByStatus("open"),
+      this.fetchRecentShifts(),
+      this.getFillRateSeries(),
+    ]);
+
+    const now = new Date();
+    const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const weeklyRevenueKobo = shifts
+      .filter(
+        (s) =>
+          s.billing_triggered_at && new Date(s.billing_triggered_at) >= weekAgo,
+      )
+      .reduce((sum, s) => sum + shiftAmountKobo(s), 0);
+
+    const urgentOpenShifts = shifts.filter(
+      (s) =>
+        s.status === "open" && (s.priority === "stat" || s.priority === "urgent"),
+    ).length;
+
+    const todayKey = now.toDateString();
+    const needsAttentionToday = shifts.filter(
+      (s) =>
+        s.status === "open" &&
+        new Date(s.scheduled_start).toDateString() === todayKey,
+    ).length;
+
+    return {
+      weeklyRevenue: formatKobo(weeklyRevenueKobo),
+      fillRatePct: fillRate.avgFillRate,
+      openShifts,
+      urgentOpenShifts,
+      needsAttentionToday,
+    };
+  }
+
+  /** Dual-series line chart data: weekly spending vs weekly fill rate. */
+  static async getSpendVsFillRateSeries(): Promise<SpendVsFillRatePoint[]> {
+    const shifts = await this.fetchRecentShifts();
+    const now = new Date();
+    const weekMs = 7 * 24 * 60 * 60 * 1000;
+
+    return Array.from({ length: 7 }, (_, i) => {
+      const end = new Date(now.getTime() - (6 - i) * weekMs);
+      const start = new Date(end.getTime() - weekMs);
+
+      const spendingKobo = shifts
+        .filter((s) => {
+          if (!s.billing_triggered_at) return false;
+          const t = new Date(s.billing_triggered_at);
+          return t >= start && t < end;
+        })
+        .reduce((sum, s) => sum + shiftAmountKobo(s), 0);
+
+      const inWeek = shifts.filter((s) => {
+        const t = new Date(s.scheduled_start);
+        return t >= start && t < end;
+      });
+      const filled = inWeek.filter((s) => FILLED_STATUSES.has(s.status)).length;
+
+      return {
+        week: `Wk ${i + 1}`,
+        spending: Math.round(spendingKobo / 100),
+        fillRate:
+          inWeek.length > 0 ? Math.round((filled / inWeek.length) * 100) : 0,
+      };
+    });
+  }
+
+  /** Shifts scheduled to run today, newest first, for the dashboard list. */
+  static async getTodaysShifts(limit = 4): Promise<ApiShift[]> {
+    const shifts = await this.fetchRecentShifts();
+    const todayKey = new Date().toDateString();
+    return shifts
+      .filter(
+        (s) => new Date(s.scheduled_start).toDateString() === todayKey,
+      )
+      .sort(
+        (a, b) =>
+          new Date(a.scheduled_start).getTime() -
+          new Date(b.scheduled_start).getTime(),
+      )
+      .slice(0, limit);
+  }
+
+  /** Aggregates for the redesigned Analytics page, from the real shifts list. */
+  static async getAnalyticsOverview(): Promise<{
+    totalRevenue: string;
+    fillRatePct: number;
+    completionRatePct: number;
+    cancelledShifts: number;
+    trend: { week: string; committed: number; spending: number }[];
+    rolesRequested: { role: string; count: number }[];
+    departments: { name: string; shifts: number; fillRatePct: number }[];
+  }> {
+    const shifts = await this.fetchRecentShifts();
+
+    const totalRevenueKobo = shifts
+      .filter((s) => s.billing_triggered_at)
+      .reduce((sum, s) => sum + shiftAmountKobo(s), 0);
+
+    const filled = shifts.filter((s) => FILLED_STATUSES.has(s.status));
+    const fillRatePct =
+      shifts.length > 0 ? Math.round((filled.length / shifts.length) * 100) : 0;
+
+    const started = shifts.filter((s) =>
+      ["in_progress", "completed", "no_show", "cancelled"].includes(s.status),
+    );
+    const completed = shifts.filter((s) => s.status === "completed");
+    const completionRatePct =
+      started.length > 0
+        ? Math.round((completed.length / started.length) * 1000) / 10
+        : 0;
+
+    const cancelledShifts = shifts.filter(
+      (s) => s.status === "cancelled" || s.status === "no_show",
+    ).length;
+
+    const weekMs = 7 * 24 * 60 * 60 * 1000;
+    const now = new Date();
+    const trend = Array.from({ length: 8 }, (_, i) => {
+      const end = new Date(now.getTime() - (7 - i) * weekMs);
+      const start = new Date(end.getTime() - weekMs);
+      const inWeek = (iso: string | null | undefined) => {
+        if (!iso) return false;
+        const t = new Date(iso);
+        return t >= start && t < end;
+      };
+      return {
+        week: `Wk ${i + 1}`,
+        committed: Math.round(
+          shifts
+            .filter((s) => inWeek(s.scheduled_start))
+            .reduce((sum, s) => sum + shiftAmountKobo(s), 0) / 100,
+        ),
+        spending: Math.round(
+          shifts
+            .filter((s) => inWeek(s.billing_triggered_at))
+            .reduce((sum, s) => sum + shiftAmountKobo(s), 0) / 100,
+        ),
+      };
+    });
+
+    const roleCounts = new Map<string, number>();
+    for (const s of shifts) {
+      roleCounts.set(s.role_title, (roleCounts.get(s.role_title) ?? 0) + 1);
+    }
+    const rolesRequested = Array.from(roleCounts.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([role, count]) => ({ role, count }));
+
+    const deptGroups = new Map<string, { total: number; filled: number }>();
+    for (const s of shifts) {
+      const name = s.department ?? "General";
+      const group = deptGroups.get(name) ?? { total: 0, filled: 0 };
+      group.total += 1;
+      if (FILLED_STATUSES.has(s.status)) group.filled += 1;
+      deptGroups.set(name, group);
+    }
+    const departments = Array.from(deptGroups.entries())
+      .sort((a, b) => b[1].total - a[1].total)
+      .slice(0, 5)
+      .map(([name, g]) => ({
+        name,
+        shifts: g.total,
+        fillRatePct: g.total > 0 ? Math.round((g.filled / g.total) * 100) : 0,
+      }));
+
+    return {
+      totalRevenue: formatKobo(totalRevenueKobo),
+      fillRatePct,
+      completionRatePct,
+      cancelledShifts,
+      trend,
+      rolesRequested,
+      departments,
     };
   }
 

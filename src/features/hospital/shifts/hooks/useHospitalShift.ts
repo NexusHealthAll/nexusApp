@@ -26,7 +26,10 @@ const urgencyToPriority: Record<string, ApiShiftPriority> = {
 
 export const roleToCategory: Record<string, string> = {
   Doctor: "doctor",
+  Physician: "doctor",
   Nurse: "nurse",
+  "Registered Nurse": "nurse",
+  Midwife: "nurse",
   "Lab Technician": "lab_technician",
   Pharmacist: "pharmacist",
   Radiographer: "radiographer",
@@ -37,9 +40,17 @@ function buildShiftPayload(data: ShiftFormData) {
   // Note: some fields in the backend payload were described as numbers in kobo.
   // We forward what we can; the exact backend schema may evolve.
   const statBonus = data.bonuses.find((b) => b.id === "stat");
+  const requirements = [
+    ...(data.qualifications || []),
+    ...(data.certificates || []),
+    ...(data.minExperience && data.minExperience !== "none"
+      ? [`Minimum experience: ${data.minExperience}`]
+      : []),
+    ...(data.languages ? [`Languages: ${data.languages}`] : []),
+  ];
   return {
     broadcast_consent_confirmed: true,
-    department: data.specialty || "",
+    department: data.department || data.specialty || "",
     duration_hours: data.duration || 0,
     equipment: (data.equipment || []).map((e) => e.name),
     fixed_rate_kobo: Math.trunc(data.fixedRate * 100),
@@ -49,7 +60,7 @@ function buildShiftPayload(data: ShiftFormData) {
     priority: urgencyToPriority[data.urgencyLevel] ?? "normal",
     rate_kobo_per_hour:
       data.payType === "hourly" ? Math.trunc(data.hourlyRate * 100) : 0,
-    requirements: data.qualifications || [],
+    requirements,
     role_category: roleToCategory[data.roleNeeded] ?? "doctor",
     role_title: data.roleNeeded || "",
     scheduled_start: new Date(

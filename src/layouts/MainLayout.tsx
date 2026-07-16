@@ -1,8 +1,7 @@
 import { ReactNode, useState } from "react";
-import { Sidebar } from "./components/Sidebar";
-import { TopNavigation } from "./components/TopNavigation";
+import { HospitalSidebar } from "./components/HospitalSidebar";
+import { HospitalTopBar } from "./components/HospitalTopBar";
 import { AppProfile } from "@/types";
-import { CreateShiftModal } from "@/features/hospital/shifts/components/CreateShiftModal";
 import { HospitalApprovalPendingBanner } from "@/features/hospital/components/HospitalApprovalPendingBanner";
 
 interface MainLayoutProps {
@@ -10,26 +9,16 @@ interface MainLayoutProps {
   profile: AppProfile;
 }
 
-const profileLayoutStyles: Record<
-  AppProfile,
-  { shell: string; content: string }
-> = {
-  hospital: {
-    shell: "bg-secondary-50/40",
-    content: "mx-auto bg-onboarding-mainBackground p-4 lg:p-6",
-  },
-  "medical-staff": {
-    shell: "bg-primary-50/40",
-    content: "mx-auto bg-neutral-50 p-4 lg:p-6",
-  },
-};
-
-export function MainLayout({ children, profile }: MainLayoutProps) {
+/**
+ * Authenticated app shell. Only the hospital profile renders this layout —
+ * health-worker (medical-staff) pages are a self-contained mobile PWA shell,
+ * so RoleLayout skips MainLayout for them entirely.
+ */
+export function MainLayout({ children }: MainLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const layoutStyles = profileLayoutStyles[profile];
 
   return (
-    <div className={`flex h-screen ${layoutStyles.shell}`}>
+    <div className="flex h-screen bg-neutral-50">
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div
@@ -38,31 +27,20 @@ export function MainLayout({ children, profile }: MainLayoutProps) {
         />
       )}
 
-      {/* Sidebar */}
-      <Sidebar
-        profile={profile}
+      <HospitalSidebar
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
       />
 
-      {/* Main Content Area */}
       <div className="flex flex-1 flex-col overflow-hidden lg:ml-0">
-        {/* Top Navigation */}
-        <TopNavigation
-          profile={profile}
-          onMenuClick={() => setSidebarOpen(true)}
-        />
+        <HospitalTopBar onMenuClick={() => setSidebarOpen(true)} />
 
-        {profile === "hospital" && <HospitalApprovalPendingBanner />}
+        <HospitalApprovalPendingBanner />
 
-        {/* Page Content */}
         <main className="flex-1 overflow-y-auto">
-          <div className={layoutStyles.content}>{children}</div>
+          <div className="mx-auto max-w-7xl p-4 lg:p-8">{children}</div>
         </main>
-
       </div>
-
-      {profile === "hospital" && <CreateShiftModal />}
     </div>
   );
 }

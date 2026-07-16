@@ -1,10 +1,11 @@
 import { Link, Outlet, useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/shared/auth/store/authStore";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ChevronDown } from "lucide-react";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, ChevronDown, LayoutDashboard, LogOut } from "lucide-react";
 import { NexusCareLogo } from "@/shared/components/ui/NexusCareLogo";
 import { Button } from "@/shared/components/ui/Button";
+import { AvatarInitials } from "@/shared/components/ui/AvatarInitials";
+import { authUtils, type UserData } from "@/shared/auth/utils/authUtils";
 import {
   waitlistFooterSections,
   waitlistNavItems,
@@ -17,6 +18,9 @@ export function WaitlistFlowShell() {
   const navigate = useNavigate();
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState<UserData | null>(() =>
+    authUtils.isAuthenticated() ? authUtils.getCurrentUser() : null,
+  );
   const [openAccordion, setOpenAccordion] = useState<
     "hospital" | "health-worker" | null
   >(null);
@@ -294,23 +298,46 @@ export function WaitlistFlowShell() {
               Join Waitlist
             </Button>
 
+            {/* Logged-in users see their avatar instead of the Get started CTA */}
             <div className="relative" data-waitlist-get-started>
-              <Button
-                type="button"
-                aria-haspopup="true"
-                aria-expanded={isDropdownOpen}
-                onClick={() => setIsDropdownOpen((v) => !v)}
-                className="rounded-xl px-5 text-sm font-semibold text-onboarding-textPrimary bg-white hover:bg-white/80 border border-onboarding-textPrimary/50"
-              >
-                <span className="flex items-center gap-2">
-                  Get started
+              {currentUser ? (
+                <button
+                  type="button"
+                  aria-haspopup="true"
+                  aria-expanded={isDropdownOpen}
+                  aria-label="Account menu"
+                  onClick={() => setIsDropdownOpen((v) => !v)}
+                  className="flex items-center gap-1.5 rounded-full transition-opacity hover:opacity-85"
+                >
+                  <AvatarInitials
+                    name={currentUser.fullName || currentUser.email || "User"}
+                    size="md"
+                    className="bg-onboarding-primaryBlue font-bold text-white"
+                  />
                   <ChevronDown
-                    className={`h-4 w-4 transition-transform duration-300 ${
+                    className={`h-4 w-4 text-neutral-500 transition-transform duration-300 ${
                       isDropdownOpen ? "rotate-180" : "rotate-0"
                     }`}
                   />
-                </span>
-              </Button>
+                </button>
+              ) : (
+                <Button
+                  type="button"
+                  aria-haspopup="true"
+                  aria-expanded={isDropdownOpen}
+                  onClick={() => setIsDropdownOpen((v) => !v)}
+                  className="rounded-xl px-5 text-sm font-semibold text-onboarding-textPrimary bg-white hover:bg-white/80 border border-onboarding-textPrimary/50"
+                >
+                  <span className="flex items-center gap-2">
+                    Get started
+                    <ChevronDown
+                      className={`h-4 w-4 transition-transform duration-300 ${
+                        isDropdownOpen ? "rotate-180" : "rotate-0"
+                      }`}
+                    />
+                  </span>
+                </Button>
+              )}
 
               <div
                 className={`absolute top-full right-0 z-30 ${
@@ -325,7 +352,48 @@ export function WaitlistFlowShell() {
                   }`}
                 >
                   <div className="relative" role="menu">
-                    {dropdownContent}
+                    {currentUser ? (
+                      <div className="mt-3 w-64 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-soft">
+                        <div className="border-b border-neutral-100 px-4 py-3">
+                          <p className="truncate text-sm font-semibold text-neutral-900">
+                            {currentUser.fullName || "Account"}
+                          </p>
+                          <p className="truncate text-xs text-neutral-500">
+                            {currentUser.email}
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          data-waitlist-get-started
+                          onClick={() =>
+                            navigate(
+                              currentUser.role === "hospital_admin"
+                                ? "/hospital/dashboard"
+                                : "/medical-staff/dashboard",
+                            )
+                          }
+                          className="flex w-full items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-50"
+                        >
+                          <LayoutDashboard className="h-4 w-4" />
+                          Go to Dashboard
+                        </button>
+                        <button
+                          type="button"
+                          data-waitlist-get-started
+                          onClick={() => {
+                            authUtils.clearAuth();
+                            setCurrentUser(null);
+                            setIsDropdownOpen(false);
+                          }}
+                          className="flex w-full items-center gap-2.5 border-t border-neutral-100 px-4 py-2.5 text-sm font-medium text-error-600 transition-colors hover:bg-error-50"
+                        >
+                          <LogOut className="h-4 w-4" />
+                          Log out
+                        </button>
+                      </div>
+                    ) : (
+                      dropdownContent
+                    )}
                   </div>
                 </div>
               </div>
