@@ -1,0 +1,2 @@
+# GitHub Activity Log
+# This file is used to track daily progress and fill GitHub activity graph
