@@ -1,5 +1,7 @@
+import { useState } from "react";
 import {
   Activity,
+  ArrowRight,
   Brain,
   CalendarClock,
   ClipboardCheck,
@@ -9,74 +11,18 @@ import {
   Wallet,
   Zap,
 } from "lucide-react";
+import { Button } from "@/shared/components/ui/Button";
 import {
+  waitlistAudienceCards,
+  waitlistInsights,
   waitlistPartners,
+  waitlistSteps,
 } from "../constants/waitlistContent";
-import { DirectionalStepper } from "./DirectionalStepper";
-import { FaqAccordion } from "./FaqAccordion";
-import { ProblemCard } from "./ProblemCard";
-
-const staffingProblems = [
-  {
-    title: "Last-minute shift cancellations",
-    description:
-      "Unexpected call-outs leave critical units under-covered, forcing hospitals to scramble for replacements during peak demand.",
-    imageSrc: "/waitlist/hospital-form.jpg",
-    imageAlt: "Hospital unit managing a sudden staffing gap",
-  },
-  {
-    title: "Staff shortages and burnout",
-    description:
-      "Persistent vacancies and overtime pressure increase clinician fatigue, impacting team morale, retention, and continuity of care.",
-    imageSrc: "/waitlist/health-workers.jpg",
-    imageAlt: "Healthcare staff experiencing workload strain",
-  },
-  {
-    title: "Slow manual staffing process",
-    description:
-      "Phone calls, spreadsheets, and back-and-forth approvals delay shift fulfillment and make urgent staffing decisions harder.",
-    imageSrc: "/waitlist/landing.jpg",
-    imageAlt: "Manual staffing coordination and scheduling workflow",
-  },
-] as const;
-
-const hospitalFlowSteps = [
-  "Post an open shift",
-  "Verified healthcare workers apply or accept",
-  "Fill staffing gaps quickly",
-  "Approve completed shifts and payment",
-] as const;
-
-const healthWorkerFlowSteps = [
-  "Create and verify your profile",
-  "Browse available hospital shifts",
-  "Accept shifts that fit your schedule",
-  "Complete shifts and get paid",
-] as const;
-
-const faqItems = [
-  {
-    question: "Is Nexus only for hospitals?",
-    answer: "No. Clinics and healthcare centers can also use Nexus.",
-  },
-  {
-    question: "Who can apply for shifts?",
-    answer:
-      "Verified healthcare professionals such as nurses, doctors, and healthcare assistants.",
-  },
-  {
-    question: "How are workers verified?",
-    answer: "We verify identity and professional credentials before approval.",
-  },
-  {
-    question: "When do workers get paid?",
-    answer: "Payments are processed after shift completion and approval.",
-  },
-  {
-    question: "Can workers choose their schedules?",
-    answer: "Yes. Workers select shifts based on their availability.",
-  },
-] as const;
+import { useWaitlistFlow } from "./waitlistFlowContext";
+import {
+  WaitlistSubmissionError,
+  submitWaitlistEmailToFirebase,
+} from "../services/waitlistFirebaseService";
 
 const ecosystemColumns = [
   {
@@ -140,164 +86,162 @@ const ecosystemColumns = [
 ] as const;
 
 export function WaitlistLandingStep() {
+  const { openJoinModal } = useWaitlistFlow();
+  const [ctaEmail, setCtaEmail] = useState("");
+  const [ctaState, setCtaState] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [ctaMessage, setCtaMessage] = useState("");
+
+  const handleCtaSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!ctaEmail.trim()) return;
+
+    setCtaState("loading");
+    setCtaMessage("");
+
+    try {
+      await submitWaitlistEmailToFirebase(ctaEmail, "cta-form");
+      setCtaState("success");
+      setCtaMessage("You are on the waitlist! We will reach out soon.");
+      setCtaEmail("");
+    } catch (err) {
+      if (err instanceof WaitlistSubmissionError && err.code === "duplicate") {
+        setCtaState("error");
+        setCtaMessage("This email is already on the waitlist.");
+      } else {
+        openJoinModal();
+      }
+    }
+  };
+
   return (
     <div className="bg-[#f4f6fa]">
+      {/* 1. HERO SECTION */}
       <section className="px-4 pb-12 pt-12 sm:px-6 lg:px-8 lg:pb-16 lg:pt-20">
         <div className="mx-auto max-w-6xl text-center">
-          <div className="mx-auto inline-flex items-center gap-2 rounded-full border bg-primaryGreen/90 px-4 py-2 text-sm font-medium bg-gradient-to-b from-onboarding-primaryBlue to-onboarding-primaryGreen bg-clip-text text-transparent shadow-sm">
-            <Sparkles className="h-4 w-4" />
+          <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-teal-200/60 bg-teal-50/80 px-4 py-2 text-sm font-medium text-teal-700 shadow-sm">
+            <Sparkles className="h-4 w-4 text-teal-600" />
             Redefining Clinical Efficiency
           </div>
 
           <h1 className="mt-6 text-4xl font-semibold tracking-tight text-neutral-950 sm:text-5xl lg:text-6xl">
-            <span className="text-onboarding-primaryBlue">
-              Healthcare staffing,
-            </span>{" "}
-            <span className="text-onboarding-primaryGreen">on demand.</span>
+            The{" "}
+            <span className="text-onboarding-primaryBlue">Digital Pulse</span>{" "}
+            of Modern Healthcare.
           </h1>
 
-          <p className="mx-auto mt-5 max-w-2xl text-sm leading-7 text-neutral-600 sm:text-base">
-            Hospitals post open shifts. Verified healthcare professionals accept
-            shifts and get paid after completion.
+          <p className="mx-auto mt-5 max-w-3xl text-sm leading-7 text-neutral-600 sm:text-base">
+            Empowering healthcare facilities with AI-driven documentation and a
+            high-fidelity marketplace for elite clinical talent. Experience the
+            future of medical workflows.
           </p>
+
+          <div className="mt-8 flex justify-center">
+            <Button
+              type="button"
+              onClick={openJoinModal}
+              className="rounded-xl bg-gradient-to-r from-onboarding-primaryGreen to-onboarding-primaryBlue px-6 py-3 text-base font-semibold text-white shadow-soft hover:opacity-90 transition-opacity"
+            >
+              Join Waitlist
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          </div>
 
           <div className="mx-auto mt-12 max-w-6xl overflow-hidden rounded-2xl border border-neutral-200 bg-[#0a2f4a] shadow-strong">
             <img
               src="/waitlist/landing.jpg"
               alt="Clinical workflow dashboard"
-              className="h-[32rem] w-full object-cover center opacity-75 sm:h-[32rem]"
+              className="h-[32rem] w-full object-cover center opacity-80 sm:h-[36rem]"
             />
           </div>
         </div>
       </section>
 
-      <section className="px-4 pb-14 sm:px-6 lg:px-8 lg:pb-20 mx-auto">
-        <div className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-2">
-          <article className="relative overflow-hidden rounded-2xl shadow-strong">
-            <img
-              src="/waitlist/hospitals.jpg"
-              alt="Hospital operations"
-              className="h-[24rem] w-full object-cover object-center"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#06345c]/90 via-[#06345c]/45 to-transparent" />
-            <div className="absolute bottom-8 left-8 right-8 text-white">
-              <p className="text-xs uppercase tracking-[0.2em] text-white/70">
-                Institutional Excellence
-              </p>
-              <h2 className="mt-2 text-4xl font-semibold">For Hospitals</h2>
-              <p className="mt-3 text-sm leading-7 text-white/80">
-                Eliminate staffing gaps with automated compliance and verified
-                talent pipelines.
-              </p>
-              {/* <button
-                type="button"
-                onClick={() => goToRoleLogin("hospital")}
-                className="text-sm bg-white text-onboarding-primaryBlue py-4 px-6 rounded-lg mt-2"
-              >
-                Join as a Hospital
-              </button> */}
-            </div>
-          </article>
-
-          <article className="relative overflow-hidden rounded-2xl shadow-strong">
-            <img
-              src="/waitlist/health-workers.jpg"
-              alt="Healthcare worker profile"
-              className="h-[24rem] w-full object-cover object-center"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0b3a63]/90 via-[#0b3a63]/45 to-transparent" />
-            <div className="absolute bottom-8 left-8 right-8 text-white">
-              <p className="text-xs uppercase tracking-[0.2em] text-white/70">
-                Clinician Empowerment
-              </p>
-              <h2 className="mt-2 text-4xl font-semibold">
-                For Health Workers
-              </h2>
-              <p className="mt-3 text-sm leading-7 text-white/80">
-                The freedom to work anywhere, powered by AI documentation that
-                saves hours daily.
-              </p>
-              {/* <button
-                type="button"
-                onClick={() => goToRoleLogin("health-worker")}
-                className="text-sm bg-white text-onboarding-primaryBlue py-4 px-6 rounded-lg mt-2"
-              >
-                Join as a Health Worker
-              </button> */}
-            </div>
-          </article>
-        </div>
-      </section>
-
-      <section className="border-y border-neutral-200 bg-[#eef0f5] px-4 py-6 sm:px-6 lg:px-8">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-7 gap-y-3 text-xs font-semibold uppercase tracking-[0.15em] text-neutral-500 sm:text-sm">
-          <span className="text-onboarding-primaryBlue">Partnered with</span>
+      {/* 2. PARTNERS SECTION */}
+      <section className="border-y border-neutral-200/80 bg-[#eef0f5] px-4 py-6 sm:px-6 lg:px-8">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-8 gap-y-3 text-xs font-semibold uppercase tracking-[0.15em] text-neutral-500 sm:text-sm">
+          <span className="text-onboarding-primaryBlue">PARTNERED WITH</span>
           {waitlistPartners.map((partner) => (
             <span key={partner}>{partner}</span>
           ))}
         </div>
       </section>
 
+      {/* 3. PRECISION WORKFLOW SECTION */}
       <section className="px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
         <div className="mx-auto max-w-6xl">
           <div className="text-center">
-            <h2 className="text-4xl font-semibold text-onboarding-primaryGreen">
-              Hospital struggles to fill shifts quickly
+            <h2 className="text-3xl font-semibold text-onboarding-primaryBlue sm:text-4xl">
+              Precision Workflow
             </h2>
-            <p className="mx-auto mt-4 max-w-2xl text-sm text-neutral-600 sm:text-base">
-              Staff shortages, emergency absences, and scheduling gaps affect
-              healthcare delivery every day. Nexus helps hospitals find
-              qualified healthcare workers fast.
+            <p className="mx-auto mt-3 max-w-2xl text-sm text-neutral-600 sm:text-base">
+              A seamless 3-step engine built from registration to shift reconciliation.
             </p>
           </div>
 
-          <div className="mt-12 grid gap-6 border-t border-neutral-200 pt-8 md:grid-cols-3">
-            {staffingProblems.map((problem) => (
-              <ProblemCard
-                key={problem.title}
-                title={problem.title}
-                description={problem.description}
-                imageSrc={problem.imageSrc}
-                imageAlt={problem.imageAlt}
-              />
+          <div className="mt-12 grid gap-8 md:grid-cols-3">
+            {waitlistSteps.map((step) => (
+              <div
+                key={step.id}
+                className="flex flex-col items-center text-center p-6 rounded-2xl bg-white border border-neutral-200/70 shadow-sm"
+              >
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r from-onboarding-primaryGreen to-onboarding-primaryBlue text-white font-bold text-lg shadow-sm">
+                  {step.id}
+                </div>
+                <h3 className="mt-5 text-xl font-semibold text-neutral-900">
+                  {step.title}
+                </h3>
+                <p className="mt-3 text-sm leading-6 text-neutral-600">
+                  {step.description}
+                </p>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="px-4 py-5 sm:px-6 lg:px-8 lg:py-20">
-        <div className="mx-auto max-w-6xl">
-          <div className="text-center">
-            <h2 className="text-4xl font-semibold text-onboarding-primaryGreen">
-              How Nexus solves these staffing challenges
-            </h2>
-            <p className="mx-auto mt-4 max-w-2xl text-sm text-neutral-600 sm:text-base">
-              This step-by-step flow helps hospitals respond faster to
-              cancellations, reduce burnout from understaffing, and replace
-              slow manual coordination with a reliable digital workflow.
-            </p>
-          </div>
+      {/* 4. AUDIENCE CARDS (FOR HOSPITALS & HEALTH WORKERS) */}
+      <section className="px-4 pb-14 sm:px-6 lg:px-8 lg:pb-20">
+        <div className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-2">
+          {waitlistAudienceCards.map((card) => {
+            const isHospital = card.title.toLowerCase().includes("hospital");
+            const imgSrc = isHospital
+              ? "/waitlist/hospitals.jpg"
+              : "/waitlist/health-workers.jpg";
 
-          <div className="mt-12 grid gap-6 border-t border-neutral-200 pt-8 lg:grid-cols-2">
-            <DirectionalStepper
-              title="For Hospitals"
-              steps={[...hospitalFlowSteps]}
-            />
-            <DirectionalStepper
-              title="For Health Workers"
-              steps={[...healthWorkerFlowSteps]}
-            />
-          </div>
+            return (
+              <article
+                key={card.title}
+                className="relative overflow-hidden rounded-3xl shadow-strong group"
+              >
+                <img
+                  src={imgSrc}
+                  alt={card.title}
+                  className="h-[26rem] w-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#06345c]/95 via-[#06345c]/55 to-transparent" />
+                <div className="absolute bottom-8 left-8 right-8 text-white">
+                  <p className="text-xs uppercase tracking-[0.2em] text-white/70">
+                    {card.eyebrow}
+                  </p>
+                  <h2 className="mt-2 text-3xl font-semibold">{card.title}</h2>
+                  <p className="mt-3 text-sm leading-7 text-white/80 max-w-md">
+                    {card.description}
+                  </p>
+                  <Button
+                    type="button"
+                    onClick={openJoinModal}
+                    className="mt-5 rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-neutral-900 shadow hover:bg-neutral-100 transition-colors"
+                  >
+                    {card.ctaLabel}
+                  </Button>
+                </div>
+              </article>
+            );
+          })}
         </div>
       </section>
 
-      <section>
-        <FaqAccordion
-          headline="Frequently asked questions"
-          items={[...faqItems]}
-        />
-      </section>
-
+      {/* 5. EMPOWERING THE ECOSYSTEM */}
       <section className="px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
         <div className="mx-auto max-w-6xl">
           <div className="text-center">
@@ -320,7 +264,7 @@ export function WaitlistLandingStep() {
                   <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-onboarding-primaryGreen to-onboarding-primaryBlue text-white">
                     <ClipboardCheck className="h-5 w-5" />
                   </div>
-                  <h3 className="text-4xl font-semibold text-neutral-900">
+                  <h3 className="text-3xl font-semibold text-neutral-900">
                     {column.title}
                   </h3>
                 </div>
@@ -347,6 +291,103 @@ export function WaitlistLandingStep() {
               </article>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* 6. EDITORIAL INSIGHTS */}
+      <section className="px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
+        <div className="mx-auto max-w-6xl">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <div>
+              <h2 className="text-3xl font-semibold text-onboarding-primaryBlue sm:text-4xl">
+                Editorial Insights
+              </h2>
+              <p className="mt-2 text-sm text-neutral-600 sm:text-base">
+                A curated collection of research, product updates, and clinical operational guides.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={openJoinModal}
+              className="inline-flex items-center gap-1.5 text-sm font-semibold text-onboarding-primaryBlue hover:underline shrink-0"
+            >
+              Read all articles <ArrowRight className="h-4 w-4" />
+            </button>
+          </div>
+
+          <div className="mt-10 grid gap-6 md:grid-cols-3">
+            {waitlistInsights.map((insight) => (
+              <article
+                key={insight.title}
+                className="overflow-hidden rounded-2xl border border-neutral-200/80 bg-white shadow-soft flex flex-col group"
+              >
+                <div className="relative h-48 overflow-hidden bg-neutral-100">
+                  <img
+                    src={insight.image}
+                    alt={insight.title}
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                </div>
+                <div className="p-6 flex flex-col flex-1">
+                  <div className="flex items-center gap-2 text-xs font-semibold text-onboarding-primaryBlue uppercase tracking-wider">
+                    <span>{insight.category}</span>
+                    <span>•</span>
+                    <span className="text-neutral-500">{insight.readTime}</span>
+                  </div>
+                  <h3 className="mt-3 text-lg font-semibold text-neutral-900 line-clamp-2">
+                    {insight.title}
+                  </h3>
+                  <p className="mt-2 text-sm text-neutral-600 line-clamp-3 flex-1">
+                    {insight.description}
+                  </p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 7. READY FOR THE PULSE? */}
+      <section className="px-4 pb-16 sm:px-6 lg:px-8 lg:pb-24">
+        <div className="mx-auto max-w-5xl overflow-hidden rounded-3xl bg-gradient-to-r from-[#0d5675] via-[#107085] to-[#189a96] p-8 text-center sm:p-14 shadow-strong text-white">
+          <h2 className="text-3xl font-semibold sm:text-4xl">
+            Ready for the Pulse?
+          </h2>
+          <p className="mx-auto mt-4 max-w-xl text-sm leading-6 text-white/90 sm:text-base">
+            Join the waitlist to be part of the first cohort of clinicians and
+            facilities in our high-fidelity private beta.
+          </p>
+
+          <form
+            onSubmit={handleCtaSubmit}
+            className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3 max-w-lg mx-auto"
+          >
+            <input
+              type="email"
+              value={ctaEmail}
+              onChange={(e) => setCtaEmail(e.target.value)}
+              placeholder="Enter your work email"
+              required
+              className="h-12 w-full sm:flex-1 rounded-xl bg-white px-4 text-sm text-neutral-800 placeholder:text-neutral-400 outline-none shadow-sm focus:ring-2 focus:ring-teal-300"
+            />
+            <Button
+              type="submit"
+              isLoading={ctaState === "loading"}
+              className="h-12 w-full sm:w-auto rounded-xl bg-white px-6 text-sm font-semibold text-[#13888d] hover:bg-neutral-50 shadow-md transition-colors shrink-0"
+            >
+              Secure My Spot
+            </Button>
+          </form>
+
+          {ctaMessage && (
+            <p
+              className={`mt-4 text-xs font-medium ${
+                ctaState === "error" ? "text-red-200" : "text-emerald-100"
+              }`}
+            >
+              {ctaMessage}
+            </p>
+          )}
         </div>
       </section>
     </div>
