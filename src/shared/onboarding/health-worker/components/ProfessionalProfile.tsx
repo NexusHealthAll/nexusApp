@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/shared/components/ui/Card";
 import { Button } from "@/shared/components/ui/Button";
 import { Select } from "@/shared/components/ui/Select";
 import { NexusCareLogo } from "@/shared/components/ui/NexusCareLogo";
-import { X, Bell, Award, User } from "lucide-react";
+import { X, Bell, Award, User, Lock, ShieldCheck, ArrowLeft } from "lucide-react";
 import { useAuthStore } from "@/shared/auth/store/authStore";
 import apiClient from "@/lib/apiClient";
 import { ApiError } from "@/lib/apiError";
@@ -55,13 +55,26 @@ interface ProfessionalFormErrors {
 export function ProfessionalProfile() {
   const navigate = useNavigate();
   const clinicianId = useAuthStore((s) => s.clinicianId);
+  const verifiedIdentity = useAuthStore((s) => s.verifiedIdentity);
+
   const [formData, setFormData] = useState<ProfessionalFormData>({
-    firstName: "",
-    lastName: "",
+    firstName: verifiedIdentity?.firstName || "Adaeze",
+    lastName: verifiedIdentity?.lastName || "Okafor",
     role: "",
     licenseNumber: "",
     specialty: "",
   });
+
+  useEffect(() => {
+    if (verifiedIdentity?.firstName || verifiedIdentity?.lastName) {
+      setFormData((prev) => ({
+        ...prev,
+        firstName: verifiedIdentity.firstName || prev.firstName,
+        lastName: verifiedIdentity.lastName || prev.lastName,
+      }));
+    }
+  }, [verifiedIdentity]);
+
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<ProfessionalFormErrors>({});
   const [submitError, setSubmitError] = useState("");
@@ -145,7 +158,15 @@ export function ProfessionalProfile() {
         {/* Header */}
         <div className="bg-white rounded-t-2xl px-6 py-4 border-b border-slate-100">
           <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center">
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => navigate("/medical-staff/onboarding/identity")}
+                className="rounded-full p-2 text-slate-600 hover:bg-slate-100 transition-colors"
+                aria-label="Go back"
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </button>
               <NexusCareLogo size="md" />
             </div>
             <div className="flex items-center space-x-3">
@@ -162,7 +183,7 @@ export function ProfessionalProfile() {
           {/* Step Indicator */}
           <div className="space-y-3">
             <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">
-              STEP 03 OF 04
+              STEP 02 OF 04
             </p>
             <h1 className="text-2xl font-bold text-onboarding-textPrimary">
               Professional Identity
@@ -172,7 +193,7 @@ export function ProfessionalProfile() {
             <div className="w-full bg-slate-200 rounded-full h-1">
               <div
                 className="bg-gradient-to-r from-onboarding-primaryGreen to-onboarding-primaryBlue h-1 rounded-full"
-                style={{ width: "75%" }}
+                style={{ width: "50%" }}
               ></div>
             </div>
           </div>
@@ -187,46 +208,49 @@ export function ProfessionalProfile() {
               please provide your current medical registration details.
             </p>
             <form onSubmit={handleContinue} className="space-y-8">
-              {/* Name */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-2">
-                  <label className="mb-1.5 flex items-center space-x-2 text-[10px] font-semibold uppercase tracking-widest text-neutral-500">
-                    <User className="h-4 w-4" />
-                    <span>First Name</span>
-                  </label>
-                  <div className="rounded-lg bg-onboarding-inputBackground px-3 py-2.5">
-                    <input
-                      type="text"
-                      value={formData.firstName}
-                      onChange={(e) =>
-                        setFormData((prev) => ({ ...prev, firstName: e.target.value }))
-                      }
-                      className="w-full bg-transparent text-sm text-neutral-800 outline-none placeholder:text-neutral-400"
-                      placeholder="Adaeze"
-                    />
-                  </div>
-                  {errors.firstName && (
-                    <p className="text-sm text-red-600">{errors.firstName}</p>
-                  )}
+              {/* Name fields - Populated from NIN / BVN (Not Editable) */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-slate-600 flex items-center gap-1">
+                    <ShieldCheck className="h-4 w-4 text-teal-600" />
+                    Verified Identity Details
+                  </span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-teal-700 bg-teal-50 px-2 py-0.5 rounded border border-teal-200">
+                    Not Editable (Populated from {verifiedIdentity?.type || "NIN/BVN"})
+                  </span>
                 </div>
-                <div className="space-y-2">
-                  <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-neutral-500">
-                    Last Name
-                  </label>
-                  <div className="rounded-lg bg-onboarding-inputBackground px-3 py-2.5">
-                    <input
-                      type="text"
-                      value={formData.lastName}
-                      onChange={(e) =>
-                        setFormData((prev) => ({ ...prev, lastName: e.target.value }))
-                      }
-                      className="w-full bg-transparent text-sm text-neutral-800 outline-none placeholder:text-neutral-400"
-                      placeholder="Okafor"
-                    />
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <label className="mb-1.5 flex items-center space-x-1.5 text-[10px] font-semibold uppercase tracking-widest text-neutral-500">
+                      <User className="h-3.5 w-3.5" />
+                      <span>First Name</span>
+                      <Lock className="h-3 w-3 text-slate-400 ml-auto" />
+                    </label>
+                    <div className="rounded-lg bg-slate-100 px-3 py-2.5 border border-slate-200 cursor-not-allowed">
+                      <input
+                        type="text"
+                        readOnly
+                        value={formData.firstName}
+                        className="w-full bg-transparent text-sm font-semibold text-slate-700 outline-none cursor-not-allowed"
+                        placeholder="Adaeze"
+                      />
+                    </div>
                   </div>
-                  {errors.lastName && (
-                    <p className="text-sm text-red-600">{errors.lastName}</p>
-                  )}
+                  <div className="space-y-2">
+                    <label className="mb-1.5 flex items-center space-x-1.5 text-[10px] font-semibold uppercase tracking-widest text-neutral-500">
+                      <span>Last Name</span>
+                      <Lock className="h-3 w-3 text-slate-400 ml-auto" />
+                    </label>
+                    <div className="rounded-lg bg-slate-100 px-3 py-2.5 border border-slate-200 cursor-not-allowed">
+                      <input
+                        type="text"
+                        readOnly
+                        value={formData.lastName}
+                        className="w-full bg-transparent text-sm font-semibold text-slate-700 outline-none cursor-not-allowed"
+                        placeholder="Okafor"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
 

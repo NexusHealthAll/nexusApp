@@ -213,17 +213,16 @@ export function OtpVerify() {
           return;
         }
 
-        // health-worker/register => account created, but the registration
-        // response isn't a usable session (see note above). Send them to a
-        // real login instead of straight into the app; keep the clinician
-        // id around so the post-login onboarding steps know which profile
-        // to complete, and prefill the email on the login screen.
+        // health-worker/register => account created. Route through the onboarding
+        // flow first (identity verification -> professional profile -> payout setup),
+        // after which the user logs in to complete session setup.
         if (body.clinician_id) {
           useAuthStore.getState().setClinicianId(body.clinician_id);
         }
         clearFlow();
         useAuthStore.getState().setPendingEmail(email);
-        navigate("/auth/login", { state: { justRegistered: true } });
+        localStorage.setItem("pendingEmail", email);
+        navigate("/medical-staff/onboarding/identity");
         return;
       }
 
@@ -248,14 +247,35 @@ export function OtpVerify() {
   const handleResendOtp = async () => {
     if (!canResend) return;
 
-    const email = localStorage.getItem("pendingEmail") ?? "";
+    const email =
+      useAuthStore.getState().pendingEmail ||
+      localStorage.getItem("pendingEmail") ||
+      "";
+
+    if (!email) {
+      setError("Session expired. Please start over from login or signup.");
+      return;
+    }
 
     setCanResend(false);
     setResendTimer(60);
     setError("");
 
     try {
-      await apiClient.post("/api/v1/auth/otp/send", { email });
+      const flowForOtpVerify = useAuthStore.getState().activeAuthFlow;
+      const shouldUseCliniciansOtp =
+        flowForOtpVerify?.role === "health-worker" &&
+        flowForOtpVerify?.action === "register";
+
+      const otpSendPath = shouldUseCliniciansOtp
+        ? "/api/v1/clinicians/otp/send"
+        : "/api/v1/auth/otp/send";
+
+      await apiClient.post(otpSendPath, { email });
+
+      // Ensure session email memory remains set
+      localStorage.setItem("pendingEmail", email);
+      useAuthStore.getState().setPendingEmail(email);
 
       // Restart countdown timer
       const timer = setInterval(() => {
