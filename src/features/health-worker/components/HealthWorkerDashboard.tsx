@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import type { ReactNode } from "react";
 import {
   Bell,
@@ -190,6 +191,7 @@ function Shell({
 }
 
 export function HealthWorkerDashboard() {
+  const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
   const workerApi = useHealthWorkerShifts();
   const { getShiftDetails } = useHospitalShift();
@@ -561,7 +563,7 @@ export function HealthWorkerDashboard() {
             saveError={profileSaveError}
             onLogout={() => {
               useAuthStore.getState().clearAuthSession();
-              window.location.href = "/auth/login";
+              navigate("/auth/login", { replace: true });
             }}
           />
         );

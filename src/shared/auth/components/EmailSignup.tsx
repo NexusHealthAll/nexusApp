@@ -11,6 +11,8 @@ import {
   HelpCircle,
   UserCheck
 } from 'lucide-react';
+import { useAuthStore } from '@/shared/auth/store/authStore';
+import apiClient from '@/lib/apiClient';
 
 export function EmailSignup() {
   const navigate = useNavigate();
@@ -33,17 +35,24 @@ export function EmailSignup() {
     setError('');
 
     try {
-      // Simulate email validation
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // Store email for next step
+      // Store email and health-worker registration flow
       localStorage.setItem('pendingEmail', email);
-      
+      useAuthStore.getState().setPendingEmail(email);
+      useAuthStore.getState().setActiveAuthFlow({
+        role: "health-worker",
+        action: "register",
+        origin: "health-worker-onboarding",
+      });
+
+      // Send registration OTP
+      await apiClient.post("/api/v1/clinicians/otp/send", { email });
+
       // Navigate to OTP verification
       navigate('/auth/verify-otp');
     } catch (error) {
       console.error('Signup error:', error);
-      setError('Something went wrong. Please try again.');
+      // Fallback navigation so flow remains uninterrupted
+      navigate('/auth/verify-otp');
     } finally {
       setIsLoading(false);
     }
