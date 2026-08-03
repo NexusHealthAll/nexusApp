@@ -1,11 +1,14 @@
 import type { RouteObject } from "react-router-dom";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { ProtectedRoute } from "@/shared/auth/components";
+import { useAuthStore } from "@/shared/auth/store/authStore";
 
 // Simple admin dashboard placeholder, kept alongside the route config it
 // belongs to rather than split into its own file for one component.
 // eslint-disable-next-line react-refresh/only-export-components
 function AdminDashboard() {
+  const navigate = useNavigate();
+
   return (
     <ProtectedRoute requiredRole="hospital_admin">
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center p-4">
@@ -23,9 +26,8 @@ function AdminDashboard() {
           </p>
           <button
             onClick={() => {
-              localStorage.removeItem("authToken");
-              localStorage.removeItem("userData");
-              window.location.href = "/auth/login";
+              useAuthStore.getState().clearAuthSession();
+              navigate("/auth/login", { replace: true });
             }}
             className="bg-slate-900 hover:bg-slate-800 text-white px-6 py-3 rounded-lg font-semibold transition-all"
           >

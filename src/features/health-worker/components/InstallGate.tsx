@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import type { ReactNode } from "react";
 import { Download, LogOut, MonitorDown, Share, Smartphone } from "lucide-react";
 import { cn } from "@/shared/utils/cn";
@@ -44,11 +45,12 @@ export function InstallGate({ children }: { children: ReactNode }) {
 }
 
 function InstallRequiredScreen() {
+  const navigate = useNavigate();
   const { canInstall, isIos, isInstalled, promptInstall } = useInstallPrompt();
 
   function handleLogout() {
     useAuthStore.getState().clearAuthSession();
-    window.location.href = "/auth/login";
+    navigate("/auth/login", { replace: true });
   }
 
   return (
