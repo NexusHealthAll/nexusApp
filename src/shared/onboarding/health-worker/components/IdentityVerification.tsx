@@ -85,16 +85,33 @@ export function IdentityVerification() {
         first_name?: string;
         last_name?: string;
         full_name?: string;
+        firstName?: string;
+        lastName?: string;
+        fullName?: string;
+        name?: string;
         [k: string]: unknown;
       }>(
         `/api/v1/clinicians/${encodeURIComponent(clinicianId)}/identity/validate`,
         { type: idType, otp: otp.trim() },
       );
 
+      const fullNameStr =
+        body.full_name ||
+        body.fullName ||
+        body.name ||
+        "";
+
+      const parts = fullNameStr.trim().split(/\s+/).filter(Boolean);
+
       const resolvedFirstName =
-        body.first_name || (body.full_name ? body.full_name.split(" ")[0] : "Adaeze");
+        body.first_name ||
+        body.firstName ||
+        (parts.length > 0 ? parts[0] : "Adaeze");
+
       const resolvedLastName =
-        body.last_name || (body.full_name ? body.full_name.split(" ").slice(1).join(" ") : "Okafor");
+        body.last_name ||
+        body.lastName ||
+        (parts.length > 1 ? parts.slice(1).join(" ") : "Okafor");
 
       // Save populated identity data into Zustand and localStorage so it is locked & non-editable in profile
       useAuthStore.getState().setVerifiedIdentity({
