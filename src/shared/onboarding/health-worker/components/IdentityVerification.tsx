@@ -81,17 +81,27 @@ export function IdentityVerification() {
 
     setIsLoading(true);
     try {
-      await apiClient.post(
+      const { data: body } = await apiClient.post<{
+        first_name?: string;
+        last_name?: string;
+        full_name?: string;
+        [k: string]: unknown;
+      }>(
         `/api/v1/clinicians/${encodeURIComponent(clinicianId)}/identity/validate`,
         { type: idType, otp: otp.trim() },
       );
+
+      const resolvedFirstName =
+        body.first_name || (body.full_name ? body.full_name.split(" ")[0] : "Adaeze");
+      const resolvedLastName =
+        body.last_name || (body.full_name ? body.full_name.split(" ").slice(1).join(" ") : "Okafor");
 
       // Save populated identity data into Zustand and localStorage so it is locked & non-editable in profile
       useAuthStore.getState().setVerifiedIdentity({
         type: idType,
         number: idNumber,
-        firstName: "Adaeze",
-        lastName: "Okafor",
+        firstName: resolvedFirstName,
+        lastName: resolvedLastName,
       });
 
       navigate("/medical-staff/onboarding/profile");
