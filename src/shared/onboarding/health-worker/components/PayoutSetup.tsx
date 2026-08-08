@@ -31,10 +31,13 @@ export function PayoutSetup() {
   const navigate = useNavigate();
   const clinicianId = useAuthStore((s) => s.clinicianId);
   const verifiedIdentity = useAuthStore((s) => s.verifiedIdentity);
+  const user = useAuthStore((s) => s.user);
 
   const expectedName = verifiedIdentity
-    ? `${verifiedIdentity.firstName} ${verifiedIdentity.lastName}`
-    : "Adaeze Okafor";
+    ? `${verifiedIdentity.firstName} ${verifiedIdentity.lastName}`.trim()
+    : user?.first_name && user?.last_name
+      ? `${user.first_name} ${user.last_name}`.trim()
+      : "";
 
   const [banks, setBanks] = useState<Bank[]>([]);
   const [banksLoading, setBanksLoading] = useState(true);
@@ -50,6 +53,33 @@ export function PayoutSetup() {
   const [isVerified, setIsVerified] = useState(false);
   const [errors, setErrors] = useState<Partial<PayoutData>>({});
   const [submitError, setSubmitError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    if (!verifiedIdentity && clinicianId) {
+      apiClient
+        .get<{
+          verified: boolean;
+          first_name?: string;
+          last_name?: string;
+          type?: string;
+        }>(`/api/v1/clinicians/${encodeURIComponent(clinicianId)}/identity`)
+        .then(({ data }) => {
+          if (active && data.verified && (data.first_name || data.last_name)) {
+            useAuthStore.getState().setVerifiedIdentity({
+              type: (data.type as "BVN" | "NIN") || "BVN",
+              number: "",
+              firstName: data.first_name || "",
+              lastName: data.last_name || "",
+            });
+          }
+        })
+        .catch(() => {});
+    }
+    return () => {
+      active = false;
+    };
+  }, [clinicianId, verifiedIdentity]);
 
   useEffect(() => {
     let cancelled = false;

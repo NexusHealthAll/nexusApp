@@ -20,6 +20,77 @@ import { ApiError } from "@/lib/apiError";
 
 type IdType = "NIN" | "BVN";
 
+function extractNamesFromResponse(body: Record<string, unknown>): {
+  firstName: string;
+  lastName: string;
+} {
+  const findKeyRecursive = (obj: unknown, keys: string[]): string | null => {
+    if (!obj || typeof obj !== "object") return null;
+    if (Array.isArray(obj)) {
+      for (const item of obj) {
+        const res = findKeyRecursive(item, keys);
+        if (res) return res;
+      }
+      return null;
+    }
+    const record = obj as Record<string, unknown>;
+    for (const key of keys) {
+      if (typeof record[key] === "string" && (record[key] as string).trim()) {
+        return (record[key] as string).trim();
+      }
+    }
+    for (const k of Object.keys(record)) {
+      if (record[k] && typeof record[k] === "object") {
+        const res = findKeyRecursive(record[k], keys);
+        if (res) return res;
+      }
+    }
+    return null;
+  };
+
+  const fnKeys = ["firstName", "first_name", "first_Name", "firstnames", "givenName", "given_name"];
+  const lnKeys = ["lastName", "last_name", "last_Name", "surname", "surName", "familyName", "family_name"];
+  const mnKeys = ["middleName", "middle_name", "otherNames", "other_names"];
+  const fullKeys = ["fullName", "full_name", "formattedName", "formatted_name", "name"];
+
+  let fn = findKeyRecursive(body, fnKeys) || "";
+  let ln = findKeyRecursive(body, lnKeys) || "";
+  const mn = findKeyRecursive(body, mnKeys) || "";
+  const full = findKeyRecursive(body, fullKeys) || "";
+
+  if ((!fn || !ln) && full) {
+    const parts = full.split(/\s+/).filter(Boolean);
+    if (parts.length >= 2) {
+      if (!fn) fn = parts[0];
+      if (!ln) ln = parts.slice(1).join(" ");
+    } else if (parts.length === 1 && !fn) {
+      fn = parts[0];
+    }
+  }
+
+  if (!ln && mn) {
+    ln = mn;
+  }
+
+  const titleCase = (str: string) => {
+    if (!str) return str;
+    const isUpper = str.split("").every((c) => c === c.toUpperCase() && c !== c.toLowerCase());
+    if (isUpper) {
+      return str
+        .toLowerCase()
+        .split(" ")
+        .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+        .join(" ");
+    }
+    return str;
+  };
+
+  return {
+    firstName: titleCase(fn),
+    lastName: titleCase(ln),
+  };
+}
+
 export function IdentityVerification() {
   const navigate = useNavigate();
   const clinicianId = useAuthStore((s) => s.clinicianId);
@@ -81,37 +152,16 @@ export function IdentityVerification() {
 
     setIsLoading(true);
     try {
-      const { data: body } = await apiClient.post<{
-        first_name?: string;
-        last_name?: string;
-        full_name?: string;
-        firstName?: string;
-        lastName?: string;
-        fullName?: string;
-        name?: string;
-        [k: string]: unknown;
-      }>(
+      const { data: body } = await apiClient.post<Record<string, unknown>>(
         `/api/v1/clinicians/${encodeURIComponent(clinicianId)}/identity/validate`,
         { type: idType, otp: otp.trim() },
       );
 
-      const fullNameStr =
-        body.full_name ||
-        body.fullName ||
-        body.name ||
-        "";
+      const userInStore = useAuthStore.getState().user;
+      const { firstName: extractedFn, lastName: extractedLn } = extractNamesFromResponse(body);
 
-      const parts = fullNameStr.trim().split(/\s+/).filter(Boolean);
-
-      const resolvedFirstName =
-        body.first_name ||
-        body.firstName ||
-        (parts.length > 0 ? parts[0] : "Adaeze");
-
-      const resolvedLastName =
-        body.last_name ||
-        body.lastName ||
-        (parts.length > 1 ? parts.slice(1).join(" ") : "Okafor");
+      const resolvedFirstName = extractedFn || userInStore?.first_name || "";
+      const resolvedLastName = extractedLn || userInStore?.last_name || "";
 
       // Save populated identity data into Zustand and localStorage so it is locked & non-editable in profile
       useAuthStore.getState().setVerifiedIdentity({

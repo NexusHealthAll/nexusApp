@@ -56,24 +56,55 @@ export function ProfessionalProfile() {
   const navigate = useNavigate();
   const clinicianId = useAuthStore((s) => s.clinicianId);
   const verifiedIdentity = useAuthStore((s) => s.verifiedIdentity);
+  const user = useAuthStore((s) => s.user);
 
   const [formData, setFormData] = useState<ProfessionalFormData>({
-    firstName: verifiedIdentity?.firstName || "Adaeze",
-    lastName: verifiedIdentity?.lastName || "Okafor",
+    firstName: verifiedIdentity?.firstName || user?.first_name || "",
+    lastName: verifiedIdentity?.lastName || user?.last_name || "",
     role: "",
     licenseNumber: "",
     specialty: "",
   });
 
   useEffect(() => {
+    let active = true;
     if (verifiedIdentity?.firstName || verifiedIdentity?.lastName) {
       setFormData((prev) => ({
         ...prev,
         firstName: verifiedIdentity.firstName || prev.firstName,
         lastName: verifiedIdentity.lastName || prev.lastName,
       }));
+    } else if (clinicianId) {
+      apiClient
+        .get<{
+          verified: boolean;
+          first_name?: string;
+          last_name?: string;
+          type?: string;
+        }>(`/api/v1/clinicians/${encodeURIComponent(clinicianId)}/identity`)
+        .then(({ data }) => {
+          if (active && data.verified && (data.first_name || data.last_name)) {
+            const fn = data.first_name || "";
+            const ln = data.last_name || "";
+            useAuthStore.getState().setVerifiedIdentity({
+              type: (data.type as "BVN" | "NIN") || "BVN",
+              number: "",
+              firstName: fn,
+              lastName: ln,
+            });
+            setFormData((prev) => ({
+              ...prev,
+              firstName: fn || prev.firstName,
+              lastName: ln || prev.lastName,
+            }));
+          }
+        })
+        .catch(() => {});
     }
-  }, [verifiedIdentity]);
+    return () => {
+      active = false;
+    };
+  }, [clinicianId, verifiedIdentity]);
 
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<ProfessionalFormErrors>({});
@@ -232,7 +263,7 @@ export function ProfessionalProfile() {
                         readOnly
                         value={formData.firstName}
                         className="w-full bg-transparent text-sm font-semibold text-slate-700 outline-none cursor-not-allowed"
-                        placeholder="Adaeze"
+                        placeholder="First name"
                       />
                     </div>
                   </div>
@@ -247,7 +278,7 @@ export function ProfessionalProfile() {
                         readOnly
                         value={formData.lastName}
                         className="w-full bg-transparent text-sm font-semibold text-slate-700 outline-none cursor-not-allowed"
-                        placeholder="Okafor"
+                        placeholder="Last name"
                       />
                     </div>
                   </div>
