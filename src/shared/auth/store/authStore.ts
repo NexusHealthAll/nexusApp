@@ -30,6 +30,14 @@ type ActiveAuthFlow = {
   origin: AuthFlowOrigin;
 } | null;
 
+export type VerifiedIdentityData = {
+  type: "NIN" | "BVN";
+  number: string;
+  firstName: string;
+  lastName: string;
+  phone?: string;
+};
+
 type AuthStoreState = {
   // Email used to prefill login/OTP screens
   pendingEmail: string;
@@ -55,6 +63,11 @@ type AuthStoreState = {
   clinicianId: string;
   setClinicianId: (clinicianId: string) => void;
   clearClinicianId: () => void;
+
+  // Verified identity data (NIN/BVN)
+  verifiedIdentity: VerifiedIdentityData | null;
+  setVerifiedIdentity: (identity: VerifiedIdentityData) => void;
+  clearVerifiedIdentity: () => void;
 
   setAuthSession: (args: {
     accessToken: string;
@@ -82,6 +95,24 @@ export const useAuthStore = create<AuthStoreState>((set) => ({
   clearClinicianId: () => {
     localStorage.removeItem("clinicianId");
     set({ clinicianId: "" });
+  },
+
+  verifiedIdentity: (() => {
+    const raw = localStorage.getItem("verifiedIdentity");
+    if (!raw) return null;
+    try {
+      return JSON.parse(raw) as VerifiedIdentityData;
+    } catch {
+      return null;
+    }
+  })(),
+  setVerifiedIdentity: (identity) => {
+    localStorage.setItem("verifiedIdentity", JSON.stringify(identity));
+    set({ verifiedIdentity: identity });
+  },
+  clearVerifiedIdentity: () => {
+    localStorage.removeItem("verifiedIdentity");
+    set({ verifiedIdentity: null });
   },
 
   // Legacy

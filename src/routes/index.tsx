@@ -28,6 +28,7 @@ import {
   VerificationPending,
 } from "@/shared/onboarding/health-worker/components";
 import { InstallGate } from "@/features/health-worker/components/InstallGate";
+import { useAuthStore } from "@/shared/auth/store/authStore";
 
 function buildRoleTree(
   basePath: string,
@@ -141,55 +142,44 @@ const hospitalOnboardingRoutes: RouteObject[] = [
   },
 ];
 
+function OnboardingAuthGuard({ children }: { children: React.ReactNode }) {
+  const clinicianId = useAuthStore((s) => s.clinicianId);
+  const accessToken = useAuthStore((s) => s.accessToken);
+  if (!clinicianId && !accessToken) {
+    return <Navigate to="/auth/login" replace />;
+  }
+  return <>{children}</>;
+}
+
 /**
- * Health-worker onboarding (professional profile, identity, payout) runs
- * *after* a real login, using the session it establishes — unlike the
- * hospital onboarding above, these are genuinely protected routes, not
- * PublicOnlyAuthRoute. See OtpVerify's health-worker/register branch: it
- * sends the user to /auth/login first rather than chaining straight into
- * onboarding with the registration endpoint's non-session token.
+ * Health-worker onboarding (identity, professional profile, payout) runs right
+ * after registration and before login, using the pending clinician context.
  */
 const medicalStaffOnboardingRoutes: RouteObject[] = [
   {
-    // Pathless layout: these steps run post-login, so they sit behind the
-    // same installed-app requirement as the dashboard (see InstallGate).
     element: (
       <InstallGate>
-        <Outlet />
+        <OnboardingAuthGuard>
+          <Outlet />
+        </OnboardingAuthGuard>
       </InstallGate>
     ),
     children: [
       {
-        path: "/medical-staff/onboarding/profile",
-        element: (
-          <ProtectedRoute requiredRole="health_worker">
-            <ProfessionalProfile />
-          </ProtectedRoute>
-        ),
+        path: "/medical-staff/onboarding/identity",
+        element: <IdentityVerification />,
       },
       {
-        path: "/medical-staff/onboarding/identity",
-        element: (
-          <ProtectedRoute requiredRole="health_worker">
-            <IdentityVerification />
-          </ProtectedRoute>
-        ),
+        path: "/medical-staff/onboarding/profile",
+        element: <ProfessionalProfile />,
       },
       {
         path: "/medical-staff/onboarding/payout",
-        element: (
-          <ProtectedRoute requiredRole="health_worker">
-            <PayoutSetup />
-          </ProtectedRoute>
-        ),
+        element: <PayoutSetup />,
       },
       {
         path: "/medical-staff/onboarding/pending",
-        element: (
-          <ProtectedRoute requiredRole="health_worker">
-            <VerificationPending />
-          </ProtectedRoute>
-        ),
+        element: <VerificationPending />,
       },
     ],
   },
