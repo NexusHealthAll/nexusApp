@@ -10,12 +10,22 @@ export interface HospitalProfile {
   adminRole: string;
   adminInitials: string;
   adminRegistrationStatus: HospitalRegistrationStatus | null;
+  registrationNumber: string;
+  verificationStatus: string;
+  approvedAt: string | null;
 }
 
-interface HospitalResponse {
+interface MeHospitalProfile {
   id: string;
   name: string;
+  registration_number: string;
+  verification_status: string;
   admin_registration_status: HospitalRegistrationStatus | null;
+  approved_at: string | null;
+}
+
+interface MeResponse {
+  hospital?: MeHospitalProfile | null;
 }
 
 export interface HospitalDetails {
@@ -68,11 +78,11 @@ function deriveInitials(name: string): string {
 
 /**
  * Identity of the hospital + admin currently signed in, shown in the sidebar
- * header and top-bar breadcrumb. Backed by `GET /api/v1/hospitals/:id`
- * (real endpoint — see nexus-backend `src/handlers/hospitals.rs`) using the
- * `hospital_id` embedded in the logged-in user's auth session. There is no
- * dedicated "abbreviation" field on the backend Hospital model, so it's
- * derived client-side from the hospital name.
+ * header and top-bar breadcrumb. Backed by the protected `GET /api/v1/auth/me`
+ * endpoint (see nexus-backend `src/handlers/auth.rs`), which derives the
+ * hospital server-side from the caller's JWT — no client-supplied id needed.
+ * There is no dedicated "abbreviation" field on the backend Hospital model,
+ * so it's derived client-side from the hospital name.
  *
  * `admin_registration_status` is also read from this response — it's the
  * same field `POST /api/v1/shifts` checks server-side (must be "approved")
@@ -81,13 +91,11 @@ function deriveInitials(name: string): string {
 export class HospitalProfileService {
   static async getProfile(): Promise<HospitalProfile | null> {
     const user = useAuthStore.getState().user;
-    const hospitalId = user?.hospital_id;
-    if (!hospitalId) return null;
+    if (!user?.hospital_id) return null;
 
-    const res = await apiClient.get<HospitalResponse>(
-      `/api/v1/hospitals/${encodeURIComponent(hospitalId)}`,
-    );
-    const hospital = res.data;
+    const res = await apiClient.get<MeResponse>("/api/v1/auth/me");
+    const hospital = res.data.hospital;
+    if (!hospital) return null;
 
     const adminName =
       [user?.first_name, user?.last_name].filter(Boolean).join(" ") ||
@@ -101,6 +109,9 @@ export class HospitalProfileService {
       adminRole: "Hospital Admin",
       adminInitials: deriveInitials(adminName),
       adminRegistrationStatus: hospital.admin_registration_status,
+      registrationNumber: hospital.registration_number,
+      verificationStatus: hospital.verification_status,
+      approvedAt: hospital.approved_at,
     };
   }
 
