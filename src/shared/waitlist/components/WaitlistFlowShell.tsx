@@ -1,7 +1,12 @@
 import { Link, Outlet, useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/shared/auth/store/authStore";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { CheckCircle2, ChevronDown, LayoutDashboard, LogOut } from "lucide-react";
+import {
+  CheckCircle2,
+  ChevronDown,
+  LayoutDashboard,
+  LogOut,
+} from "lucide-react";
 import { NexusCareLogo } from "@/shared/components/ui/NexusCareLogo";
 import { Button } from "@/shared/components/ui/Button";
 import { AvatarInitials } from "@/shared/components/ui/AvatarInitials";
@@ -57,91 +62,97 @@ export function WaitlistFlowShell() {
     };
   }, [isDropdownOpen]);
 
-  const handleLoginNavigation = useCallback((role: "hospital" | "health-worker") => {
-    const hasToken = !!localStorage.getItem("accessToken");
-    if (!hasToken) {
-      // Track which auth flow started from (so OTP + redirects can use correct API behavior)
-      if (role === "hospital") {
-        useAuthStore.getState().setAuthFlowOrigin("hospital-onboarding");
-      } else {
-        // store currently supports only "hospital-onboarding" | "normal" | null
-        useAuthStore.getState().setAuthFlowOrigin("normal");
+  const handleLoginNavigation = useCallback(
+    (role: "hospital" | "health-worker") => {
+      const hasToken = !!localStorage.getItem("accessToken");
+      if (!hasToken) {
+        // Track which auth flow started from (so OTP + redirects can use correct API behavior)
+        if (role === "hospital") {
+          useAuthStore.getState().setAuthFlowOrigin("hospital-onboarding");
+        } else {
+          // store currently supports only "hospital-onboarding" | "normal" | null
+          useAuthStore.getState().setAuthFlowOrigin("normal");
+        }
+
+        localStorage.setItem("selectedRole", role);
+
+        // Start the same role/action auth selection flow as the landing screen.
+        // This ensures OTP verification + redirects have consistent context.
+        useAuthStore.getState().setActiveAuthFlow({
+          role,
+          action: "login",
+          origin: "landing",
+        });
+
+        navigate("/auth/login");
+        return;
       }
+
+      // If already logged in, route to dashboards
+      try {
+        const raw = localStorage.getItem("userData");
+        const parsed = raw ? JSON.parse(raw) : null;
+        const currentRole = parsed?.role as string | undefined;
+
+        if (currentRole === "hospital_admin") {
+          navigate("/hospital/dashboard");
+          return;
+        }
+
+        if (currentRole === "health_worker") {
+          navigate("/medical-staff/dashboard");
+          return;
+        }
+      } catch {
+        // ignore
+      }
+
+      navigate("/auth/login");
+    },
+    [navigate],
+  );
+
+  const handleRegisterNavigation = useCallback(
+    (role: "hospital" | "health-worker") => {
+      if (role === "hospital") {
+        // Hospital register currently creates a temp hospital admin user
+        // and routes into hospital onboarding.
+        const tempAuthToken = `temp_token_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        const tempUserData = {
+          id: `user_${Date.now()}`,
+          fullName: "Hospital Administrator",
+          email: "",
+          role: "hospital_admin",
+          onboardingComplete: false,
+          createdAt: new Date().toISOString(),
+        };
+
+        localStorage.setItem("authToken", tempAuthToken);
+        localStorage.setItem("userData", JSON.stringify(tempUserData));
+        localStorage.removeItem("pendingEmail");
+        localStorage.removeItem("emailVerified");
+
+        navigate("/hospital/onboarding/registration");
+        return;
+      }
+
+      // Health worker register: use the same login→OTP→verify→onboarding flow.
+      // Let the clinicians OTP endpoints be triggered after email entry.
+      useAuthStore.getState().setAuthFlowOrigin("normal");
 
       localStorage.setItem("selectedRole", role);
 
-      // Start the same role/action auth selection flow as the landing screen.
-      // This ensures OTP verification + redirects have consistent context.
       useAuthStore.getState().setActiveAuthFlow({
-        role,
-        action: "login",
+        role: "health-worker",
+        action: "register",
         origin: "landing",
       });
 
+      // Navigate to email capture. EmailLogin will send clinicians OTP.
       navigate("/auth/login");
-      return;
-    }
-
-    // If already logged in, route to dashboards
-    try {
-      const raw = localStorage.getItem("userData");
-      const parsed = raw ? JSON.parse(raw) : null;
-      const currentRole = parsed?.role as string | undefined;
-
-      if (currentRole === "hospital_admin") {
-        navigate("/hospital/dashboard");
-        return;
-      }
-
-      if (currentRole === "health_worker") {
-        navigate("/medical-staff/dashboard");
-        return;
-      }
-    } catch {
-      // ignore
-    }
-
-    navigate("/auth/login");
-  }, [navigate]);
-
-  const handleRegisterNavigation = useCallback((role: "hospital" | "health-worker") => {
-    if (role === "hospital") {
-      // Hospital register currently creates a temp hospital admin user
-      // and routes into hospital onboarding.
-      const tempAuthToken = `temp_token_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      const tempUserData = {
-        id: `user_${Date.now()}`,
-        fullName: "Hospital Administrator",
-        email: "",
-        role: "hospital_admin",
-        onboardingComplete: false,
-        createdAt: new Date().toISOString(),
-      };
-
-      localStorage.setItem("authToken", tempAuthToken);
-      localStorage.setItem("userData", JSON.stringify(tempUserData));
-      localStorage.removeItem("pendingEmail");
-      localStorage.removeItem("emailVerified");
-
-      navigate("/hospital/onboarding/registration");
-      return;
-    }
-
-    // Health worker register: use the same login→OTP→verify→onboarding flow.
-    // Let the clinicians OTP endpoints be triggered after email entry.
-    useAuthStore.getState().setAuthFlowOrigin("normal");
-
-    localStorage.setItem("selectedRole", role);
-
-    useAuthStore.getState().setActiveAuthFlow({
-      role: "health-worker",
-      action: "register",
-      origin: "landing",
-    });
-
-    // Navigate to email capture. EmailLogin will send clinicians OTP.
-    navigate("/auth/login");
-  }, [navigate]);
+    },
+    [navigate],
+  );
 
   const dropdownContent = useMemo(() => {
     const hospitalOpen = openAccordion === "hospital";
@@ -290,13 +301,13 @@ export function WaitlistFlowShell() {
           </nav>
 
           <div className="flex flex-row gap-4">
-            <Button
+            {/* <Button
               type="button"
               onClick={openJoinModal}
               className="rounded-xl bg-gradient-to-r from-onboarding-primaryGreen to-onboarding-primaryBlue px-5 text-sm font-semibold text-white shadow-soft"
             >
               Join Waitlist
-            </Button>
+            </Button> */}
 
             {/* Logged-in users see their avatar instead of the Get started CTA */}
             <div className="relative" data-waitlist-get-started>

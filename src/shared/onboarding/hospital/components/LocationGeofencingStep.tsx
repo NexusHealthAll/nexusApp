@@ -1,13 +1,18 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Info, Loader2, AlertCircle, ChevronDown } from "lucide-react";
 import { Select } from "@/shared/components/ui/Select";
 import { HospitalOnboardingLayout } from "./HospitalOnboardingLayout";
+import { LocationPermissionModal } from "./LocationPermissionModal";
+import { LocationCheckingScreen } from "./LocationCheckingScreen";
 import { useOnboarding } from "../context/OnboardingContext";
 import { hospitalOnboardingService } from "../services/hospitalOnboardingService";
 import { ApiError } from "@/lib/apiError";
 import apiClient from "@/lib/apiClient";
 import { useLocationTracker } from "@/shared/location/useLocationTracker";
+
+// Address input pauses this long before re-querying nearby places.
+const ADDRESS_DEBOUNCE_MS = 500;
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
@@ -25,11 +30,43 @@ const fieldError = "mt-1 text-[11px] text-red-500";
 // ─── Nigeria states ───────────────────────────────────────────────────────────
 
 const NIGERIA_STATES = [
-  "Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa", "Benue",
-  "Borno", "Cross River", "Delta", "Ebonyi", "Edo", "Ekiti", "Enugu",
-  "FCT - Abuja", "Gombe", "Imo", "Jigawa", "Kaduna", "Kano", "Katsina",
-  "Kebbi", "Kogi", "Kwara", "Lagos", "Nasarawa", "Niger", "Ogun", "Ondo",
-  "Osun", "Oyo", "Plateau", "Rivers", "Sokoto", "Taraba", "Yobe", "Zamfara",
+  "Abia",
+  "Adamawa",
+  "Akwa Ibom",
+  "Anambra",
+  "Bauchi",
+  "Bayelsa",
+  "Benue",
+  "Borno",
+  "Cross River",
+  "Delta",
+  "Ebonyi",
+  "Edo",
+  "Ekiti",
+  "Enugu",
+  "FCT - Abuja",
+  "Gombe",
+  "Imo",
+  "Jigawa",
+  "Kaduna",
+  "Kano",
+  "Katsina",
+  "Kebbi",
+  "Kogi",
+  "Kwara",
+  "Lagos",
+  "Nasarawa",
+  "Niger",
+  "Ogun",
+  "Ondo",
+  "Osun",
+  "Oyo",
+  "Plateau",
+  "Rivers",
+  "Sokoto",
+  "Taraba",
+  "Yobe",
+  "Zamfara",
 ];
 
 // ─── Reverse-geocode types ────────────────────────────────────────────────────
@@ -55,7 +92,12 @@ interface LandmarkDropdownProps {
   onChange: (val: string) => void;
 }
 
-function LandmarkDropdown({ items, loading, value, onChange }: LandmarkDropdownProps) {
+function LandmarkDropdown({
+  items,
+  loading,
+  value,
+  onChange,
+}: LandmarkDropdownProps) {
   const [open, setOpen] = useState(false);
   const [customMode, setCustomMode] = useState(false);
   const [customText, setCustomText] = useState("");
@@ -64,7 +106,10 @@ function LandmarkDropdown({ items, loading, value, onChange }: LandmarkDropdownP
   // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(e.target as Node)
+      ) {
         setOpen(false);
       }
     }
@@ -73,14 +118,13 @@ function LandmarkDropdown({ items, loading, value, onChange }: LandmarkDropdownP
   }, []);
 
   const isKnownItem = items.some((i) => i.title === value);
-  const triggerLabel =
-    loading
-      ? ""
-      : value && isKnownItem
+  const triggerLabel = loading
+    ? ""
+    : value && isKnownItem
+      ? value
+      : value && !isKnownItem
         ? value
-        : value && !isKnownItem
-          ? value
-          : "Select a nearby landmark…";
+        : "Select a nearby landmark…";
 
   // ── custom text input mode ──
   if (customMode) {
@@ -197,7 +241,13 @@ function LandmarkDropdown({ items, loading, value, onChange }: LandmarkDropdownP
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export function LocationGeofencingStep() {
-  const { latitude, longitude, error: geoError } = useLocationTracker();
+  const {
+    latitude,
+    longitude,
+    error: geoError,
+    permissionState,
+    retry: retryLocation,
+  } = useLocationTracker();
   const navigate = useNavigate();
   const { formData, setField, setFields } = useOnboarding();
 
@@ -210,7 +260,9 @@ export function LocationGeofencingStep() {
     radius: formData.radius,
   });
 
-  const [errors, setErrors] = useState<Partial<Record<keyof typeof local, string>>>({});
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof typeof local, string>>
+  >({});
   const [submitting, setSubmitting] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
 
@@ -219,11 +271,10 @@ export function LocationGeofencingStep() {
   const [geoLoading, setGeoLoading] = useState(false);
   const geocodeFetched = useRef(false);
 
-  // ── Fetch reverse geocode once we have coordinates ──────────────────────────
-  useEffect(() => {
+  // ── Nearby-places lookup — anchored to the device's current GPS position ────
+  // (the HERE reverse-geocode endpoint only accepts coordinates, not free text)
+  const fetchNearbyPlaces = useCallback(() => {
     if (latitude == null || longitude == null) return;
-    if (geocodeFetched.current) return;
-    geocodeFetched.current = true;
 
     setGeoLoading(true);
 
@@ -243,7 +294,8 @@ export function LocationGeofencingStep() {
             state:
               prev.state ||
               NIGERIA_STATES.find(
-                (s) => s.toLowerCase() === (first.address.state ?? "").toLowerCase()
+                (s) =>
+                  s.toLowerCase() === (first.address.state ?? "").toLowerCase(),
               ) ||
               "",
           }));
@@ -257,6 +309,30 @@ export function LocationGeofencingStep() {
       });
   }, [latitude, longitude]);
 
+  // ── Fetch once, as soon as we have coordinates ───────────────────────────────
+  useEffect(() => {
+    if (latitude == null || longitude == null) return;
+    if (geocodeFetched.current) return;
+    geocodeFetched.current = true;
+    fetchNearbyPlaces();
+  }, [latitude, longitude, fetchNearbyPlaces]);
+
+  // ── Re-fetch on a debounce as the user types the street address ─────────────
+  // Suggestions stay anchored to the device's live GPS position (not the typed
+  // text — reverse-geocode has no way to search by address string) but typing
+  // re-triggers the lookup so it stays current with the user's activity.
+  useEffect(() => {
+    if (!geocodeFetched.current) return; // wait for the initial mount fetch
+    if (!local.streetAddress.trim()) return;
+
+    const timer = setTimeout(() => {
+      fetchNearbyPlaces();
+    }, ADDRESS_DEBOUNCE_MS);
+
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only re-run on address keystrokes, not every fetchNearbyPlaces identity change
+  }, [local.streetAddress]);
+
   // ── Field helpers ────────────────────────────────────────────────────────────
   function handle(field: keyof typeof local, value: string) {
     setLocal((p) => ({ ...p, [field]: value }));
@@ -265,7 +341,10 @@ export function LocationGeofencingStep() {
 
   function validate(): boolean {
     const e: typeof errors = {};
-    if (!local.streetAddress.trim()) e.streetAddress = "Street address is required";
+    if (!local.streetAddress.trim())
+      e.streetAddress = "Street address is required";
+    if (!local.addressLine2.trim())
+      e.addressLine2 = "Nearby landmark is required";
     if (!local.city.trim()) e.city = "City is required";
     if (!local.state) e.state = "State is required";
     setErrors(e);
@@ -294,19 +373,49 @@ export function LocationGeofencingStep() {
         for (const fe of apiErr.fieldErrors) {
           if (fe.field === "address.line1" || fe.field === "streetAddress")
             fieldMap.streetAddress = fe.message;
-          else if (fe.field === "address.line2") fieldMap.addressLine2 = fe.message;
+          else if (fe.field === "address.line2")
+            fieldMap.addressLine2 = fe.message;
           else if (fe.field === "address.city") fieldMap.city = fe.message;
           else if (fe.field === "address.state") fieldMap.state = fe.message;
-          else if (fe.field === "address.postal_code") fieldMap.postalCode = fe.message;
+          else if (fe.field === "address.postal_code")
+            fieldMap.postalCode = fe.message;
         }
-        if (Object.keys(fieldMap).length) setErrors((e) => ({ ...e, ...fieldMap }));
+        if (Object.keys(fieldMap).length)
+          setErrors((e) => ({ ...e, ...fieldMap }));
       }
     } finally {
       setSubmitting(false);
     }
   }
 
-  const mapSrc = `https://www.openstreetmap.org/export/embed.html?bbox=3.2%2C6.4%2C3.5%2C6.65&layer=mapnik&marker=6.5244%2C3.3792`;
+  // Default center (Lagos) while GPS is still resolving; swapped for the
+  // live position as soon as it's available so the pin actually moves.
+  const mapLat = latitude ?? 6.5244;
+  const mapLng = longitude ?? 3.3792;
+  const bboxDelta = 0.01;
+  const mapSrc =
+    `https://www.openstreetmap.org/export/embed.html?bbox=` +
+    `${mapLng - bboxDelta}%2C${mapLat - bboxDelta}%2C${mapLng + bboxDelta}%2C${mapLat + bboxDelta}` +
+    `&layer=mapnik&marker=${mapLat}%2C${mapLng}`;
+
+  // Still resolving the initial check — don't show the form or the modal
+  // until we actually know whether location is usable.
+  if (permissionState === "unknown" || permissionState === "prompt") {
+    return <LocationCheckingScreen />;
+  }
+
+  if (
+    permissionState === "denied" ||
+    permissionState === "unavailable" ||
+    permissionState === "unsupported"
+  ) {
+    return (
+      <LocationPermissionModal
+        state={permissionState}
+        onRetry={retryLocation}
+      />
+    );
+  }
 
   return (
     <HospitalOnboardingLayout activeStep={1}>
@@ -316,8 +425,8 @@ export function LocationGeofencingStep() {
           Location &amp; Geofencing
         </h1>
         <p className="mt-1.5 text-[13px] text-neutral-500 max-w-md leading-relaxed">
-          Define the precise geographical boundary for your facility. This ensures
-          automated, location-verified clock-ins for all clinical staff.
+          Define the precise geographical boundary for your facility. This
+          ensures automated, location-verified clock-ins for all clinical staff.
         </p>
       </div>
 
@@ -332,9 +441,9 @@ export function LocationGeofencingStep() {
                 Why Geofencing Matters
               </p>
               <p className="text-[11px] text-neutral-500 leading-relaxed">
-                Geofencing enables automated shift logging. Clinicians must be within
-                this defined radius for their clock-in to register successfully on
-                the NexusCare app.
+                Geofencing enables automated shift logging. Clinicians must be
+                within this defined radius for their clock-in to register
+                successfully on the NexusCare app.
               </p>
             </div>
           </div>
@@ -366,7 +475,7 @@ export function LocationGeofencingStep() {
             {/* Nearby Landmarks — custom dropdown */}
             <div className="mb-3">
               <label className="block text-[10px] font-semibold uppercase tracking-widest text-neutral-500 mb-1.5">
-                Nearby Landmarks
+                Nearby Landmarks <span className="text-red-500">*</span>
               </label>
               <LandmarkDropdown
                 items={geoItems}
@@ -374,6 +483,9 @@ export function LocationGeofencingStep() {
                 value={local.addressLine2}
                 onChange={(val) => handle("addressLine2", val)}
               />
+              {errors.addressLine2 && (
+                <p className={fieldError}>{errors.addressLine2}</p>
+              )}
             </div>
 
             {/* City + State */}
