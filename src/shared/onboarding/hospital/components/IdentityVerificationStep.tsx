@@ -112,7 +112,7 @@ type ValidateStatus = "idle" | "loading" | "success" | "error";
 
 export function IdentityVerificationStep() {
   const navigate = useNavigate();
-  const { formData, reset } = useOnboarding();
+  const { formData } = useOnboarding();
   const hospitalId = formData.hospitalId;
 
   // ── Card 1 state ─────────────────────────────────────────────────────────
@@ -183,7 +183,8 @@ export function IdentityVerificationStep() {
         type: identityType,
       });
       setValidateStatus("success");
-      reset();
+      // Draft is kept — VerificationStatusStep still needs it for the
+      // Application Summary card. Cleared once the user leaves that page.
       navigate("/hospital/onboarding/verification-status");
     } catch (err) {
       const apiErr = err instanceof ApiError ? err : null;

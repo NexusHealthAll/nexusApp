@@ -17,7 +17,7 @@ const fieldError = "mt-1 text-[11px] text-red-500";
 
 export function HospitalDetailsStep() {
   const navigate    = useNavigate();
-  const { formData, setFields } = useOnboarding();
+  const { formData, setFields, reset } = useOnboarding();
 
   // Pre-fill email from auth if available
   const authEmail = authUtils.getCurrentUser()?.email ?? "";
@@ -217,7 +217,11 @@ export function HospitalDetailsStep() {
       {/* Actions */}
       <div className="max-w-2xl mx-auto mt-8 flex items-center justify-between w-full">
         <button
-          onClick={() => navigate("/auth/role-selection")}
+          onClick={() => {
+            // User is abandoning the flow entirely — clear the draft.
+            reset();
+            navigate("/auth/role-selection");
+          }}
           className="px-6 py-2.5 rounded-lg bg-[#EF4444] hover:bg-[#DC2626] text-white text-[13px] font-semibold transition-colors duration-150"
         >
           Cancel

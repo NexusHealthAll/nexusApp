@@ -1,4 +1,9 @@
-import { createContext, useContext, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+
+// Persists the in-progress draft across page reloads/tab closes so entered
+// fields survive a failed registration submit or an accidental refresh.
+// Only cleared explicitly when the user leaves the onboarding flow (see reset()).
+const STORAGE_KEY = "nexus:hospital-onboarding-draft";
 
 /** All onboarding form data collected across the 3 steps */
 export interface OnboardingFormData {
@@ -38,17 +43,31 @@ const INITIAL: OnboardingFormData = {
   hospitalId: "",
 };
 
+function loadPersisted(): OnboardingFormData {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? { ...INITIAL, ...JSON.parse(raw) } : INITIAL;
+  } catch {
+    return INITIAL;
+  }
+}
+
 interface OnboardingCtx {
   formData: OnboardingFormData;
   setField: <K extends keyof OnboardingFormData>(key: K, value: OnboardingFormData[K]) => void;
   setFields: (partial: Partial<OnboardingFormData>) => void;
+  /** Clears the draft, both in memory and in storage. Call only when the user leaves the flow entirely. */
   reset: () => void;
 }
 
 const OnboardingContext = createContext<OnboardingCtx | null>(null);
 
 export function OnboardingProvider({ children }: { children: ReactNode }) {
-  const [formData, setFormData] = useState<OnboardingFormData>(INITIAL);
+  const [formData, setFormData] = useState<OnboardingFormData>(loadPersisted);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
+  }, [formData]);
 
   function setField<K extends keyof OnboardingFormData>(key: K, value: OnboardingFormData[K]) {
     setFormData((prev) => ({ ...prev, [key]: value }));
@@ -59,6 +78,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   }
 
   function reset() {
+    localStorage.removeItem(STORAGE_KEY);
     setFormData(INITIAL);
   }
 

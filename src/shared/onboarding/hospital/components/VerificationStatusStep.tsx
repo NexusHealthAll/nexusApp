@@ -15,7 +15,7 @@ import { useAuthStore } from "@/shared/auth/store/authStore";
 
 export function VerificationStatusStep() {
   const navigate = useNavigate();
-  const { formData } = useOnboarding();
+  const { formData, reset } = useOnboarding();
 
   // Derive display values from context
   const facilityName = formData.hospitalName || "—";
@@ -218,6 +218,8 @@ export function VerificationStatusStep() {
                 origin: "hospital-onboarding",
               });
 
+              // Onboarding is fully complete — safe to clear the draft now.
+              reset();
               navigate("/auth/login");
             }}
             className="flex items-center gap-2 px-7 py-2.5 rounded-lg bg-[#0F766E] hover:bg-[#0D9488] text-white text-[13px] font-semibold transition-colors duration-150 shadow-sm"
