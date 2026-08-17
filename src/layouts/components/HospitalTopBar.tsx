@@ -59,27 +59,27 @@ export function HospitalTopBar({ onMenuClick }: HospitalTopBarProps) {
   const adminName = profile?.adminName ?? "—";
 
   return (
-    <header className="flex h-16 items-center gap-3 border-b border-neutral-200 bg-white px-4 lg:px-6">
+    <header className="flex h-16 items-center gap-3 border-b border-neutral-200 bg-white px-4 dark:border-neutral-800 dark:bg-neutral-900 lg:px-6">
       <button
         onClick={onMenuClick}
-        className="rounded-md p-2 text-neutral-500 hover:bg-neutral-100 lg:hidden"
+        className="rounded-md p-2 text-neutral-500 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800 lg:hidden"
       >
         <Menu className="h-5 w-5" />
       </button>
 
       <div className="relative min-w-0 flex-1 max-w-md">
-        <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
+        <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400 dark:text-neutral-500" />
         <input
           type="text"
           placeholder="Search shifts, workers, invoices..."
-          className="w-full rounded-lg border border-neutral-200 bg-neutral-50 py-2 pl-10 pr-4 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-secondary-500"
+          className="w-full rounded-lg border border-neutral-200 bg-neutral-50 py-2 pl-10 pr-4 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-secondary-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 dark:placeholder:text-neutral-500"
         />
       </div>
 
       <div className="ml-auto flex flex-shrink-0 items-center gap-2.5">
         <button
           onClick={() => navigate(PATHS.hospital.createShift)}
-          className="hidden h-9 items-center gap-1.5 rounded-lg bg-neutral-800 px-3.5 text-sm font-semibold text-white transition-colors hover:bg-neutral-900 sm:flex"
+          className="hidden h-9 items-center gap-1.5 rounded-lg bg-neutral-800 px-3.5 text-sm font-semibold text-white transition-colors hover:bg-neutral-900 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white sm:flex"
         >
           <Plus className="h-4 w-4" />
           Create Shift
@@ -87,7 +87,7 @@ export function HospitalTopBar({ onMenuClick }: HospitalTopBarProps) {
 
         <Link
           to={PATHS.hospital.messages}
-          className="flex h-9 w-9 items-center justify-center rounded-lg border border-neutral-200 text-neutral-500 transition-colors hover:bg-neutral-50 hover:text-neutral-700"
+          className="flex h-9 w-9 items-center justify-center rounded-lg border border-neutral-200 text-neutral-500 transition-colors hover:bg-neutral-50 hover:text-neutral-700 dark:border-neutral-700 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
           aria-label="Messages"
         >
           <MessageSquare className="h-4 w-4" />
@@ -95,7 +95,7 @@ export function HospitalTopBar({ onMenuClick }: HospitalTopBarProps) {
 
         <Link
           to={PATHS.hospital.notifications}
-          className="relative flex h-9 w-9 items-center justify-center rounded-lg border border-neutral-200 text-neutral-500 transition-colors hover:bg-neutral-50 hover:text-neutral-700"
+          className="relative flex h-9 w-9 items-center justify-center rounded-lg border border-neutral-200 text-neutral-500 transition-colors hover:bg-neutral-50 hover:text-neutral-700 dark:border-neutral-700 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
           aria-label="Notifications"
         >
           <Bell className="h-4 w-4" />
@@ -109,36 +109,36 @@ export function HospitalTopBar({ onMenuClick }: HospitalTopBarProps) {
         <div className="relative" ref={menuRef}>
           <button
             onClick={() => setMenuOpen((v) => !v)}
-            className="flex items-center gap-2 rounded-lg px-1.5 py-1 transition-colors hover:bg-neutral-50"
+            className="flex items-center gap-2 rounded-lg px-1.5 py-1 transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800"
           >
             <span className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary-500 text-xs font-bold text-white">
               {profile?.adminInitials ?? "—"}
             </span>
-            <span className="hidden text-sm font-semibold text-neutral-900 md:block">
+            <span className="hidden text-sm font-semibold text-neutral-900 dark:text-neutral-50 md:block">
               {adminName}
             </span>
             <ChevronDown
               className={cn(
-                "hidden h-4 w-4 text-neutral-400 transition-transform md:block",
+                "hidden h-4 w-4 text-neutral-400 transition-transform dark:text-neutral-500 md:block",
                 menuOpen && "rotate-180",
               )}
             />
           </button>
 
           {menuOpen && (
-            <div className="absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-strong">
-              <div className="border-b border-neutral-100 px-4 py-3">
-                <p className="truncate text-sm font-semibold text-neutral-900">
+            <div className="absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-strong dark:border-neutral-700 dark:bg-neutral-900">
+              <div className="border-b border-neutral-100 px-4 py-3 dark:border-neutral-800">
+                <p className="truncate text-sm font-semibold text-neutral-900 dark:text-neutral-50">
                   {adminName}
                 </p>
-                <p className="truncate text-xs text-neutral-400">
+                <p className="truncate text-xs text-neutral-400 dark:text-neutral-500">
                   {profile?.name ?? ""}
                 </p>
               </div>
               <Link
                 to={PATHS.hospital.profile}
                 onClick={() => setMenuOpen(false)}
-                className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900"
+                className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-50"
               >
                 <Building2 className="h-4 w-4" />
                 Hospital Profile
@@ -146,14 +146,14 @@ export function HospitalTopBar({ onMenuClick }: HospitalTopBarProps) {
               <Link
                 to={PATHS.hospital.settings}
                 onClick={() => setMenuOpen(false)}
-                className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900"
+                className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-50"
               >
                 <Settings className="h-4 w-4" />
                 Settings
               </Link>
               <button
                 onClick={handleLogout}
-                className="flex w-full items-center gap-2.5 border-t border-neutral-100 px-4 py-2.5 text-sm font-medium text-error-600 hover:bg-error-50"
+                className="flex w-full items-center gap-2.5 border-t border-neutral-100 px-4 py-2.5 text-sm font-medium text-error-600 hover:bg-error-50 dark:border-neutral-800 dark:text-error-400 dark:hover:bg-error-950"
               >
                 <LogOut className="h-4 w-4" />
                 Log Out

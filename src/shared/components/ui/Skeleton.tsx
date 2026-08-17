@@ -7,7 +7,7 @@ export function Skeleton({ className, ...props }: SkeletonProps) {
   return (
     <div
       className={cn(
-        'animate-pulse rounded-md bg-neutral-200',
+        'animate-pulse rounded-md bg-neutral-200 dark:bg-neutral-800',
         className
       )}
       {...props}
@@ -33,7 +33,7 @@ export function DashboardSkeleton() {
       {/* Stats Cards Skeleton */}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="rounded-xl border border-neutral-200 bg-white p-6 shadow-medium">
+          <div key={i} className="rounded-xl border border-neutral-200 bg-white p-6 shadow-medium dark:border-neutral-800 dark:bg-neutral-900">
             <div className="flex items-center justify-between mb-4">
               <Skeleton className="h-4 w-24" />
               <Skeleton className="h-5 w-5 rounded" />
@@ -47,7 +47,7 @@ export function DashboardSkeleton() {
       {/* Status Cards Skeleton */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="rounded-xl bg-neutral-50 p-4">
+          <div key={i} className="rounded-xl bg-neutral-50 p-4 dark:bg-neutral-800">
             <div className="flex items-center space-x-3">
               <Skeleton className="h-9 w-9 rounded-lg" />
               <div className="space-y-2">
@@ -62,7 +62,7 @@ export function DashboardSkeleton() {
       {/* Charts Skeleton */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {Array.from({ length: 2 }).map((_, i) => (
-          <div key={i} className="rounded-xl border border-neutral-200 bg-white p-6 shadow-medium">
+          <div key={i} className="rounded-xl border border-neutral-200 bg-white p-6 shadow-medium dark:border-neutral-800 dark:bg-neutral-900">
             <div className="flex items-center justify-between mb-4">
               <Skeleton className="h-6 w-40" />
               <Skeleton className="h-8 w-20" />
@@ -82,7 +82,7 @@ export function DashboardSkeleton() {
 
       {/* Bottom Section Skeleton */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2 rounded-xl border border-neutral-200 bg-white p-6 shadow-medium">
+        <div className="lg:col-span-2 rounded-xl border border-neutral-200 bg-white p-6 shadow-medium dark:border-neutral-800 dark:bg-neutral-900">
           <div className="flex items-center justify-between mb-4">
             <Skeleton className="h-6 w-32" />
             <Skeleton className="h-8 w-20" />
@@ -100,7 +100,7 @@ export function DashboardSkeleton() {
             ))}
           </div>
         </div>
-        <div className="rounded-xl border border-neutral-200 bg-white p-6 shadow-medium">
+        <div className="rounded-xl border border-neutral-200 bg-white p-6 shadow-medium dark:border-neutral-800 dark:bg-neutral-900">
           <Skeleton className="h-6 w-24 mb-4" />
           <div className="space-y-3">
             {Array.from({ length: 4 }).map((_, i) => (

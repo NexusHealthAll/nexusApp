@@ -105,18 +105,18 @@ export function AnalyticsPage() {
               {
                 label: "Cancelled Shifts",
                 value: data.cancelledShifts,
-                tone: "text-error-600",
+                tone: "text-error-600 dark:text-error-400",
               },
             ].map((stat) => (
               <div
                 key={stat.label}
-                className="rounded-2xl border border-neutral-100 bg-white p-5"
+                className="rounded-2xl border border-neutral-100 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900"
               >
-                <p className="text-sm text-neutral-500">{stat.label}</p>
+                <p className="text-sm text-neutral-500 dark:text-neutral-400">{stat.label}</p>
                 <p
                   className={cn(
                     "mt-2 text-2xl font-bold tracking-tight",
-                    stat.tone ?? "text-neutral-900",
+                    stat.tone ?? "text-neutral-900 dark:text-neutral-50",
                   )}
                 >
                   {stat.value}
@@ -127,11 +127,11 @@ export function AnalyticsPage() {
 
           {/* Trend + roles */}
           <div className="mt-4 grid gap-4 xl:grid-cols-[2fr_1fr]">
-            <div className="rounded-2xl border border-neutral-100 bg-white p-5">
-              <h2 className="text-base font-bold text-neutral-900">
+            <div className="rounded-2xl border border-neutral-100 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
+              <h2 className="text-base font-bold text-neutral-900 dark:text-neutral-50">
                 Revenue & Spending Trend
               </h2>
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
                 Last 8 weeks
               </p>
               <div className="mt-4 h-[260px] w-full">
@@ -189,7 +189,7 @@ export function AnalyticsPage() {
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
-              <div className="mt-2 flex items-center gap-4 text-xs text-neutral-500">
+              <div className="mt-2 flex items-center gap-4 text-xs text-neutral-500 dark:text-neutral-400">
                 <span className="flex items-center gap-1.5">
                   <span className="h-2.5 w-2.5 rounded-sm bg-[#0f766e]" />
                   Revenue
@@ -201,23 +201,23 @@ export function AnalyticsPage() {
               </div>
             </div>
 
-            <div className="rounded-2xl border border-neutral-100 bg-white p-5">
-              <h2 className="text-base font-bold text-neutral-900">
+            <div className="rounded-2xl border border-neutral-100 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
+              <h2 className="text-base font-bold text-neutral-900 dark:text-neutral-50">
                 Most Requested Roles
               </h2>
               <div className="mt-5 space-y-5">
                 {data.rolesRequested.length === 0 ? (
-                  <p className="text-sm text-neutral-400">No shifts yet.</p>
+                  <p className="text-sm text-neutral-400 dark:text-neutral-500">No shifts yet.</p>
                 ) : (
                   data.rolesRequested.map((role) => (
                     <div key={role.role}>
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-neutral-700">{role.role}</span>
-                        <span className="font-semibold text-neutral-400">
+                        <span className="text-neutral-700 dark:text-neutral-300">{role.role}</span>
+                        <span className="font-semibold text-neutral-400 dark:text-neutral-500">
                           {role.count}
                         </span>
                       </div>
-                      <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-neutral-100">
+                      <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-neutral-100 dark:bg-neutral-800">
                         <div
                           className="h-full rounded-full bg-secondary-600"
                           style={{
@@ -234,8 +234,8 @@ export function AnalyticsPage() {
 
           {/* Ratings + departments */}
           <div className="mt-4 grid gap-4 xl:grid-cols-2">
-            <div className="rounded-2xl border border-neutral-100 bg-white p-5">
-              <h2 className="text-base font-bold text-neutral-900">
+            <div className="rounded-2xl border border-neutral-100 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
+              <h2 className="text-base font-bold text-neutral-900 dark:text-neutral-50">
                 Worker Ratings Distribution
               </h2>
               {/* No aggregate ratings endpoint yet — rate workers after shifts to populate this. */}
@@ -247,33 +247,33 @@ export function AnalyticsPage() {
               />
             </div>
 
-            <div className="rounded-2xl border border-neutral-100 bg-white p-5">
-              <h2 className="text-base font-bold text-neutral-900">
+            <div className="rounded-2xl border border-neutral-100 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
+              <h2 className="text-base font-bold text-neutral-900 dark:text-neutral-50">
                 Department Performance
               </h2>
               {data.departments.length === 0 ? (
-                <p className="mt-4 text-sm text-neutral-400">No shifts yet.</p>
+                <p className="mt-4 text-sm text-neutral-400 dark:text-neutral-500">No shifts yet.</p>
               ) : (
-                <ul className="mt-2 divide-y divide-neutral-50">
+                <ul className="mt-2 divide-y divide-neutral-50 dark:divide-neutral-800">
                   {data.departments.map((dept) => (
                     <li
                       key={dept.name}
                       className="flex items-center justify-between gap-4 py-3.5 text-sm"
                     >
-                      <span className="font-medium text-neutral-800">
+                      <span className="font-medium text-neutral-800 dark:text-neutral-200">
                         {dept.name}
                       </span>
-                      <span className="ml-auto text-neutral-400">
+                      <span className="ml-auto text-neutral-400 dark:text-neutral-500">
                         {dept.shifts} shift{dept.shifts === 1 ? "" : "s"}
                       </span>
                       <span
                         className={cn(
                           "w-24 text-right font-bold",
                           dept.fillRatePct >= 90
-                            ? "text-success-600"
+                            ? "text-success-600 dark:text-success-400"
                             : dept.fillRatePct >= 85
-                              ? "text-secondary-600"
-                              : "text-warning-500",
+                              ? "text-secondary-600 dark:text-secondary-400"
+                              : "text-warning-500 dark:text-warning-400",
                         )}
                       >
                         {dept.fillRatePct}% fill rate

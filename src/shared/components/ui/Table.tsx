@@ -57,7 +57,7 @@ export function Table<T>({
     <div className="overflow-x-auto">
       <table className={cn("w-full text-sm", className)}>
         <thead>
-          <tr className="text-left text-xs font-semibold text-neutral-400">
+          <tr className="text-left text-xs font-semibold text-neutral-400 dark:text-neutral-500">
             {columns.map((column) => (
               <th
                 key={column.key}
@@ -77,8 +77,9 @@ export function Table<T>({
               transition={{ duration: 0.2, delay: Math.min(index, 12) * 0.02 }}
               onClick={onRowClick ? () => onRowClick(row) : undefined}
               className={cn(
-                "border-t border-neutral-50",
-                onRowClick && "cursor-pointer hover:bg-neutral-50",
+                "border-t border-neutral-50 dark:border-neutral-800",
+                onRowClick &&
+                  "cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800",
               )}
             >
               {columns.map((column) => (

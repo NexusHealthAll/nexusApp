@@ -37,7 +37,7 @@ export function Avatar({
         src={photoUrl}
         alt={name ?? "Profile photo"}
         className={cn(
-          "shrink-0 rounded-full border-2 border-brand-200 object-cover",
+          "shrink-0 rounded-full border-2 border-brand-200 object-cover dark:border-brand-800",
           avatarSizeClasses[size],
           className,
         )}
@@ -48,7 +48,7 @@ export function Avatar({
   return (
     <div
       className={cn(
-        "flex shrink-0 items-center justify-center rounded-full border-2 border-brand-200 bg-brand-100 font-bold text-brand-700",
+        "flex shrink-0 items-center justify-center rounded-full border-2 border-brand-200 bg-brand-100 font-bold text-brand-700 dark:border-brand-800 dark:bg-brand-950 dark:text-brand-300",
         avatarSizeClasses[size],
         className,
       )}
@@ -70,35 +70,35 @@ export function Header({
   onNotifications?: () => void;
 }) {
   return (
-    <header className="sticky top-0 z-30 border-b border-neutral-100 bg-[#f6fbff]/95 px-5 py-4 backdrop-blur">
+    <header className="sticky top-0 z-30 border-b border-neutral-100 bg-[#f6fbff]/95 px-5 py-4 backdrop-blur dark:border-neutral-800 dark:bg-neutral-950/95">
       <div className="flex items-center justify-between">
         <div className="flex min-w-0 items-center gap-3">
           {onBack && (
             <button
               type="button"
               onClick={onBack}
-              className="rounded-full p-1.5 text-brand-700 hover:bg-brand-50"
+              className="rounded-full p-1.5 text-brand-700 hover:bg-brand-50 dark:text-brand-300 dark:hover:bg-brand-950"
             >
               <ArrowLeft className="h-5 w-5" />
             </button>
           )}
           <div className="min-w-0">
-            <p className="text-[10px] font-bold uppercase tracking-wide text-brand-700">
+            <p className="text-[10px] font-bold uppercase tracking-wide text-brand-700 dark:text-brand-300">
               NexusCare
             </p>
             {title && (
-              <h1 className="truncate text-xl font-bold text-neutral-950">
+              <h1 className="truncate text-xl font-bold text-neutral-950 dark:text-neutral-50">
                 {title}
               </h1>
             )}
-            {subtitle && <p className="text-xs text-neutral-500">{subtitle}</p>}
+            {subtitle && <p className="text-xs text-neutral-500 dark:text-neutral-500">{subtitle}</p>}
           </div>
         </div>
         {onNotifications && (
           <button
             type="button"
             onClick={onNotifications}
-            className="rounded-full p-2 text-brand-700 hover:bg-brand-50"
+            className="rounded-full p-2 text-brand-700 hover:bg-brand-50 dark:text-brand-300 dark:hover:bg-brand-950"
           >
             <Bell className="h-5 w-5" />
           </button>
@@ -116,10 +116,10 @@ export function StatusBadge({
   tone?: "blue" | "green" | "red" | "amber";
 }) {
   const tones = {
-    blue: "bg-brand-50 text-brand-700",
-    green: "bg-success-50 text-success-700",
-    red: "bg-error-50 text-error-700",
-    amber: "bg-warning-50 text-warning-700",
+    blue: "bg-brand-50 text-brand-700 dark:bg-brand-950 dark:text-brand-300",
+    green: "bg-success-50 text-success-700 dark:bg-success-950 dark:text-success-300",
+    red: "bg-error-50 text-error-700 dark:bg-error-950 dark:text-error-300",
+    amber: "bg-warning-50 text-warning-700 dark:bg-warning-950 dark:text-warning-300",
   };
 
   return (
@@ -139,9 +139,9 @@ export function Metric({
   icon: ComponentType<{ className?: string }>;
 }) {
   return (
-    <div className="rounded-2xl bg-white p-4 shadow-sm">
-      <Icon className="h-5 w-5 text-brand-700" />
-      <p className="mt-3 text-xs text-neutral-500">{label}</p>
+    <div className="rounded-2xl bg-white p-4 shadow-sm dark:bg-neutral-900">
+      <Icon className="h-5 w-5 text-brand-700 dark:text-brand-300" />
+      <p className="mt-3 text-xs text-neutral-500 dark:text-neutral-500">{label}</p>
       <p className="text-xl font-bold">{value}</p>
     </div>
   );
@@ -157,9 +157,9 @@ export function InfoTile({
   value: string;
 }) {
   return (
-    <div className="rounded-2xl bg-white p-4 shadow-sm">
-      <Icon className="h-5 w-5 text-brand-700" />
-      <p className="mt-2 text-xs text-neutral-500">{label}</p>
+    <div className="rounded-2xl bg-white p-4 shadow-sm dark:bg-neutral-900">
+      <Icon className="h-5 w-5 text-brand-700 dark:text-brand-300" />
+      <p className="mt-2 text-xs text-neutral-500 dark:text-neutral-500">{label}</p>
       <p className="text-sm font-bold">{value}</p>
     </div>
   );
@@ -176,11 +176,11 @@ export function InfoRow({
 }) {
   return (
     <div className="flex items-center gap-3">
-      <span className="rounded-xl bg-brand-50 p-2 text-brand-700">
+      <span className="rounded-xl bg-brand-50 p-2 text-brand-700 dark:bg-brand-950 dark:text-brand-300">
         <Icon className="h-5 w-5" />
       </span>
       <div>
-        <p className="text-xs text-neutral-500">{label}</p>
+        <p className="text-xs text-neutral-500 dark:text-neutral-500">{label}</p>
         <p className="font-bold">{value}</p>
       </div>
     </div>

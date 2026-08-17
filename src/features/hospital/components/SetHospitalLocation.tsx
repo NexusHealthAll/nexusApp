@@ -13,10 +13,10 @@ export function SetHospitalLocation() {
     <div className="space-y-6">
       {/* Title */}
       <div>
-        <h1 className="text-2xl font-bold text-neutral-900">
+        <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-50">
           Set Hospital Location
         </h1>
-        <p className="mt-1 text-sm text-neutral-500">
+        <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
           Drag pin to exact hospital entrance
         </p>
       </div>
@@ -24,7 +24,7 @@ export function SetHospitalLocation() {
       {/* Map + Sidebar */}
       <div className="grid gap-4 lg:grid-cols-[1fr_280px]">
         {/* Map area */}
-        <div className="relative overflow-hidden rounded-2xl border border-neutral-200">
+        <div className="relative overflow-hidden rounded-2xl border border-neutral-200 dark:border-neutral-800">
           {/* Satellite map placeholder */}
           <div
             className="relative h-[420px] w-full bg-cover bg-center"
@@ -80,11 +80,11 @@ export function SetHospitalLocation() {
 
             {/* Zoom controls */}
             <div className="absolute right-3 top-3 flex flex-col gap-1">
-              <button className="flex h-8 w-8 items-center justify-center rounded bg-white shadow-md hover:bg-neutral-50">
-                <Plus className="h-4 w-4 text-neutral-700" />
+              <button className="flex h-8 w-8 items-center justify-center rounded bg-white shadow-md hover:bg-neutral-50 dark:bg-neutral-900 dark:hover:bg-neutral-800">
+                <Plus className="h-4 w-4 text-neutral-700 dark:text-neutral-300" />
               </button>
-              <button className="flex h-8 w-8 items-center justify-center rounded bg-white shadow-md hover:bg-neutral-50">
-                <Minus className="h-4 w-4 text-neutral-700" />
+              <button className="flex h-8 w-8 items-center justify-center rounded bg-white shadow-md hover:bg-neutral-50 dark:bg-neutral-900 dark:hover:bg-neutral-800">
+                <Minus className="h-4 w-4 text-neutral-700 dark:text-neutral-300" />
               </button>
             </div>
 
@@ -94,7 +94,7 @@ export function SetHospitalLocation() {
                 <MapPin className="h-5 w-5 text-white" />
               </div>
               {/* Coordinate badge */}
-              <div className="mt-2 flex items-center gap-1 whitespace-nowrap rounded-full bg-white px-3 py-1 text-xs font-medium text-neutral-700 shadow-md">
+              <div className="mt-2 flex items-center gap-1 whitespace-nowrap rounded-full bg-white px-3 py-1 text-xs font-medium text-neutral-700 shadow-md dark:bg-neutral-900 dark:text-neutral-300">
                 <MapPin className="h-3 w-3 text-secondary-600" />
                 {coords.lat.toFixed(4)}°N, {coords.lng.toFixed(4)}°E
               </div>
@@ -102,14 +102,14 @@ export function SetHospitalLocation() {
 
             {/* Search bar */}
             <div className="absolute bottom-3 left-3 right-3">
-              <div className="flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 shadow-md">
-                <Search className="h-4 w-4 flex-shrink-0 text-neutral-400" />
+              <div className="flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 shadow-md dark:bg-neutral-900">
+                <Search className="h-4 w-4 flex-shrink-0 text-neutral-400 dark:text-neutral-500" />
                 <input
                   type="text"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search for street or landmark..."
-                  className="flex-1 bg-transparent text-sm text-neutral-700 outline-none placeholder:text-neutral-400"
+                  className="flex-1 bg-transparent text-sm text-neutral-700 outline-none placeholder:text-neutral-400 dark:text-neutral-300 dark:placeholder:text-neutral-500"
                 />
               </div>
             </div>
@@ -117,14 +117,14 @@ export function SetHospitalLocation() {
         </div>
 
         {/* Verification Setup sidebar */}
-        <div className="rounded-2xl bg-onboarding-inputBackground p-5">
+        <div className="rounded-2xl bg-onboarding-inputBackground p-5 dark:bg-neutral-900">
           <div className="mb-3 flex items-start gap-3">
             <ShieldCheck className="mt-0.5 h-5 w-5 flex-shrink-0 text-secondary-600" />
-            <h3 className="text-base font-bold text-onboarding-textPrimary">
+            <h3 className="text-base font-bold text-onboarding-textPrimary dark:text-neutral-50">
               Verification Setup
             </h3>
           </div>
-          <p className="mb-4 text-sm leading-relaxed text-onboarding-textSecondary">
+          <p className="mb-4 text-sm leading-relaxed text-onboarding-textSecondary dark:text-neutral-400">
             Accurate entrance placement ensures your staff can clock-in without
             friction while maintaining clinical compliance.
           </p>
@@ -148,7 +148,7 @@ export function SetHospitalLocation() {
                       />
                     </svg>
                   </span>
-                  <span className="text-onboarding-textPrimary">{item}</span>
+                  <span className="text-onboarding-textPrimary dark:text-neutral-50">{item}</span>
                 </li>
               ),
             )}
@@ -165,34 +165,34 @@ export function SetHospitalLocation() {
 
       {/* Info cards */}
       <div className="grid gap-4 sm:grid-cols-2">
-        <div className="flex items-start gap-4 rounded-2xl bg-onboarding-inputBackground p-5">
-          <div className="mt-0.5 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-white">
+        <div className="flex items-start gap-4 rounded-2xl bg-onboarding-inputBackground p-5 dark:bg-neutral-900">
+          <div className="mt-0.5 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-white dark:bg-neutral-800">
             <MapPin className="h-4 w-4 text-secondary-600" />
           </div>
           <div>
-            <p className="mb-1 text-sm font-semibold text-onboarding-textPrimary">
+            <p className="mb-1 text-sm font-semibold text-onboarding-textPrimary dark:text-neutral-50">
               Clock-In Verification
             </p>
-            <p className="text-xs leading-relaxed text-onboarding-textSecondary">
+            <p className="text-xs leading-relaxed text-onboarding-textSecondary dark:text-neutral-400">
               Workers must be within{" "}
-              <span className="font-semibold text-secondary-700">100m</span> of
+              <span className="font-semibold text-secondary-700 dark:text-secondary-400">100m</span> of
               this entrance to record their arrival. Geofencing is automatically
               applied to all assigned shifts.
             </p>
           </div>
         </div>
 
-        <div className="flex items-start gap-4 rounded-2xl bg-onboarding-inputBackground p-5">
-          <div className="mt-0.5 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-white">
+        <div className="flex items-start gap-4 rounded-2xl bg-onboarding-inputBackground p-5 dark:bg-neutral-900">
+          <div className="mt-0.5 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-white dark:bg-neutral-800">
             <ShieldCheck className="h-4 w-4 text-secondary-600" />
           </div>
           <div>
-            <p className="mb-1 text-sm font-semibold text-onboarding-textPrimary">
+            <p className="mb-1 text-sm font-semibold text-onboarding-textPrimary dark:text-neutral-50">
               Shift Broadcasting
             </p>
-            <p className="text-xs leading-relaxed text-onboarding-textSecondary">
+            <p className="text-xs leading-relaxed text-onboarding-textSecondary dark:text-neutral-400">
               New shifts are prioritized for workers within a{" "}
-              <span className="font-semibold text-secondary-700">
+              <span className="font-semibold text-secondary-700 dark:text-secondary-400">
                 5km radius
               </span>{" "}
               of the hospital to minimize travel delays and ensure reliability.

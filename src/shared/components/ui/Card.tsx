@@ -8,9 +8,9 @@ interface CardProps extends HTMLAttributes<HTMLDivElement> {
 const Card = forwardRef<HTMLDivElement, CardProps>(
   ({ className, variant = 'default', ...props }, ref) => {
     const variants = {
-      default: 'bg-white border border-neutral-200',
-      outlined: 'bg-white border-2 border-neutral-300',
-      elevated: 'bg-white shadow-medium border border-neutral-100',
+      default: 'bg-white border border-neutral-200 dark:bg-neutral-900 dark:border-neutral-800',
+      outlined: 'bg-white border-2 border-neutral-300 dark:bg-neutral-900 dark:border-neutral-700',
+      elevated: 'bg-white shadow-medium border border-neutral-100 dark:bg-neutral-900 dark:border-neutral-800',
     };
 
     return (
@@ -45,7 +45,7 @@ const CardTitle = forwardRef<HTMLParagraphElement, HTMLAttributes<HTMLHeadingEle
   ({ className, ...props }, ref) => (
     <h3
       ref={ref}
-      className={cn('text-lg font-semibold leading-none tracking-tight text-neutral-900', className)}
+      className={cn('text-lg font-semibold leading-none tracking-tight text-neutral-900 dark:text-neutral-50', className)}
       {...props}
     />
   )
@@ -57,7 +57,7 @@ const CardDescription = forwardRef<HTMLParagraphElement, HTMLAttributes<HTMLPara
   ({ className, ...props }, ref) => (
     <p
       ref={ref}
-      className={cn('text-sm text-neutral-600', className)}
+      className={cn('text-sm text-neutral-600 dark:text-neutral-400', className)}
       {...props}
     />
   )

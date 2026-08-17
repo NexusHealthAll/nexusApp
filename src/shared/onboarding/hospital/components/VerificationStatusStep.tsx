@@ -39,17 +39,17 @@ export function VerificationStatusStep() {
     <HospitalOnboardingLayout activeStep={3} lockedSteps={[0, 1, 2]}>
       <div className="max-w-4xl mx-auto">
         {/* ── Success banner — light blue gradient as in design ── */}
-        <div className="rounded-xl bg-gradient-to-br from-[#EBF4FF] via-[#DAE8F3] to-[#C8DFEF] border border-[#C8DFEF] px-7 py-6 mb-7">
+        <div className="rounded-xl bg-gradient-to-br from-[#EBF4FF] via-[#DAE8F3] to-[#C8DFEF] dark:from-neutral-900 dark:via-neutral-900 dark:to-neutral-800 border border-[#C8DFEF] dark:border-neutral-700 px-7 py-6 mb-7">
           {/* "Pending Review" chip */}
-          <div className="inline-flex items-center gap-1.5 bg-white/70 border border-[#C8DFEF] text-[#1A5888] text-[11px] font-semibold px-3 py-1 rounded-full mb-4">
+          <div className="inline-flex items-center gap-1.5 bg-white/70 dark:bg-neutral-800/70 border border-[#C8DFEF] dark:border-neutral-700 text-[#1A5888] dark:text-[#5AA6D6] text-[11px] font-semibold px-3 py-1 rounded-full mb-4">
             <ShieldCheck className="h-3 w-3" />
             Pending Review
           </div>
 
-          <h1 className="text-[24px] font-bold text-neutral-900 leading-snug mb-2">
+          <h1 className="text-[24px] font-bold text-neutral-900 dark:text-neutral-50 leading-snug mb-2">
             Application Submitted Successfully
           </h1>
-          <p className="text-[13px] text-neutral-600 max-w-lg leading-relaxed">
+          <p className="text-[13px] text-neutral-600 dark:text-neutral-300 max-w-lg leading-relaxed">
             Thank you for completing the registration process. Our compliance
             team is currently reviewing your application. You will be notified
             once the review is complete.
@@ -59,8 +59,8 @@ export function VerificationStatusStep() {
         {/* ── Two-column grid ── */}
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_250px] gap-5">
           {/* LEFT: Review Timeline */}
-          <div className="bg-white rounded-xl border border-gray-200 px-6 py-6">
-            <h2 className="text-[15px] font-semibold text-neutral-800 mb-7">
+          <div className="bg-white dark:bg-neutral-900 rounded-xl border border-gray-200 dark:border-neutral-800 px-6 py-6">
+            <h2 className="text-[15px] font-semibold text-neutral-800 dark:text-neutral-100 mb-7">
               Review Timeline
             </h2>
 
@@ -71,10 +71,10 @@ export function VerificationStatusStep() {
                   <div className="h-9 w-9 rounded-full bg-[#349C93] flex items-center justify-center shrink-0 shadow-sm">
                     <CheckCircle2 className="h-4.5 w-4.5 text-white" />
                   </div>
-                  <div className="w-px flex-1 bg-gray-200 mt-1.5" />
+                  <div className="w-px flex-1 bg-gray-200 dark:bg-neutral-700 mt-1.5" />
                 </div>
                 <div className="pt-1">
-                  <p className="text-[13px] font-semibold text-neutral-800">
+                  <p className="text-[13px] font-semibold text-neutral-800 dark:text-neutral-100">
                     Documents Submitted
                   </p>
                   <p className="text-[11px] text-neutral-400 mt-0.5">
@@ -89,7 +89,7 @@ export function VerificationStatusStep() {
                   <div className="h-9 w-9 rounded-full bg-[#1A5888] flex items-center justify-center shrink-0 shadow-sm">
                     <ShieldCheck className="h-4.5 w-4.5 text-white" />
                   </div>
-                  <div className="w-px flex-1 bg-gray-200 mt-1.5" />
+                  <div className="w-px flex-1 bg-gray-200 dark:bg-neutral-700 mt-1.5" />
                 </div>
                 <div className="pt-1">
                   <p className="text-[13px] font-semibold text-[#1A5888] mb-1">
@@ -99,7 +99,7 @@ export function VerificationStatusStep() {
                     Currently verifying medical licenses and facility
                     credentials against national registries.
                   </p>
-                  <div className="inline-flex items-center gap-1.5 bg-[#EBF4FF] border border-[#C8DFEF] text-[#1A5888] text-[11px] font-medium px-3 py-1.5 rounded-full">
+                  <div className="inline-flex items-center gap-1.5 bg-[#EBF4FF] dark:bg-neutral-800 border border-[#C8DFEF] dark:border-neutral-700 text-[#1A5888] dark:text-[#5AA6D6] text-[11px] font-medium px-3 py-1.5 rounded-full">
                     <Clock className="h-3 w-3" />
                     Estimated completion: 2-3 business days
                   </div>
@@ -109,8 +109,8 @@ export function VerificationStatusStep() {
               {/* Item 3 — pending */}
               <li className="flex gap-4">
                 <div className="flex flex-col items-center">
-                  <div className="h-9 w-9 rounded-full bg-gray-200 flex items-center justify-center shrink-0">
-                    <div className="h-2.5 w-2.5 rounded-full bg-gray-400" />
+                  <div className="h-9 w-9 rounded-full bg-gray-200 dark:bg-neutral-700 flex items-center justify-center shrink-0">
+                    <div className="h-2.5 w-2.5 rounded-full bg-gray-400 dark:bg-neutral-500" />
                   </div>
                 </div>
                 <div className="pt-1">
@@ -128,12 +128,12 @@ export function VerificationStatusStep() {
           {/* RIGHT column */}
           <div className="space-y-4">
             {/* Need Assistance */}
-            <div className="bg-white rounded-xl border border-gray-200 p-5">
+            <div className="bg-white dark:bg-neutral-900 rounded-xl border border-gray-200 dark:border-neutral-800 p-5">
               <div className="flex items-center gap-3 mb-3">
-                <div className="h-9 w-9 rounded-xl bg-[#EBF4FF] flex items-center justify-center shrink-0">
-                  <MessageSquare className="h-4 w-4 text-[#1A5888]" />
+                <div className="h-9 w-9 rounded-xl bg-[#EBF4FF] dark:bg-neutral-800 flex items-center justify-center shrink-0">
+                  <MessageSquare className="h-4 w-4 text-[#1A5888] dark:text-[#5AA6D6]" />
                 </div>
-                <h3 className="text-[13px] font-semibold text-neutral-800">
+                <h3 className="text-[13px] font-semibold text-neutral-800 dark:text-neutral-100">
                   Need Assistance?
                 </h3>
               </div>
@@ -142,11 +142,11 @@ export function VerificationStatusStep() {
                 questions about your application.
               </p>
               <div className="space-y-2">
-                <button className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg bg-[#EBF4FF] border border-[#C8DFEF] text-[12px] font-semibold text-[#1A5888] hover:bg-[#DAE8F3] transition-colors duration-150">
+                <button className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg bg-[#EBF4FF] dark:bg-neutral-800 border border-[#C8DFEF] dark:border-neutral-700 text-[12px] font-semibold text-[#1A5888] dark:text-[#5AA6D6] hover:bg-[#DAE8F3] dark:hover:bg-neutral-700 transition-colors duration-150">
                   <MessageSquare className="h-3.5 w-3.5" />
                   Live Chat Support
                 </button>
-                <button className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg bg-gray-50 border border-gray-200 text-[12px] font-semibold text-neutral-700 hover:bg-gray-100 transition-colors duration-150">
+                <button className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg bg-gray-50 dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 text-[12px] font-semibold text-neutral-700 dark:text-neutral-200 hover:bg-gray-100 dark:hover:bg-neutral-700 transition-colors duration-150">
                   <Mail className="h-3.5 w-3.5" />
                   Email Support
                 </button>
@@ -154,8 +154,8 @@ export function VerificationStatusStep() {
             </div>
 
             {/* Application Summary */}
-            <div className="bg-white rounded-xl border border-gray-200 p-5">
-              <h3 className="text-[13px] font-semibold text-neutral-800 mb-4">
+            <div className="bg-white dark:bg-neutral-900 rounded-xl border border-gray-200 dark:border-neutral-800 p-5">
+              <h3 className="text-[13px] font-semibold text-neutral-800 dark:text-neutral-100 mb-4">
                 Application Summary
               </h3>
 
@@ -164,7 +164,7 @@ export function VerificationStatusStep() {
                   <p className="text-[9px] font-bold uppercase tracking-widest text-neutral-400 mb-1">
                     Facility
                   </p>
-                  <p className="text-[13px] font-semibold text-neutral-800">
+                  <p className="text-[13px] font-semibold text-neutral-800 dark:text-neutral-100">
                     {facilityName}
                   </p>
                   <p className="text-[11px] text-neutral-400 mt-0.5">
@@ -176,7 +176,7 @@ export function VerificationStatusStep() {
                   <p className="text-[9px] font-bold uppercase tracking-widest text-neutral-400 mb-1">
                     Administrator
                   </p>
-                  <p className="text-[13px] font-semibold text-neutral-800">
+                  <p className="text-[13px] font-semibold text-neutral-800 dark:text-neutral-100">
                     {adminName}
                   </p>
                   <p className="text-[11px] text-neutral-400 mt-0.5">
@@ -188,7 +188,7 @@ export function VerificationStatusStep() {
                   <p className="text-[9px] font-bold uppercase tracking-widest text-neutral-400 mb-1">
                     Phone
                   </p>
-                  <div className="flex items-center gap-1.5 text-neutral-800">
+                  <div className="flex items-center gap-1.5 text-neutral-800 dark:text-neutral-100">
                     <Phone className="h-3.5 w-3.5 text-neutral-400" />
                     <span className="text-[13px] font-semibold">
                       {adminPhone}

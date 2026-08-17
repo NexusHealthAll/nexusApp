@@ -79,19 +79,19 @@ export function HelpPage() {
     <div className="mx-auto max-w-3xl">
       {/* Hero */}
       <div className="pt-4 text-center">
-        <h1 className="text-3xl font-bold text-neutral-900">
+        <h1 className="text-3xl font-bold text-neutral-900 dark:text-neutral-50">
           How can we help?
         </h1>
-        <p className="mt-2 text-sm text-neutral-500">
+        <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
           Search articles, or reach our support team directly.
         </p>
         <div className="relative mx-auto mt-6 max-w-xl">
-          <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
+          <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400 dark:text-neutral-500" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search help articles..."
-            className="w-full rounded-xl border border-neutral-200 bg-white py-3 pl-11 pr-4 text-sm text-neutral-900 shadow-soft placeholder:text-neutral-400 focus:border-secondary-500 focus:outline-none focus:ring-1 focus:ring-secondary-500"
+            className="w-full rounded-xl border border-neutral-200 bg-white py-3 pl-11 pr-4 text-sm text-neutral-900 shadow-soft placeholder:text-neutral-400 focus:border-secondary-500 focus:outline-none focus:ring-1 focus:ring-secondary-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-50 dark:placeholder:text-neutral-500"
           />
         </div>
       </div>
@@ -101,33 +101,33 @@ export function HelpPage() {
         {SUPPORT_CHANNELS.map((channel) => (
           <button
             key={channel.title}
-            className="rounded-2xl border border-neutral-100 bg-white px-6 py-8 text-center transition-shadow hover:shadow-soft"
+            className="rounded-2xl border border-neutral-100 bg-white px-6 py-8 text-center transition-shadow hover:shadow-soft dark:border-neutral-800 dark:bg-neutral-900"
           >
-            <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-secondary-50 text-secondary-600">
+            <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-secondary-50 text-secondary-600 dark:bg-secondary-950 dark:text-secondary-400">
               <channel.icon className="h-5 w-5" />
             </span>
-            <p className="mt-4 text-sm font-bold text-neutral-900">
+            <p className="mt-4 text-sm font-bold text-neutral-900 dark:text-neutral-50">
               {channel.title}
             </p>
-            <p className="mt-1 text-xs text-neutral-400">{channel.caption}</p>
+            <p className="mt-1 text-xs text-neutral-400 dark:text-neutral-500">{channel.caption}</p>
           </button>
         ))}
       </div>
 
       {/* FAQs */}
       <div className="mt-10 flex items-center justify-between">
-        <h2 className="text-lg font-bold text-neutral-900">
+        <h2 className="text-lg font-bold text-neutral-900 dark:text-neutral-50">
           Frequently Asked Questions
         </h2>
-        <button className="flex items-center gap-1.5 rounded-lg border border-error-200 bg-white px-3.5 py-2 text-sm font-semibold text-error-600 transition-colors hover:bg-error-50">
+        <button className="flex items-center gap-1.5 rounded-lg border border-error-200 bg-white px-3.5 py-2 text-sm font-semibold text-error-600 transition-colors hover:bg-error-50 dark:border-error-900 dark:bg-neutral-900 dark:text-error-400 dark:hover:bg-error-950">
           <AlertTriangle className="h-4 w-4" />
           Report an Issue
         </button>
       </div>
 
-      <div className="mt-4 divide-y divide-neutral-100 overflow-hidden rounded-2xl border border-neutral-100 bg-white">
+      <div className="mt-4 divide-y divide-neutral-100 overflow-hidden rounded-2xl border border-neutral-100 bg-white dark:divide-neutral-800 dark:border-neutral-800 dark:bg-neutral-900">
         {visibleFaqs.length === 0 ? (
-          <p className="px-6 py-8 text-center text-sm text-neutral-400">
+          <p className="px-6 py-8 text-center text-sm text-neutral-400 dark:text-neutral-500">
             No articles match "{search.trim()}".
           </p>
         ) : (
@@ -139,18 +139,18 @@ export function HelpPage() {
                   onClick={() => setOpenIndex(isOpen ? null : index)}
                   className="flex w-full items-center justify-between gap-4 px-6 py-5 text-left"
                 >
-                  <span className="text-sm font-bold text-neutral-900">
+                  <span className="text-sm font-bold text-neutral-900 dark:text-neutral-50">
                     {faq.question}
                   </span>
                   <ChevronDown
                     className={cn(
-                      "h-4 w-4 flex-shrink-0 text-neutral-400 transition-transform",
+                      "h-4 w-4 flex-shrink-0 text-neutral-400 dark:text-neutral-500 transition-transform",
                       isOpen && "rotate-180",
                     )}
                   />
                 </button>
                 {isOpen && (
-                  <p className="px-6 pb-5 text-sm leading-relaxed text-neutral-500">
+                  <p className="px-6 pb-5 text-sm leading-relaxed text-neutral-500 dark:text-neutral-400">
                     {faq.answer}
                   </p>
                 )}

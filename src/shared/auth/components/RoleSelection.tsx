@@ -73,22 +73,22 @@ export function RoleSelection() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#F3FAFF] via-[#F8FBFF] to-[#EDF7FF] flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-[#F3FAFF] via-[#F8FBFF] to-[#EDF7FF] dark:from-neutral-950 dark:via-neutral-950 dark:to-neutral-900 flex flex-col">
       {/* Header with Logo */}
-      <div className="bg-white/80 backdrop-blur-sm px-6 py-4 border-b border-gray-100/50 flex-shrink-0">
+      <div className="bg-white/80 dark:bg-neutral-900/80 backdrop-blur-sm px-6 py-4 border-b border-gray-100/50 dark:border-neutral-800 flex-shrink-0">
         <div className="flex items-center justify-between">
           <div className="transition-transform duration-300 hover:scale-105">
             <NexusCareLogo size="sm" />
           </div>
-          <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center shadow-inner">
+          <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900 dark:to-blue-800 flex items-center justify-center shadow-inner">
             <div className="w-2 h-2 bg-gradient-to-br from-blue-400 to-blue-500 rounded-full animate-pulse"></div>
           </div>
         </div>
       </div>
 
       {/* Enhanced Progress Bar */}
-      <div className="bg-white/80 backdrop-blur-sm px-6 pb-2">
-        <div className="w-full bg-gray-200/80 rounded-full h-1.5 overflow-hidden">
+      <div className="bg-white/80 dark:bg-neutral-900/80 backdrop-blur-sm px-6 pb-2">
+        <div className="w-full bg-gray-200/80 dark:bg-neutral-800 rounded-full h-1.5 overflow-hidden">
           <div className="bg-gradient-to-r from-onboarding-primaryGreen to-onboarding-primaryBlue h-full rounded-full w-3/4 transition-all duration-1000 ease-out shadow-sm"></div>
         </div>
       </div>
@@ -105,12 +105,12 @@ export function RoleSelection() {
             }`}
           >
             <div className="relative inline-block">
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-onboarding-textPrimary to-gray-700 bg-clip-text text-transparent mb-4">
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-onboarding-textPrimary to-gray-700 dark:from-neutral-50 dark:to-neutral-300 bg-clip-text text-transparent mb-4">
                 Choose Your Professional Role
               </h1>
               <Sparkles className="absolute -top-2 -right-4 w-6 h-6 text-yellow-400 animate-pulse" />
             </div>
-            <p className="text-base text-onboarding-textSecondary px-4 leading-relaxed max-w-2xl mx-auto">
+            <p className="text-base text-onboarding-textSecondary dark:text-neutral-400 px-4 leading-relaxed max-w-2xl mx-auto">
               Select your medical specialization to view clinical opportunities
               tailored to your expertise.
             </p>
@@ -129,30 +129,30 @@ export function RoleSelection() {
               onClick={() => handleRoleSelect("health-worker")}
               className={`p-8 rounded-2xl border-2 cursor-pointer transition-all duration-300 ease-out text-center transform hover:scale-[1.02] ${
                 selectedRole === "health-worker"
-                  ? "border-teal-400 bg-teal-50/80 shadow-lg shadow-teal-200/50"
-                  : "border-gray-200 bg-transparent hover:border-gray-300 hover:bg-white/30"
+                  ? "border-teal-400 bg-teal-50/80 dark:bg-teal-950/60 shadow-lg shadow-teal-200/50 dark:shadow-none"
+                  : "border-gray-200 dark:border-neutral-700 bg-transparent hover:border-gray-300 dark:hover:border-neutral-600 hover:bg-white/30 dark:hover:bg-neutral-900/40"
               }`}
             >
               <div className="flex flex-col items-center">
                 <div
                   className={`w-20 h-20 rounded-full flex items-center justify-center mb-6 transition-all duration-300 ${
                     selectedRole === "health-worker"
-                      ? "bg-gradient-to-br from-teal-100 to-teal-200"
-                      : "bg-gradient-to-br from-teal-50 to-teal-100"
+                      ? "bg-gradient-to-br from-teal-100 to-teal-200 dark:from-teal-900 dark:to-teal-800"
+                      : "bg-gradient-to-br from-teal-50 to-teal-100 dark:from-teal-950 dark:to-teal-900"
                   }`}
                 >
                   <Stethoscope
                     className={`w-10 h-10 transition-all duration-300 ${
                       selectedRole === "health-worker"
-                        ? "text-teal-700 scale-110"
-                        : "text-teal-600"
+                        ? "text-teal-700 dark:text-teal-300 scale-110"
+                        : "text-teal-600 dark:text-teal-400"
                     }`}
                   />
                 </div>
-                <h3 className="font-bold text-onboarding-textPrimary mb-4 text-xl">
+                <h3 className="font-bold text-onboarding-textPrimary dark:text-neutral-50 mb-4 text-xl">
                   Health Workers
                 </h3>
-                <p className="text-sm text-onboarding-textSecondary leading-relaxed mb-6 px-4">
+                <p className="text-sm text-onboarding-textSecondary dark:text-neutral-400 leading-relaxed mb-6 px-4">
                   Medical professionals providing direct patient care,
                   consultations, and clinical services.
                 </p>
@@ -169,7 +169,7 @@ export function RoleSelection() {
                       className={`flex items-center space-x-3 transition-all duration-300 delay-${index * 100}`}
                     >
                       <div className="w-2 h-2 bg-gradient-to-r from-green-400 to-green-500 rounded-full"></div>
-                      <span className="text-sm text-onboarding-textSecondary">
+                      <span className="text-sm text-onboarding-textSecondary dark:text-neutral-400">
                         {feature}
                       </span>
                     </div>
@@ -183,30 +183,30 @@ export function RoleSelection() {
               onClick={() => handleRoleSelect("hospital")}
               className={`p-8 rounded-2xl border-2 cursor-pointer transition-all duration-300 ease-out text-center transform hover:scale-[1.02] ${
                 selectedRole === "hospital"
-                  ? "border-teal-400 bg-teal-50/80 shadow-lg shadow-teal-200/50"
-                  : "border-gray-200 bg-transparent hover:border-gray-300 hover:bg-white/30"
+                  ? "border-teal-400 bg-teal-50/80 dark:bg-teal-950/60 shadow-lg shadow-teal-200/50 dark:shadow-none"
+                  : "border-gray-200 dark:border-neutral-700 bg-transparent hover:border-gray-300 dark:hover:border-neutral-600 hover:bg-white/30 dark:hover:bg-neutral-900/40"
               }`}
             >
               <div className="flex flex-col items-center">
                 <div
                   className={`w-20 h-20 rounded-full flex items-center justify-center mb-6 transition-all duration-300 ${
                     selectedRole === "hospital"
-                      ? "bg-gradient-to-br from-gray-100 to-gray-200"
-                      : "bg-gradient-to-br from-gray-50 to-gray-100"
+                      ? "bg-gradient-to-br from-gray-100 to-gray-200 dark:from-neutral-700 dark:to-neutral-600"
+                      : "bg-gradient-to-br from-gray-50 to-gray-100 dark:from-neutral-800 dark:to-neutral-700"
                   }`}
                 >
                   <Building2
                     className={`w-10 h-10 transition-all duration-300 ${
                       selectedRole === "hospital"
-                        ? "text-gray-700 scale-110"
-                        : "text-gray-600"
+                        ? "text-gray-700 dark:text-neutral-200 scale-110"
+                        : "text-gray-600 dark:text-neutral-400"
                     }`}
                   />
                 </div>
-                <h3 className="font-bold text-onboarding-textPrimary mb-4 text-xl">
+                <h3 className="font-bold text-onboarding-textPrimary dark:text-neutral-50 mb-4 text-xl">
                   Hospital Administrator
                 </h3>
-                <p className="text-sm text-onboarding-textSecondary leading-relaxed mb-6 px-4">
+                <p className="text-sm text-onboarding-textSecondary dark:text-neutral-400 leading-relaxed mb-6 px-4">
                   Healthcare facility management, staff coordination, and
                   operational oversight.
                 </p>
@@ -223,7 +223,7 @@ export function RoleSelection() {
                       className={`flex items-center space-x-3 transition-all duration-300 delay-${index * 100}`}
                     >
                       <div className="w-2 h-2 bg-gradient-to-r from-teal-400 to-teal-500 rounded-full"></div>
-                      <span className="text-sm text-onboarding-textSecondary">
+                      <span className="text-sm text-onboarding-textSecondary dark:text-neutral-400">
                         {feature}
                       </span>
                     </div>
@@ -241,7 +241,7 @@ export function RoleSelection() {
               className={`w-full font-medium py-4 rounded-xl transition-all duration-300 ease-out transform ${
                 selectedRole
                   ? "bg-gradient-to-r from-onboarding-primaryGreen to-onboarding-primaryBlue text-white hover:opacity-90 shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
-                  : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                  : "bg-gray-100 dark:bg-neutral-800 text-gray-400 dark:text-neutral-500 cursor-not-allowed"
               } ${isLoading ? "animate-pulse" : ""}`}
             >
               {isLoading ? (
@@ -259,14 +259,14 @@ export function RoleSelection() {
 
             {/* Enhanced Support Link */}
             <p
-              className={`text-sm text-onboarding-textSecondary text-center mt-6 leading-relaxed transition-all duration-700 delay-800 ease-out ${
+              className={`text-sm text-onboarding-textSecondary dark:text-neutral-400 text-center mt-6 leading-relaxed transition-all duration-700 delay-800 ease-out ${
                 showCards
                   ? "translate-y-0 opacity-100"
                   : "translate-y-4 opacity-0"
               }`}
             >
               Need help choosing your role?{" "}
-              <button className="text-secondary-600 hover:text-secondary-700 font-medium transition-colors duration-200 hover:underline">
+              <button className="text-secondary-600 dark:text-secondary-400 hover:text-secondary-700 dark:hover:text-secondary-300 font-medium transition-colors duration-200 hover:underline">
                 Contact Support
               </button>
             </p>

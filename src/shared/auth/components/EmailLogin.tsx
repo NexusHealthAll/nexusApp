@@ -117,29 +117,29 @@ export function EmailLogin() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#F3FAFF] via-[#F8FBFF] to-[#EDF7FF] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-[#F3FAFF] via-[#F8FBFF] to-[#EDF7FF] dark:from-neutral-950 dark:via-neutral-950 dark:to-neutral-900 flex items-center justify-center p-4">
       <div className="w-full max-w-lg">
         {/* Main Login Card with enhanced shadows and animations */}
         <Card
-          className={`bg-white/95 backdrop-blur-sm border border-gray-200/50 shadow-2xl shadow-blue-500/10 rounded-3xl overflow-hidden min-h-[90vh] sm:min-h-[80vh] flex flex-col transition-all duration-700 ease-out ${
+          className={`bg-white/95 dark:bg-neutral-900/95 backdrop-blur-sm border border-gray-200/50 dark:border-neutral-800 shadow-2xl shadow-blue-500/10 dark:shadow-none rounded-3xl overflow-hidden min-h-[90vh] sm:min-h-[80vh] flex flex-col transition-all duration-700 ease-out ${
             isVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
           }`}
         >
           {/* Header with Logo */}
-          <div className="bg-white/80 backdrop-blur-sm px-6 py-4 border-b border-gray-100/50 flex-shrink-0">
+          <div className="bg-white/80 dark:bg-neutral-900/80 backdrop-blur-sm px-6 py-4 border-b border-gray-100/50 dark:border-neutral-800 flex-shrink-0">
             <div className="flex items-center justify-between">
               <div className="transition-transform duration-300 hover:scale-105">
                 <NexusCareLogo size="sm" />
               </div>
-              <div className="w-6 h-6 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center shadow-inner">
-                <div className="w-2 h-2 bg-gradient-to-br from-gray-400 to-gray-500 rounded-full"></div>
+              <div className="w-6 h-6 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 dark:from-neutral-700 dark:to-neutral-800 flex items-center justify-center shadow-inner">
+                <div className="w-2 h-2 bg-gradient-to-br from-gray-400 to-gray-500 dark:from-neutral-500 dark:to-neutral-600 rounded-full"></div>
               </div>
             </div>
           </div>
 
           {/* Enhanced Progress Bar */}
-          <div className="bg-white/80 backdrop-blur-sm px-6 pb-2">
-            <div className="w-full bg-gray-200/80 rounded-full h-1.5 overflow-hidden">
+          <div className="bg-white/80 dark:bg-neutral-900/80 backdrop-blur-sm px-6 pb-2">
+            <div className="w-full bg-gray-200/80 dark:bg-neutral-800 rounded-full h-1.5 overflow-hidden">
               <div className="bg-gradient-to-r from-onboarding-primaryGreen to-onboarding-primaryBlue h-full rounded-full w-1/4 transition-all duration-1000 ease-out shadow-sm"></div>
             </div>
           </div>

@@ -114,22 +114,22 @@ export function WaitlistLandingStep() {
   };
 
   return (
-    <div className="bg-[#f4f6fa]">
+    <div className="bg-[#f4f6fa] dark:bg-neutral-950">
       {/* 1. HERO SECTION */}
       <section className="px-4 pb-12 pt-12 sm:px-6 lg:px-8 lg:pb-16 lg:pt-20">
         <div className="mx-auto max-w-6xl text-center">
-          <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-teal-200/60 bg-teal-50/80 px-4 py-2 text-sm font-medium text-teal-700 shadow-sm">
-            <Sparkles className="h-4 w-4 text-teal-600" />
+          <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-teal-200/60 bg-teal-50/80 px-4 py-2 text-sm font-medium text-teal-700 shadow-sm dark:border-teal-800/60 dark:bg-teal-950/80 dark:text-teal-300">
+            <Sparkles className="h-4 w-4 text-teal-600 dark:text-teal-400" />
             Redefining Clinical Efficiency
           </div>
 
-          <h1 className="mt-6 text-4xl font-semibold tracking-tight text-neutral-950 sm:text-5xl lg:text-6xl">
+          <h1 className="mt-6 text-4xl font-semibold tracking-tight text-neutral-950 sm:text-5xl lg:text-6xl dark:text-neutral-50">
             The{" "}
-            <span className="text-onboarding-primaryBlue">Digital Pulse</span>{" "}
+            <span className="text-onboarding-primaryBlue dark:text-[#5AA6D6]">Digital Pulse</span>{" "}
             of Modern Healthcare.
           </h1>
 
-          <p className="mx-auto mt-5 max-w-3xl text-sm leading-7 text-neutral-600 sm:text-base">
+          <p className="mx-auto mt-5 max-w-3xl text-sm leading-7 text-neutral-600 sm:text-base dark:text-neutral-400">
             Empowering healthcare facilities with AI-driven documentation and a
             high-fidelity marketplace for elite clinical talent. Experience the
             future of medical workflows.
@@ -146,7 +146,7 @@ export function WaitlistLandingStep() {
             </Button>
           </div>
 
-          <div className="mx-auto mt-12 max-w-6xl overflow-hidden rounded-2xl border border-neutral-200 bg-[#0a2f4a] shadow-strong">
+          <div className="mx-auto mt-12 max-w-6xl overflow-hidden rounded-2xl border border-neutral-200 bg-[#0a2f4a] shadow-strong dark:border-neutral-800">
             <img
               src="/waitlist/landing.jpg"
               alt="Clinical workflow dashboard"
@@ -157,9 +157,9 @@ export function WaitlistLandingStep() {
       </section>
 
       {/* 2. PARTNERS SECTION */}
-      <section className="border-y border-neutral-200/80 bg-[#eef0f5] px-4 py-6 sm:px-6 lg:px-8">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-8 gap-y-3 text-xs font-semibold uppercase tracking-[0.15em] text-neutral-500 sm:text-sm">
-          <span className="text-onboarding-primaryBlue">PARTNERED WITH</span>
+      <section className="border-y border-neutral-200/80 bg-[#eef0f5] px-4 py-6 sm:px-6 lg:px-8 dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-8 gap-y-3 text-xs font-semibold uppercase tracking-[0.15em] text-neutral-500 sm:text-sm dark:text-neutral-400">
+          <span className="text-onboarding-primaryBlue dark:text-[#5AA6D6]">PARTNERED WITH</span>
           {waitlistPartners.map((partner) => (
             <span key={partner}>{partner}</span>
           ))}
@@ -170,10 +170,10 @@ export function WaitlistLandingStep() {
       <section className="px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
         <div className="mx-auto max-w-6xl">
           <div className="text-center">
-            <h2 className="text-3xl font-semibold text-onboarding-primaryBlue sm:text-4xl">
+            <h2 className="text-3xl font-semibold text-onboarding-primaryBlue sm:text-4xl dark:text-[#5AA6D6]">
               Precision Workflow
             </h2>
-            <p className="mx-auto mt-3 max-w-2xl text-sm text-neutral-600 sm:text-base">
+            <p className="mx-auto mt-3 max-w-2xl text-sm text-neutral-600 sm:text-base dark:text-neutral-400">
               A seamless 3-step engine built from registration to shift reconciliation.
             </p>
           </div>
@@ -182,15 +182,15 @@ export function WaitlistLandingStep() {
             {waitlistSteps.map((step) => (
               <div
                 key={step.id}
-                className="flex flex-col items-center text-center p-6 rounded-2xl bg-white border border-neutral-200/70 shadow-sm"
+                className="flex flex-col items-center text-center p-6 rounded-2xl bg-white border border-neutral-200/70 shadow-sm dark:bg-neutral-900 dark:border-neutral-800"
               >
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r from-onboarding-primaryGreen to-onboarding-primaryBlue text-white font-bold text-lg shadow-sm">
                   {step.id}
                 </div>
-                <h3 className="mt-5 text-xl font-semibold text-neutral-900">
+                <h3 className="mt-5 text-xl font-semibold text-neutral-900 dark:text-neutral-50">
                   {step.title}
                 </h3>
-                <p className="mt-3 text-sm leading-6 text-neutral-600">
+                <p className="mt-3 text-sm leading-6 text-neutral-600 dark:text-neutral-400">
                   {step.description}
                 </p>
               </div>
@@ -245,10 +245,10 @@ export function WaitlistLandingStep() {
       <section className="px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
         <div className="mx-auto max-w-6xl">
           <div className="text-center">
-            <h2 className="text-3xl font-semibold bg-gradient-to-br from-onboarding-primaryBlue to-onboarding-primaryGreen bg-clip-text text-transparent sm:text-4xl">
+            <h2 className="text-3xl font-semibold bg-gradient-to-br from-onboarding-primaryBlue to-onboarding-primaryGreen bg-clip-text text-transparent sm:text-4xl dark:from-[#5AA6D6] dark:to-onboarding-primaryGreen">
               Empowering the Ecosystem
             </h2>
-            <p className="mx-auto mt-3 max-w-3xl text-sm leading-7 text-neutral-600 sm:text-base">
+            <p className="mx-auto mt-3 max-w-3xl text-sm leading-7 text-neutral-600 sm:text-base dark:text-neutral-400">
               A high-fidelity framework designed for precision, reliability, and
               growth in clinical practice.
             </p>
@@ -258,13 +258,13 @@ export function WaitlistLandingStep() {
             {ecosystemColumns.map((column) => (
               <article
                 key={column.title}
-                className="rounded-3xl border border-[#e7e9ee] bg-[#f3f4f8] p-7 sm:p-9"
+                className="rounded-3xl border border-[#e7e9ee] bg-[#f3f4f8] p-7 sm:p-9 dark:border-neutral-800 dark:bg-neutral-900"
               >
                 <div className="flex items-center gap-4">
                   <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-onboarding-primaryGreen to-onboarding-primaryBlue text-white">
                     <ClipboardCheck className="h-5 w-5" />
                   </div>
-                  <h3 className="text-3xl font-semibold text-neutral-900">
+                  <h3 className="text-3xl font-semibold text-neutral-900 dark:text-neutral-50">
                     {column.title}
                   </h3>
                 </div>
@@ -275,12 +275,12 @@ export function WaitlistLandingStep() {
 
                     return (
                       <div key={item.title} className="flex gap-4">
-                        <Icon className="mt-1 h-5 w-5 shrink-0 text-onboarding-primaryBlue" />
+                        <Icon className="mt-1 h-5 w-5 shrink-0 text-onboarding-primaryBlue dark:text-[#5AA6D6]" />
                         <div>
-                          <p className="text-sm font-semibold text-neutral-900 sm:text-base">
+                          <p className="text-sm font-semibold text-neutral-900 sm:text-base dark:text-neutral-50">
                             {item.title}
                           </p>
-                          <p className="mt-1 text-sm leading-7 text-neutral-600 sm:text-base">
+                          <p className="mt-1 text-sm leading-7 text-neutral-600 sm:text-base dark:text-neutral-400">
                             {item.description}
                           </p>
                         </div>
@@ -299,17 +299,17 @@ export function WaitlistLandingStep() {
         <div className="mx-auto max-w-6xl">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div>
-              <h2 className="text-3xl font-semibold text-onboarding-primaryBlue sm:text-4xl">
+              <h2 className="text-3xl font-semibold text-onboarding-primaryBlue sm:text-4xl dark:text-[#5AA6D6]">
                 Editorial Insights
               </h2>
-              <p className="mt-2 text-sm text-neutral-600 sm:text-base">
+              <p className="mt-2 text-sm text-neutral-600 sm:text-base dark:text-neutral-400">
                 A curated collection of research, product updates, and clinical operational guides.
               </p>
             </div>
             <button
               type="button"
               onClick={openJoinModal}
-              className="inline-flex items-center gap-1.5 text-sm font-semibold text-onboarding-primaryBlue hover:underline shrink-0"
+              className="inline-flex items-center gap-1.5 text-sm font-semibold text-onboarding-primaryBlue hover:underline shrink-0 dark:text-[#5AA6D6]"
             >
               Read all articles <ArrowRight className="h-4 w-4" />
             </button>
@@ -319,9 +319,9 @@ export function WaitlistLandingStep() {
             {waitlistInsights.map((insight) => (
               <article
                 key={insight.title}
-                className="overflow-hidden rounded-2xl border border-neutral-200/80 bg-white shadow-soft flex flex-col group"
+                className="overflow-hidden rounded-2xl border border-neutral-200/80 bg-white shadow-soft flex flex-col group dark:border-neutral-800 dark:bg-neutral-900"
               >
-                <div className="relative h-48 overflow-hidden bg-neutral-100">
+                <div className="relative h-48 overflow-hidden bg-neutral-100 dark:bg-neutral-800">
                   <img
                     src={insight.image}
                     alt={insight.title}
@@ -329,15 +329,15 @@ export function WaitlistLandingStep() {
                   />
                 </div>
                 <div className="p-6 flex flex-col flex-1">
-                  <div className="flex items-center gap-2 text-xs font-semibold text-onboarding-primaryBlue uppercase tracking-wider">
+                  <div className="flex items-center gap-2 text-xs font-semibold text-onboarding-primaryBlue uppercase tracking-wider dark:text-[#5AA6D6]">
                     <span>{insight.category}</span>
                     <span>•</span>
-                    <span className="text-neutral-500">{insight.readTime}</span>
+                    <span className="text-neutral-500 dark:text-neutral-400">{insight.readTime}</span>
                   </div>
-                  <h3 className="mt-3 text-lg font-semibold text-neutral-900 line-clamp-2">
+                  <h3 className="mt-3 text-lg font-semibold text-neutral-900 line-clamp-2 dark:text-neutral-50">
                     {insight.title}
                   </h3>
-                  <p className="mt-2 text-sm text-neutral-600 line-clamp-3 flex-1">
+                  <p className="mt-2 text-sm text-neutral-600 line-clamp-3 flex-1 dark:text-neutral-400">
                     {insight.description}
                   </p>
                 </div>

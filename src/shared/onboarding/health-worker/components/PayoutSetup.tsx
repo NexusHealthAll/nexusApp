@@ -215,16 +215,16 @@ export function PayoutSetup() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F3FAFF] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[#F3FAFF] dark:bg-neutral-950 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Header */}
-        <div className="bg-white rounded-t-2xl px-6 py-4 border-b border-slate-100">
+        <div className="bg-white rounded-t-2xl px-6 py-4 border-b border-slate-100 dark:bg-neutral-900 dark:border-neutral-800">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <button
                 type="button"
                 onClick={() => navigate("/medical-staff/onboarding/profile")}
-                className="rounded-full p-2 text-slate-600 hover:bg-slate-100 transition-colors"
+                className="rounded-full p-2 text-slate-600 hover:bg-slate-100 transition-colors dark:text-neutral-400 dark:hover:bg-neutral-800"
                 aria-label="Go back"
               >
                 <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -239,19 +239,19 @@ export function PayoutSetup() {
               <NexusCareLogo size="md" />
             </div>
             <div className="flex items-center space-x-3">
-              <Bell className="h-5 w-5 text-slate-400" />
+              <Bell className="h-5 w-5 text-slate-400 dark:text-neutral-500" />
             </div>
           </div>
 
           {/* Step Indicator */}
           <div className="space-y-3">
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">
+            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide dark:text-neutral-400">
               STEP 03 OF 04
             </p>
-            <h1 className="text-2xl font-bold text-onboarding-textPrimary">
+            <h1 className="text-2xl font-bold text-onboarding-textPrimary dark:text-neutral-50">
               Payout Setup
             </h1>
-            <div className="w-full bg-slate-200 rounded-full h-1">
+            <div className="w-full bg-slate-200 rounded-full h-1 dark:bg-neutral-800">
               <div
                 className="bg-gradient-to-r from-onboarding-primaryGreen to-onboarding-primaryBlue h-1 rounded-full"
                 style={{ width: "75%" }}
@@ -263,20 +263,20 @@ export function PayoutSetup() {
         {/* Content */}
         <Card className="bg-white rounded-t-none rounded-b-2xl border-t-0 shadow-md">
           <CardContent className="p-6 space-y-6">
-            <p className="text-onboarding-textSecondary leading-relaxed">
+            <p className="text-onboarding-textSecondary leading-relaxed dark:text-neutral-400">
               Link your bank account to receive instant payments.
             </p>
 
             {/* Enforced Name Matching Alert */}
-            <div className="p-4 bg-teal-50 border border-teal-200 rounded-xl flex items-start space-x-3">
-              <ShieldCheck className="h-5 w-5 text-teal-600 flex-shrink-0 mt-0.5" />
+            <div className="p-4 bg-teal-50 border border-teal-200 rounded-xl flex items-start space-x-3 dark:bg-teal-950 dark:border-teal-900">
+              <ShieldCheck className="h-5 w-5 text-teal-600 flex-shrink-0 mt-0.5 dark:text-teal-400" />
               <div>
-                <h4 className="text-xs font-bold uppercase tracking-wider text-teal-900">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-teal-900 dark:text-teal-200">
                   Strict Name Match Enforced
                 </h4>
-                <p className="text-xs text-teal-700 mt-1">
+                <p className="text-xs text-teal-700 mt-1 dark:text-teal-400">
                   Payout account name must match your verified identity:{" "}
-                  <strong className="text-teal-950 font-bold">{expectedName}</strong>{" "}
+                  <strong className="text-teal-950 font-bold dark:text-teal-100">{expectedName}</strong>{" "}
                   (from {verifiedIdentity?.type || "NIN/BVN"}).
                 </p>
               </div>
@@ -285,7 +285,7 @@ export function PayoutSetup() {
             <form onSubmit={handleComplete} className="space-y-6">
               {/* Bank Selection with Search */}
               <div className="space-y-3">
-                <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-neutral-500">
+                <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
                   Select Bank
                 </label>
                 <BankDropdown
@@ -309,22 +309,22 @@ export function PayoutSetup() {
 
               {/* Account Number */}
               <div className="space-y-3">
-                <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-neutral-500">
+                <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
                   Account Number
                 </label>
-                <div className="flex items-center gap-2.5 rounded-lg bg-onboarding-inputBackground px-3 py-2.5">
+                <div className="flex items-center gap-2.5 rounded-lg bg-onboarding-inputBackground px-3 py-2.5 dark:bg-neutral-800">
                   <input
                     type="text"
                     value={formData.accountNumber}
                     onChange={(e) => handleAccountNumberChange(e.target.value)}
-                    className={`flex-1 bg-transparent text-sm text-neutral-800 outline-none placeholder:text-neutral-400 font-mono ${
+                    className={`flex-1 bg-transparent text-sm text-neutral-800 outline-none placeholder:text-neutral-400 font-mono dark:text-neutral-100 ${
                       errors.accountNumber ? "text-red-600" : ""
                     }`}
                     placeholder="0123456789"
                     maxLength={10}
                   />
                   <div className="flex-shrink-0">
-                    <svg className="h-4 w-4 text-secondary-600" fill="currentColor" viewBox="0 0 20 20">
+                    <svg className="h-4 w-4 text-secondary-600 dark:text-secondary-400" fill="currentColor" viewBox="0 0 20 20">
                       <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" />
                     </svg>
                   </div>
@@ -336,40 +336,40 @@ export function PayoutSetup() {
 
               {/* Account Name Verification & Match check */}
               <div className="space-y-3">
-                <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-neutral-500">
+                <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
                   Account Name Verification
                 </label>
                 <div
                   className={`flex items-center justify-between gap-2.5 rounded-lg px-3 py-2.5 transition-all ${
                     isVerified
-                      ? "border border-green-300 bg-green-50"
-                      : "bg-onboarding-inputBackground"
+                      ? "border border-green-300 bg-green-50 dark:border-green-800 dark:bg-green-950"
+                      : "bg-onboarding-inputBackground dark:bg-neutral-800"
                   }`}
                 >
                   {isVerifying ? (
-                    <div className="flex items-center space-x-2 text-onboarding-textSecondary">
-                      <Loader2 className="h-4 w-4 animate-spin text-teal-600" />
+                    <div className="flex items-center space-x-2 text-onboarding-textSecondary dark:text-neutral-400">
+                      <Loader2 className="h-4 w-4 animate-spin text-teal-600 dark:text-teal-400" />
                       <span className="text-sm">Verifying bank account name...</span>
                     </div>
                   ) : formData.accountName ? (
                     <div className="flex items-center justify-between w-full">
                       <div className="flex items-center space-x-2">
-                        {isVerified && <CheckCircle className="h-4 w-4 text-green-600 flex-shrink-0" />}
+                        {isVerified && <CheckCircle className="h-4 w-4 text-green-600 flex-shrink-0 dark:text-green-400" />}
                         <span
-                          className={`text-sm ${isVerified ? "text-green-900 font-bold" : "text-neutral-800"}`}
+                          className={`text-sm ${isVerified ? "text-green-900 font-bold dark:text-green-200" : "text-neutral-800 dark:text-neutral-100"}`}
                         >
                           {formData.accountName}
                         </span>
                       </div>
                       {isVerified && (
-                        <span className="text-[10px] font-semibold text-green-700 bg-green-100 px-2 py-0.5 rounded flex items-center gap-1">
+                        <span className="text-[10px] font-semibold text-green-700 bg-green-100 px-2 py-0.5 rounded flex items-center gap-1 dark:text-green-300 dark:bg-green-900">
                           <UserCheck className="h-3 w-3" />
                           Matches Identity
                         </span>
                       )}
                     </div>
                   ) : (
-                    <span className="text-sm text-neutral-400">
+                    <span className="text-sm text-neutral-400 dark:text-neutral-500">
                       Account name will appear here after verification
                     </span>
                   )}
@@ -395,16 +395,16 @@ export function PayoutSetup() {
             </form>
 
             {/* Security Notice */}
-            <div className="mt-6 p-4 bg-slate-50 rounded-lg border border-slate-200">
+            <div className="mt-6 p-4 bg-slate-50 rounded-lg border border-slate-200 dark:bg-neutral-800 dark:border-neutral-700">
               <div className="flex items-start space-x-3">
                 <div className="w-6 h-6 bg-slate-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                   <CheckCircle className="h-4 w-4 text-white" />
                 </div>
                 <div>
-                  <h4 className="font-semibold text-slate-900 mb-1">
+                  <h4 className="font-semibold text-slate-900 mb-1 dark:text-neutral-50">
                     Secure &amp; Encrypted
                   </h4>
-                  <p className="text-sm text-slate-600">
+                  <p className="text-sm text-slate-600 dark:text-neutral-400">
                     Your banking information is encrypted at rest and never
                     stored in plain text.
                   </p>
@@ -457,31 +457,31 @@ function BankDropdown({
         type="button"
         onClick={() => setOpen((v) => !v)}
         disabled={loading}
-        className={`flex items-center gap-2.5 rounded-lg bg-onboarding-inputBackground px-3 py-2.5 w-full text-left disabled:opacity-60 ${
+        className={`flex items-center gap-2.5 rounded-lg bg-onboarding-inputBackground px-3 py-2.5 w-full text-left disabled:opacity-60 dark:bg-neutral-800 ${
           error ? "ring-1 ring-red-400" : ""
         }`}
       >
-        <Building className="h-4 w-4 flex-shrink-0 text-secondary-600" />
-        <span className={`flex-1 text-sm ${selected ? "text-neutral-800 font-medium" : "text-neutral-400"}`}>
+        <Building className="h-4 w-4 flex-shrink-0 text-secondary-600 dark:text-secondary-400" />
+        <span className={`flex-1 text-sm ${selected ? "text-neutral-800 font-medium dark:text-neutral-100" : "text-neutral-400 dark:text-neutral-500"}`}>
           {loading ? "Loading banks..." : selected ? selected.name : "Choose your bank"}
         </span>
-        <svg className="h-4 w-4 text-neutral-500" viewBox="0 0 20 20" fill="currentColor">
+        <svg className="h-4 w-4 text-neutral-500 dark:text-neutral-400" viewBox="0 0 20 20" fill="currentColor">
           <path d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 011.08 1.04l-4.25 4.25a.75.75 0 01-1.06 0L5.21 8.27a.75.75 0 01.02-1.06z" />
         </svg>
       </button>
 
       {open && !loading && (
-        <div className="absolute left-0 right-0 z-50 mt-2 max-h-64 w-full overflow-hidden rounded-lg border border-slate-200 bg-white shadow-xl flex flex-col">
+        <div className="absolute left-0 right-0 z-50 mt-2 max-h-64 w-full overflow-hidden rounded-lg border border-slate-200 bg-white shadow-xl flex flex-col dark:border-neutral-800 dark:bg-neutral-900">
           {/* Sticky Bank Search Input */}
-          <div className="p-2 border-b border-slate-100 bg-slate-50">
+          <div className="p-2 border-b border-slate-100 bg-slate-50 dark:border-neutral-800 dark:bg-neutral-900">
             <div className="relative flex items-center">
-              <Search className="absolute left-2.5 h-3.5 w-3.5 text-slate-400" />
+              <Search className="absolute left-2.5 h-3.5 w-3.5 text-slate-400 dark:text-neutral-500" />
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search bank name..."
-                className="w-full rounded-md bg-white border border-slate-200 pl-8 pr-3 py-1.5 text-xs text-slate-800 outline-none focus:ring-1 focus:ring-teal-500"
+                className="w-full rounded-md bg-white border border-slate-200 pl-8 pr-3 py-1.5 text-xs text-slate-800 outline-none focus:ring-1 focus:ring-teal-500 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-100"
                 autoFocus
               />
             </div>
@@ -498,15 +498,15 @@ function BankDropdown({
                     setOpen(false);
                     setSearch("");
                   }}
-                  className={`w-full text-left px-3 py-2 text-sm hover:bg-teal-50 hover:text-teal-900 transition-colors ${
-                    value === bank.code ? "bg-teal-50 font-semibold text-teal-800" : "text-slate-700"
+                  className={`w-full text-left px-3 py-2 text-sm hover:bg-teal-50 hover:text-teal-900 transition-colors dark:hover:bg-teal-950 dark:hover:text-teal-200 ${
+                    value === bank.code ? "bg-teal-50 font-semibold text-teal-800 dark:bg-teal-950 dark:text-teal-300" : "text-slate-700 dark:text-neutral-300"
                   }`}
                 >
                   {bank.name}
                 </button>
               ))
             ) : (
-              <div className="p-3 text-xs text-center text-slate-500">
+              <div className="p-3 text-xs text-center text-slate-500 dark:text-neutral-400">
                 No banks found matching "{search}"
               </div>
             )}

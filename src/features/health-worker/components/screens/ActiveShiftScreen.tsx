@@ -47,13 +47,13 @@ export function ActiveShiftScreen({
             <h2 className="font-bold">Patients Seen</h2>
             <StatusBadge>{patients.length} this shift</StatusBadge>
           </div>
-          <p className="mb-3 text-xs text-neutral-400">
+          <p className="mb-3 text-xs text-neutral-400 dark:text-neutral-500">
             Recorded in this session only — not saved to a patient record system.
           </p>
           <div className="space-y-3">
             {patients.length === 0 ? (
               <EmptyState
-                className="bg-white"
+                className="bg-white dark:bg-neutral-900"
                 icon={<UserRound className="h-10 w-10 text-brand-300" />}
                 title="No patients recorded yet"
               />
@@ -63,23 +63,25 @@ export function ActiveShiftScreen({
                   type="button"
                   key={patient.id}
                   onClick={() => onPatientSelect(patient)}
-                  className="flex w-full items-center justify-between rounded-2xl bg-white p-4 text-left shadow-sm"
+                  className="flex w-full items-center justify-between rounded-2xl bg-white p-4 text-left shadow-sm dark:bg-neutral-900"
                 >
                   <div>
                     <p className="font-bold">{patient.name}</p>
-                    <p className="text-xs text-neutral-500">
+                    <p className="text-xs text-neutral-500 dark:text-neutral-500">
                       {patient.age}y • {patient.gender}
                     </p>
                     <p
                       className={cn(
                         "mt-2 text-[10px] font-bold uppercase",
-                        patient.status === "waiting" ? "text-warning-600" : "text-success-600",
+                        patient.status === "waiting"
+                          ? "text-warning-600 dark:text-warning-400"
+                          : "text-success-600 dark:text-success-400",
                       )}
                     >
                       {patient.status.replace("-", " ")}
                     </p>
                   </div>
-                  <ChevronRight className="h-5 w-5 text-neutral-400" />
+                  <ChevronRight className="h-5 w-5 text-neutral-400 dark:text-neutral-500" />
                 </button>
               ))
             )}
@@ -94,7 +96,7 @@ export function ActiveShiftScreen({
           <CardHeader className="p-4 pb-2">
             <CardTitle className="text-base">Shift Notes</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3 p-4 pt-0 text-sm text-neutral-500">
+          <CardContent className="space-y-3 p-4 pt-0 text-sm text-neutral-500 dark:text-neutral-500">
             <p>
               This session doesn't persist a task checklist — add notes to each patient's report
               instead.

@@ -46,7 +46,7 @@ export function AvatarInitials({
   return (
     <div
       className={cn(
-        "flex flex-shrink-0 items-center justify-center rounded-full bg-secondary-100 font-semibold text-secondary-700",
+        "flex flex-shrink-0 items-center justify-center rounded-full bg-secondary-100 font-semibold text-secondary-700 dark:bg-secondary-950 dark:text-secondary-300",
         sizeStyles[size],
         className,
       )}

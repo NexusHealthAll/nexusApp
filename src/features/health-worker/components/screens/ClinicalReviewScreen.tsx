@@ -39,7 +39,7 @@ export function ClinicalReviewScreen({
           <CardContent className="flex items-center justify-between p-4">
             <div>
               <h2 className="font-bold">{patient.name}</h2>
-              <p className="text-xs text-neutral-500">
+              <p className="text-xs text-neutral-500 dark:text-neutral-500">
                 {patient.age}y • {patient.gender}
               </p>
             </div>
@@ -57,14 +57,14 @@ export function ClinicalReviewScreen({
                 rows={3}
                 value={notes[field.key]}
                 onChange={(e) => setNotes((prev) => ({ ...prev, [field.key]: e.target.value }))}
-                className="w-full resize-none rounded-lg bg-neutral-50 px-3 py-2 text-sm text-neutral-700 outline-none"
+                className="w-full resize-none rounded-lg bg-neutral-50 px-3 py-2 text-sm text-neutral-700 outline-none dark:bg-neutral-800 dark:text-neutral-400"
                 placeholder={`Enter ${field.label.toLowerCase()}...`}
               />
             </CardContent>
           </Card>
         ))}
 
-        <p className="text-center text-xs text-neutral-400">
+        <p className="text-center text-xs text-neutral-400 dark:text-neutral-500">
           There's no clinical-notes backend yet — this saves to this shift session only, not to any
           patient record or EHR.
         </p>

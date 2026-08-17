@@ -182,18 +182,18 @@ export function ProfessionalProfile() {
   const handleSkip = () => navigate("/medical-staff/dashboard");
 
   return (
-    <div className="min-h-screen bg-[#F3FAFF] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[#F3FAFF] dark:bg-neutral-950 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <InstallPromptBanner className="mb-4" />
 
         {/* Header */}
-        <div className="bg-white rounded-t-2xl px-6 py-4 border-b border-slate-100">
+        <div className="bg-white rounded-t-2xl px-6 py-4 border-b border-slate-100 dark:bg-neutral-900 dark:border-neutral-800">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <button
                 type="button"
                 onClick={() => navigate("/medical-staff/onboarding/identity")}
-                className="rounded-full p-2 text-slate-600 hover:bg-slate-100 transition-colors"
+                className="rounded-full p-2 text-slate-600 hover:bg-slate-100 transition-colors dark:text-neutral-400 dark:hover:bg-neutral-800"
                 aria-label="Go back"
               >
                 <ArrowLeft className="h-4 w-4" />
@@ -201,27 +201,27 @@ export function ProfessionalProfile() {
               <NexusCareLogo size="md" />
             </div>
             <div className="flex items-center space-x-3">
-              <Bell className="h-5 w-5 text-slate-400" />
+              <Bell className="h-5 w-5 text-slate-400 dark:text-neutral-500" />
               <button
                 onClick={handleClose}
-                className="p-1 hover:bg-slate-100 rounded-full transition-colors"
+                className="p-1 hover:bg-slate-100 rounded-full transition-colors dark:hover:bg-neutral-800"
               >
-                <X className="h-5 w-5 text-slate-400" />
+                <X className="h-5 w-5 text-slate-400 dark:text-neutral-500" />
               </button>
             </div>
           </div>
 
           {/* Step Indicator */}
           <div className="space-y-3">
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">
+            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide dark:text-neutral-400">
               STEP 02 OF 04
             </p>
-            <h1 className="text-2xl font-bold text-onboarding-textPrimary">
+            <h1 className="text-2xl font-bold text-onboarding-textPrimary dark:text-neutral-50">
               Professional Identity
             </h1>
 
             {/* Progress Bar */}
-            <div className="w-full bg-slate-200 rounded-full h-1">
+            <div className="w-full bg-slate-200 rounded-full h-1 dark:bg-neutral-800">
               <div
                 className="bg-gradient-to-r from-onboarding-primaryGreen to-onboarding-primaryBlue h-1 rounded-full"
                 style={{ width: "50%" }}
@@ -234,7 +234,7 @@ export function ProfessionalProfile() {
         <Card className="bg-white rounded-t-none rounded-b-2xl border-t-0 shadow-md">
           <CardContent className="p-6 space-y-6">
             {/* Description */}
-            <p className="text-onboarding-textSecondary leading-relaxed">
+            <p className="text-onboarding-textSecondary leading-relaxed dark:text-neutral-400">
               To ensure clinical safety and maintain our high standards of care,
               please provide your current medical registration details.
             </p>
@@ -242,42 +242,42 @@ export function ProfessionalProfile() {
               {/* Name fields - Populated from NIN / BVN (Not Editable) */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-slate-600 flex items-center gap-1">
-                    <ShieldCheck className="h-4 w-4 text-teal-600" />
+                  <span className="text-xs font-semibold text-slate-600 flex items-center gap-1 dark:text-neutral-400">
+                    <ShieldCheck className="h-4 w-4 text-teal-600 dark:text-teal-400" />
                     Verified Identity Details
                   </span>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-teal-700 bg-teal-50 px-2 py-0.5 rounded border border-teal-200">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-teal-700 bg-teal-50 px-2 py-0.5 rounded border border-teal-200 dark:text-teal-300 dark:bg-teal-950 dark:border-teal-900">
                     Not Editable (Populated from {verifiedIdentity?.type || "NIN/BVN"})
                   </span>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-2">
-                    <label className="mb-1.5 flex items-center space-x-1.5 text-[10px] font-semibold uppercase tracking-widest text-neutral-500">
+                    <label className="mb-1.5 flex items-center space-x-1.5 text-[10px] font-semibold uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
                       <User className="h-3.5 w-3.5" />
                       <span>First Name</span>
-                      <Lock className="h-3 w-3 text-slate-400 ml-auto" />
+                      <Lock className="h-3 w-3 text-slate-400 ml-auto dark:text-neutral-500" />
                     </label>
-                    <div className="rounded-lg bg-slate-100 px-3 py-2.5 border border-slate-200 cursor-not-allowed">
+                    <div className="rounded-lg bg-slate-100 px-3 py-2.5 border border-slate-200 cursor-not-allowed dark:bg-neutral-800 dark:border-neutral-700">
                       <input
                         type="text"
                         readOnly
                         value={formData.firstName}
-                        className="w-full bg-transparent text-sm font-semibold text-slate-700 outline-none cursor-not-allowed"
+                        className="w-full bg-transparent text-sm font-semibold text-slate-700 outline-none cursor-not-allowed dark:text-neutral-300"
                         placeholder="First name"
                       />
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <label className="mb-1.5 flex items-center space-x-1.5 text-[10px] font-semibold uppercase tracking-widest text-neutral-500">
+                    <label className="mb-1.5 flex items-center space-x-1.5 text-[10px] font-semibold uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
                       <span>Last Name</span>
-                      <Lock className="h-3 w-3 text-slate-400 ml-auto" />
+                      <Lock className="h-3 w-3 text-slate-400 ml-auto dark:text-neutral-500" />
                     </label>
-                    <div className="rounded-lg bg-slate-100 px-3 py-2.5 border border-slate-200 cursor-not-allowed">
+                    <div className="rounded-lg bg-slate-100 px-3 py-2.5 border border-slate-200 cursor-not-allowed dark:bg-neutral-800 dark:border-neutral-700">
                       <input
                         type="text"
                         readOnly
                         value={formData.lastName}
-                        className="w-full bg-transparent text-sm font-semibold text-slate-700 outline-none cursor-not-allowed"
+                        className="w-full bg-transparent text-sm font-semibold text-slate-700 outline-none cursor-not-allowed dark:text-neutral-300"
                         placeholder="Last name"
                       />
                     </div>
@@ -292,7 +292,7 @@ export function ProfessionalProfile() {
                   value={formData.role}
                   onChange={(value) => setFormData((prev) => ({ ...prev, role: value }))}
                   placeholder="Select your role"
-                  className="bg-onboarding-inputBackground"
+                  className="bg-onboarding-inputBackground dark:bg-neutral-800"
                   options={ROLE_OPTIONS}
                   error={errors.role}
                 />
@@ -300,11 +300,11 @@ export function ProfessionalProfile() {
 
               {/* License Number */}
               <div className="space-y-3">
-                <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-neutral-500 flex items-center space-x-2">
+                <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-neutral-500 flex items-center space-x-2 dark:text-neutral-400">
                   <Award className="h-4 w-4" />
                   <span>License Number</span>
                 </label>
-                <div className="flex items-center gap-2.5 rounded-lg bg-onboarding-inputBackground px-3 py-2.5">
+                <div className="flex items-center gap-2.5 rounded-lg bg-onboarding-inputBackground px-3 py-2.5 dark:bg-neutral-800">
                   <input
                     type="text"
                     value={formData.licenseNumber}
@@ -314,7 +314,7 @@ export function ProfessionalProfile() {
                         licenseNumber: e.target.value,
                       }))
                     }
-                    className={`flex-1 bg-transparent text-sm text-neutral-800 outline-none placeholder:text-neutral-400 font-mono ${
+                    className={`flex-1 bg-transparent text-sm text-neutral-800 outline-none placeholder:text-neutral-400 font-mono dark:text-neutral-100 ${
                       errors.licenseNumber ? "text-red-600" : ""
                     }`}
                     placeholder="e.g., MDC/NGR/12345"
@@ -327,7 +327,7 @@ export function ProfessionalProfile() {
 
               {/* Specialty */}
               <div className="space-y-4">
-                <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-neutral-500">
+                <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
                   Specialty
                 </label>
                 <div className="flex flex-wrap gap-3">
@@ -341,7 +341,7 @@ export function ProfessionalProfile() {
                       className={`px-4 py-2 rounded-full border transition-all text-sm font-medium ${
                         formData.specialty === opt.value
                           ? "bg-teal-500 text-white border-teal-500"
-                          : "bg-slate-100 text-slate-700 border-slate-200 hover:border-slate-300"
+                          : "bg-slate-100 text-slate-700 border-slate-200 hover:border-slate-300 dark:bg-neutral-800 dark:text-neutral-300 dark:border-neutral-700 dark:hover:border-neutral-600"
                       }`}
                     >
                       {opt.label}
@@ -355,7 +355,7 @@ export function ProfessionalProfile() {
 
               {/* Data Privacy Section */}
               <div className="space-y-3">
-                <div className="flex items-start space-x-3 p-4 bg-slate-50 rounded-xl">
+                <div className="flex items-start space-x-3 p-4 bg-slate-50 rounded-xl dark:bg-neutral-800">
                   <div className="w-6 h-6 bg-green-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                     <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                       <path
@@ -366,8 +366,8 @@ export function ProfessionalProfile() {
                     </svg>
                   </div>
                   <div>
-                    <h4 className="font-semibold text-slate-900 mb-1">Data Privacy</h4>
-                    <p className="text-sm text-slate-600">
+                    <h4 className="font-semibold text-slate-900 mb-1 dark:text-neutral-50">Data Privacy</h4>
+                    <p className="text-sm text-slate-600 dark:text-neutral-400">
                       Your credentials are encrypted and stored following
                       international health data standards.
                     </p>
@@ -394,7 +394,7 @@ export function ProfessionalProfile() {
                 <button
                   type="button"
                   onClick={handleSkip}
-                  className="text-sm text-slate-500 hover:text-slate-700 transition-colors"
+                  className="text-sm text-slate-500 hover:text-slate-700 transition-colors dark:text-neutral-400 dark:hover:text-neutral-200"
                 >
                   I'll complete this later
                 </button>

@@ -19,7 +19,7 @@ export function FaqAccordion({ headline, items }: FaqAccordionProps) {
     <section className="px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
       <div className="mx-auto max-w-6xl">
         <div className="text-center">
-          <h2 className="text-4xl font-semibold bg-gradient-to-r from-onboarding-primaryBlue to-onboarding-primaryGreen bg-clip-text text-transparent sm:text-5xl">
+          <h2 className="text-4xl font-semibold bg-gradient-to-r from-onboarding-primaryBlue to-onboarding-primaryGreen bg-clip-text text-transparent sm:text-5xl dark:from-[#5AA6D6] dark:to-onboarding-primaryGreen">
             {headline}
           </h2>
         </div>
@@ -32,10 +32,10 @@ export function FaqAccordion({ headline, items }: FaqAccordionProps) {
               <article
                 key={item.question}
                 className={cn(
-                  "overflow-hidden rounded-2xl border bg-white shadow-soft transition-all",
+                  "overflow-hidden rounded-2xl border bg-white shadow-soft transition-all dark:bg-neutral-900",
                   isOpen
                     ? "border-onboarding-primaryBlue/45 ring-2 ring-onboarding-primaryGreen/20"
-                    : "border-neutral-200",
+                    : "border-neutral-200 dark:border-neutral-800",
                 )}
               >
                 <button
@@ -43,7 +43,7 @@ export function FaqAccordion({ headline, items }: FaqAccordionProps) {
                   onClick={() => setOpenIndex(isOpen ? null : index)}
                   className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left sm:px-6"
                 >
-                  <span className="text-sm font-semibold text-neutral-900 sm:text-base">
+                  <span className="text-sm font-semibold text-neutral-900 sm:text-base dark:text-neutral-50">
                     {item.question}
                   </span>
                   <span
@@ -57,8 +57,8 @@ export function FaqAccordion({ headline, items }: FaqAccordionProps) {
                 </button>
 
                 {isOpen ? (
-                  <div className="border-t border-neutral-100 px-5 py-4 sm:px-6">
-                    <p className="text-sm leading-7 text-neutral-600 sm:text-base">
+                  <div className="border-t border-neutral-100 px-5 py-4 sm:px-6 dark:border-neutral-800">
+                    <p className="text-sm leading-7 text-neutral-600 sm:text-base dark:text-neutral-400">
                       {item.answer}
                     </p>
                   </div>

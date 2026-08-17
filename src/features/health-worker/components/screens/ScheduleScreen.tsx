@@ -40,26 +40,26 @@ function ScheduleEntryCard({
   const scheduled = new Date(entry.scheduled_start);
 
   return (
-    <div className="w-full rounded-lg border border-[rgba(194,198,212,0.1)] bg-white p-5 shadow-sm">
+    <div className="w-full rounded-lg border border-[rgba(194,198,212,0.1)] bg-white p-5 shadow-sm dark:bg-neutral-900 dark:border-white/10">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <span className="inline-block rounded-xl bg-[#8df9a8] px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-[#007439]">
+          <span className="inline-block rounded-xl bg-[#8df9a8] px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-[#007439] dark:bg-success-950 dark:text-success-300">
             {badgeLabel}
           </span>
-          <h3 className="mt-1 text-lg font-extrabold text-ink-900">Hospital</h3>
+          <h3 className="mt-1 text-lg font-extrabold text-ink-900 dark:text-neutral-50">Hospital</h3>
         </div>
       </div>
 
-      <div className="mt-4 grid grid-cols-2 gap-4 rounded bg-brand-100/50 p-3">
+      <div className="mt-4 grid grid-cols-2 gap-4 rounded bg-brand-100/50 p-3 dark:bg-brand-950/50">
         <div>
-          <p className="text-[10px] font-medium uppercase text-ink-700">Date</p>
-          <p className="mt-1 text-sm font-semibold text-ink-900">
+          <p className="text-[10px] font-medium uppercase text-ink-700 dark:text-neutral-400">Date</p>
+          <p className="mt-1 text-sm font-semibold text-ink-900 dark:text-neutral-50">
             {scheduled.toLocaleDateString("en-NG", { month: "short", day: "numeric", year: "numeric" })}
           </p>
         </div>
         <div>
-          <p className="text-[10px] font-medium uppercase text-ink-700">Shift Time</p>
-          <p className="mt-1 text-sm font-semibold text-ink-900">
+          <p className="text-[10px] font-medium uppercase text-ink-700 dark:text-neutral-400">Shift Time</p>
+          <p className="mt-1 text-sm font-semibold text-ink-900 dark:text-neutral-50">
             {scheduled.toLocaleTimeString("en-NG", { hour: "2-digit", minute: "2-digit" })}
           </p>
         </div>
@@ -112,10 +112,10 @@ export function ScheduleScreen({
   return (
     <main className="space-y-4 py-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-base font-semibold tracking-tight text-ink-900">
+        <h1 className="text-base font-semibold tracking-tight text-ink-900 dark:text-neutral-50">
           {today.toLocaleDateString("en-NG", { month: "long", year: "numeric" })}
         </h1>
-        <span className="flex items-center gap-1 text-sm font-medium text-brand-700">
+        <span className="flex items-center gap-1 text-sm font-medium text-brand-700 dark:text-brand-300">
           Full Calendar
           <Calendar className="h-3.5 w-3.5" />
         </span>
@@ -127,25 +127,25 @@ export function ScheduleScreen({
             key={day.label + day.date}
             className={cn(
               "flex h-20 w-14 shrink-0 flex-col items-center justify-center gap-1 rounded-xl",
-              day.isToday ? "bg-brand-700 shadow-[0_0_0_4px_rgba(0,65,162,0.1)]" : "bg-brand-100",
+              day.isToday ? "bg-brand-700 shadow-[0_0_0_4px_rgba(0,65,162,0.1)]" : "bg-brand-100 dark:bg-brand-950",
             )}
           >
             <span
               className={cn(
                 "text-xs font-medium uppercase",
-                day.isToday ? "text-white/80" : "text-ink-700/60",
+                day.isToday ? "text-white/80" : "text-ink-700/60 dark:text-neutral-500",
               )}
             >
               {day.label}
             </span>
-            <span className={cn("text-lg font-bold", day.isToday ? "text-white" : "text-ink-700")}>
+            <span className={cn("text-lg font-bold", day.isToday ? "text-white" : "text-ink-700 dark:text-neutral-400")}>
               {day.date}
             </span>
           </div>
         ))}
       </div>
 
-      <div className="flex items-start justify-center gap-1 rounded-xl bg-brand-100 p-1">
+      <div className="flex items-start justify-center gap-1 rounded-xl bg-brand-100 p-1 dark:bg-brand-950">
         {tabs.map((tab) => (
           <button
             type="button"
@@ -153,7 +153,9 @@ export function ScheduleScreen({
             onClick={() => onScheduleTabChange(tab.id)}
             className={cn(
               "flex-1 rounded-xl px-4 py-2.5 text-sm font-semibold",
-              scheduleTab === tab.id ? "bg-white text-brand-700 shadow-sm" : "text-ink-700",
+              scheduleTab === tab.id
+                ? "bg-white text-brand-700 shadow-sm dark:bg-neutral-900 dark:text-brand-300"
+                : "text-ink-700 dark:text-neutral-400",
             )}
           >
             {tab.label}
@@ -162,16 +164,16 @@ export function ScheduleScreen({
       </div>
 
       {loadError && (
-        <p className="rounded-xl bg-error-50 px-4 py-3 text-sm text-error-700">{loadError}</p>
+        <p className="rounded-xl bg-error-50 px-4 py-3 text-sm text-error-700 dark:bg-error-950 dark:text-error-300">{loadError}</p>
       )}
-      {isLoading && <p className="text-sm text-ink-500">Loading...</p>}
+      {isLoading && <p className="text-sm text-ink-500 dark:text-neutral-500">Loading...</p>}
 
       {!isLoading && (
         <div className="space-y-4">
           {scheduleTab === "active" &&
             (active.length === 0 ? (
               <EmptyState
-                className="bg-white"
+                className="bg-white dark:bg-neutral-900"
                 icon={<CalendarClock className="h-10 w-10 text-brand-300" />}
                 title="No active shift right now"
               />
@@ -191,7 +193,7 @@ export function ScheduleScreen({
           {scheduleTab === "completed" &&
             (completed.length === 0 ? (
               <EmptyState
-                className="bg-white"
+                className="bg-white dark:bg-neutral-900"
                 icon={<CalendarCheck2 className="h-10 w-10 text-brand-300" />}
                 title="No completed shifts yet"
               />
@@ -210,7 +212,7 @@ export function ScheduleScreen({
           {scheduleTab === "upcoming" &&
             (upcoming.length === 0 ? (
               <EmptyState
-                className="bg-white"
+                className="bg-white dark:bg-neutral-900"
                 icon={<Calendar className="h-10 w-10 text-brand-300" />}
                 title="No upcoming shifts"
                 description="Accepted shifts will show up here."

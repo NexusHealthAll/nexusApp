@@ -18,10 +18,10 @@ const toneIcon: Record<
   NotificationTone,
   { icon: typeof CheckCircle2; className: string }
 > = {
-  success: { icon: CheckCircle2, className: "bg-success-50 text-success-600" },
-  info: { icon: Clock, className: "bg-primary-50 text-primary-600" },
-  warning: { icon: AlertTriangle, className: "bg-warning-50 text-warning-600" },
-  error: { icon: AlertTriangle, className: "bg-error-50 text-error-600" },
+  success: { icon: CheckCircle2, className: "bg-success-50 text-success-600 dark:bg-success-950 dark:text-success-300" },
+  info: { icon: Clock, className: "bg-primary-50 text-primary-600 dark:bg-primary-950 dark:text-primary-300" },
+  warning: { icon: AlertTriangle, className: "bg-warning-50 text-warning-600 dark:bg-warning-950 dark:text-warning-300" },
+  error: { icon: AlertTriangle, className: "bg-error-50 text-error-600 dark:bg-error-950 dark:text-error-300" },
 };
 
 /**
@@ -39,8 +39,8 @@ export function RecentActivityCard() {
   const items = notifications.slice(0, 4);
 
   return (
-    <div className="flex h-full flex-col rounded-2xl border border-neutral-100 bg-white p-5">
-      <h3 className="text-base font-bold text-neutral-900">Recent Activity</h3>
+    <div className="flex h-full flex-col rounded-2xl border border-neutral-100 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
+      <h3 className="text-base font-bold text-neutral-900 dark:text-neutral-50">Recent Activity</h3>
 
       {items.length === 0 && (
         <div className="mt-4 flex-1">
@@ -59,7 +59,7 @@ export function RecentActivityCard() {
         {items.map((item) => {
           const tone =
             item.tone === "success" && item.message.toLowerCase().includes("payment")
-              ? { icon: CircleDollarSign, className: "bg-success-50 text-success-600" }
+              ? { icon: CircleDollarSign, className: "bg-success-50 text-success-600 dark:bg-success-950 dark:text-success-300" }
               : toneIcon[item.tone];
           const Icon = tone.icon;
           return (
@@ -73,10 +73,10 @@ export function RecentActivityCard() {
                 <Icon className="h-4 w-4" />
               </span>
               <div className="min-w-0">
-                <p className="text-sm font-medium leading-snug text-neutral-800">
+                <p className="text-sm font-medium leading-snug text-neutral-800 dark:text-neutral-200">
                   {item.message}
                 </p>
-                <p className="mt-1 text-xs text-neutral-400">{item.time}</p>
+                <p className="mt-1 text-xs text-neutral-400 dark:text-neutral-500">{item.time}</p>
               </div>
             </li>
           );
@@ -85,7 +85,7 @@ export function RecentActivityCard() {
 
       <Link
         to={PATHS.hospital.notifications}
-        className="mt-5 flex items-center justify-center gap-1 border-t border-neutral-100 pt-4 text-sm font-semibold text-neutral-700 transition-colors hover:text-neutral-900"
+        className="mt-5 flex items-center justify-center gap-1 border-t border-neutral-100 pt-4 text-sm font-semibold text-neutral-700 transition-colors hover:text-neutral-900 dark:border-neutral-800 dark:text-neutral-300 dark:hover:text-neutral-50"
       >
         View all activity
         <ChevronRight className="h-4 w-4" />

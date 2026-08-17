@@ -147,7 +147,7 @@ export function HandoverReportsPage() {
               <Link
                 key={report.shiftId}
                 to={PATHS.hospital.handoverReportDetail(report.shiftId)}
-                className="block rounded-2xl border border-neutral-100 bg-white p-5 transition-shadow hover:shadow-soft"
+                className="block rounded-2xl border border-neutral-100 bg-white p-5 transition-shadow hover:shadow-soft dark:border-neutral-800 dark:bg-neutral-900"
               >
                 <div className="flex items-start gap-4">
                   <AvatarInitials
@@ -156,12 +156,12 @@ export function HandoverReportsPage() {
                     className="bg-secondary-600 font-bold text-white"
                   />
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-bold text-neutral-900">
+                    <p className="text-sm font-bold text-neutral-900 dark:text-neutral-50">
                       {report.workerName}
                       {report.credential ? `, ${report.credential}` : ""} ·{" "}
                       {report.shiftLabel}
                     </p>
-                    <p className="mt-0.5 text-xs text-neutral-400">
+                    <p className="mt-0.5 text-xs text-neutral-400 dark:text-neutral-500">
                       {report.department} · {report.role} ·{" "}
                       {report.submittedLabel}
                     </p>
@@ -172,10 +172,10 @@ export function HandoverReportsPage() {
                   >
                     {display.label}
                   </Badge>
-                  <ChevronRight className="mt-0.5 h-5 w-5 flex-shrink-0 text-neutral-300" />
+                  <ChevronRight className="mt-0.5 h-5 w-5 flex-shrink-0 text-neutral-300 dark:text-neutral-600" />
                 </div>
                 {report.executiveSummary && (
-                  <p className="mt-4 text-sm leading-relaxed text-neutral-600">
+                  <p className="mt-4 text-sm leading-relaxed text-neutral-600 dark:text-neutral-400">
                     {report.executiveSummary}
                   </p>
                 )}

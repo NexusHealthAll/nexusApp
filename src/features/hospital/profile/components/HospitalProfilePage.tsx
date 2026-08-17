@@ -96,7 +96,7 @@ export function HospitalProfilePage() {
 
   if (!details) {
     return (
-      <p className="text-sm text-neutral-500">
+      <p className="text-sm text-neutral-500 dark:text-neutral-400">
         No hospital record found for this account.
       </p>
     );
@@ -104,20 +104,20 @@ export function HospitalProfilePage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-bold text-neutral-900 lg:text-3xl">
+      <h1 className="mb-6 text-2xl font-bold text-neutral-900 lg:text-3xl dark:text-neutral-50">
         Hospital Profile
       </h1>
 
       {/* Header card */}
-      <div className="flex flex-wrap items-start gap-5 rounded-2xl border border-neutral-100 bg-white p-6">
+      <div className="flex flex-wrap items-start gap-5 rounded-2xl border border-neutral-100 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
         <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-secondary-700 text-white">
           <Building2 className="h-8 w-8" />
         </span>
         <div className="min-w-0 flex-1">
-          <h2 className="text-2xl font-bold text-secondary-800">
+          <h2 className="text-2xl font-bold text-secondary-800 dark:text-secondary-300">
             {details.name}
           </h2>
-          <p className="mt-1 text-sm text-neutral-500">{details.address}</p>
+          <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">{details.address}</p>
           <div className="mt-2.5 flex flex-wrap items-center gap-2">
             <Badge variant={isVerified ? "success" : "warning"}>
               {isVerified ? (
@@ -173,8 +173,8 @@ export function HospitalProfilePage() {
       <div className="mt-4 grid gap-4 xl:grid-cols-[2fr_1fr]">
         <div className="space-y-4">
           {/* Hospital information */}
-          <div className="rounded-2xl border border-neutral-100 bg-white p-6">
-            <h3 className="text-base font-bold text-neutral-900">
+          <div className="rounded-2xl border border-neutral-100 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
+            <h3 className="text-base font-bold text-neutral-900 dark:text-neutral-50">
               Hospital Information
             </h3>
             <div className="mt-5 grid gap-5 sm:grid-cols-2">
@@ -183,13 +183,13 @@ export function HospitalProfilePage() {
                 value={form.name}
                 readOnly={!isEditing}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
-                className={cn(!isEditing && "bg-neutral-50")}
+                className={cn(!isEditing && "bg-neutral-50 dark:bg-neutral-800")}
               />
               <Input
                 label="Registration Number"
                 value={details.registrationNumber}
                 readOnly
-                className="bg-neutral-50"
+                className="bg-neutral-50 dark:bg-neutral-800"
               />
               {/* Hospital type / staff size have no backend fields yet. */}
               <Input
@@ -197,14 +197,14 @@ export function HospitalProfilePage() {
                 value=""
                 placeholder="Not set"
                 readOnly
-                className="bg-neutral-50"
+                className="bg-neutral-50 dark:bg-neutral-800"
               />
               <Input
                 label="Staff Size"
                 value=""
                 placeholder="Not set"
                 readOnly
-                className="bg-neutral-50"
+                className="bg-neutral-50 dark:bg-neutral-800"
               />
               <Input
                 label="Address"
@@ -212,7 +212,7 @@ export function HospitalProfilePage() {
                 readOnly={!isEditing}
                 onChange={(e) => setForm({ ...form, address: e.target.value })}
                 containerClassName="sm:col-span-2"
-                className={cn(!isEditing && "bg-neutral-50")}
+                className={cn(!isEditing && "bg-neutral-50 dark:bg-neutral-800")}
               />
               <Input
                 label="Phone"
@@ -221,7 +221,7 @@ export function HospitalProfilePage() {
                 onChange={(e) =>
                   setForm({ ...form, phoneNumber: e.target.value })
                 }
-                className={cn(!isEditing && "bg-neutral-50")}
+                className={cn(!isEditing && "bg-neutral-50 dark:bg-neutral-800")}
               />
               <Input
                 label="Email"
@@ -229,16 +229,16 @@ export function HospitalProfilePage() {
                 value={form.email}
                 readOnly={!isEditing}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
-                className={cn(!isEditing && "bg-neutral-50")}
+                className={cn(!isEditing && "bg-neutral-50 dark:bg-neutral-800")}
               />
             </div>
           </div>
 
           {/* Departments */}
-          <div className="rounded-2xl border border-neutral-100 bg-white p-6">
-            <h3 className="text-base font-bold text-neutral-900">Departments</h3>
+          <div className="rounded-2xl border border-neutral-100 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
+            <h3 className="text-base font-bold text-neutral-900 dark:text-neutral-50">Departments</h3>
             {departments.length === 0 && newDepartment === null && (
-              <p className="mt-2 text-sm text-neutral-400">
+              <p className="mt-2 text-sm text-neutral-400 dark:text-neutral-500">
                 No departments added yet — add the units your hospital staffs.
               </p>
             )}
@@ -246,7 +246,7 @@ export function HospitalProfilePage() {
               {departments.map((dept) => (
                 <span
                   key={dept}
-                  className="rounded-full bg-secondary-50 px-4 py-1.5 text-sm font-medium text-secondary-700"
+                  className="rounded-full bg-secondary-50 px-4 py-1.5 text-sm font-medium text-secondary-700 dark:bg-secondary-950 dark:text-secondary-300"
                 >
                   {dept}
                 </span>
@@ -254,7 +254,7 @@ export function HospitalProfilePage() {
               {newDepartment === null ? (
                 <button
                   onClick={() => setNewDepartment("")}
-                  className="flex items-center gap-1 rounded-full border border-dashed border-neutral-300 px-4 py-1.5 text-sm font-medium text-neutral-500 transition-colors hover:border-neutral-400 hover:text-neutral-700"
+                  className="flex items-center gap-1 rounded-full border border-dashed border-neutral-300 px-4 py-1.5 text-sm font-medium text-neutral-500 transition-colors hover:border-neutral-400 hover:text-neutral-700 dark:border-neutral-700 dark:text-neutral-400 dark:hover:border-neutral-600 dark:hover:text-neutral-200"
                 >
                   <Plus className="h-3.5 w-3.5" />
                   Add Department
@@ -279,7 +279,7 @@ export function HospitalProfilePage() {
                     setNewDepartment(null);
                   }}
                   placeholder="Department name"
-                  className="w-44 rounded-full border border-secondary-300 px-4 py-1.5 text-sm focus:outline-none"
+                  className="w-44 rounded-full border border-secondary-300 px-4 py-1.5 text-sm focus:outline-none dark:border-secondary-700 dark:bg-neutral-800 dark:text-neutral-100"
                 />
               )}
             </div>
@@ -288,8 +288,8 @@ export function HospitalProfilePage() {
 
         <div className="space-y-4">
           {/* Operating hours — no backend field yet. */}
-          <div className="rounded-2xl border border-neutral-100 bg-white p-6">
-            <h3 className="text-base font-bold text-neutral-900">
+          <div className="rounded-2xl border border-neutral-100 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
+            <h3 className="text-base font-bold text-neutral-900 dark:text-neutral-50">
               Operating Hours
             </h3>
             <EmptyState
@@ -301,24 +301,24 @@ export function HospitalProfilePage() {
           </div>
 
           {/* Emergency contacts */}
-          <div className="rounded-2xl border border-neutral-100 bg-white p-6">
-            <h3 className="text-base font-bold text-neutral-900">
+          <div className="rounded-2xl border border-neutral-100 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
+            <h3 className="text-base font-bold text-neutral-900 dark:text-neutral-50">
               Emergency Contacts
             </h3>
             <ul className="mt-4 space-y-4">
               <li>
-                <p className="text-sm font-bold text-neutral-900">
+                <p className="text-sm font-bold text-neutral-900 dark:text-neutral-50">
                   Hospital Admin Desk
                 </p>
-                <p className="mt-0.5 text-xs text-neutral-500">
+                <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
                   Front Office • {details.phoneNumber}
                 </p>
               </li>
               <li>
-                <p className="text-sm font-bold text-neutral-900">
+                <p className="text-sm font-bold text-neutral-900 dark:text-neutral-50">
                   Billing & Payments
                 </p>
-                <p className="mt-0.5 text-xs text-neutral-500">
+                <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
                   Accounts • {details.email}
                 </p>
               </li>
@@ -326,18 +326,18 @@ export function HospitalProfilePage() {
           </div>
 
           {/* Location card */}
-          <div className="overflow-hidden rounded-2xl border border-neutral-100 bg-white">
-            <div className="flex h-36 items-center justify-center bg-secondary-50">
-              <span className="flex items-center gap-2 rounded-lg border border-secondary-200 bg-white/70 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-secondary-700">
+          <div className="overflow-hidden rounded-2xl border border-neutral-100 bg-white dark:border-neutral-800 dark:bg-neutral-900">
+            <div className="flex h-36 items-center justify-center bg-secondary-50 dark:bg-secondary-950">
+              <span className="flex items-center gap-2 rounded-lg border border-secondary-200 bg-white/70 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-secondary-700 dark:border-secondary-800 dark:bg-neutral-900/70 dark:text-secondary-300">
                 <MapPin className="h-3.5 w-3.5" />
                 Map view — {details.address.split(",")[0]}
               </span>
             </div>
             <div className="p-5">
-              <p className="text-sm font-bold text-neutral-900">
+              <p className="text-sm font-bold text-neutral-900 dark:text-neutral-50">
                 Main Campus Location
               </p>
-              <p className="mt-0.5 text-xs text-neutral-500">
+              <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
                 {details.address}
               </p>
             </div>

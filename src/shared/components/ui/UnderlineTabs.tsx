@@ -27,7 +27,7 @@ export function UnderlineTabs<T extends string = string>({
   return (
     <div
       className={cn(
-        "flex items-center gap-6 overflow-x-auto border-b border-neutral-200",
+        "flex items-center gap-6 overflow-x-auto border-b border-neutral-200 dark:border-neutral-800",
         className,
       )}
     >
@@ -41,8 +41,8 @@ export function UnderlineTabs<T extends string = string>({
             className={cn(
               "-mb-px flex flex-shrink-0 items-center gap-1.5 border-b-2 pb-2.5 text-sm font-medium transition-colors",
               isActive
-                ? "border-secondary-600 font-semibold text-secondary-700"
-                : "border-transparent text-neutral-500 hover:text-neutral-800",
+                ? "border-secondary-600 font-semibold text-secondary-700 dark:text-secondary-400"
+                : "border-transparent text-neutral-500 hover:text-neutral-800 dark:text-neutral-400 dark:hover:text-neutral-100",
             )}
           >
             {option.label}
@@ -51,8 +51,8 @@ export function UnderlineTabs<T extends string = string>({
                 className={cn(
                   "flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-semibold",
                   isActive
-                    ? "bg-secondary-50 text-secondary-700"
-                    : "bg-neutral-100 text-neutral-500",
+                    ? "bg-secondary-50 text-secondary-700 dark:bg-secondary-950 dark:text-secondary-300"
+                    : "bg-neutral-100 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400",
                 )}
               >
                 {option.count}

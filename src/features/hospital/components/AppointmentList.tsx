@@ -38,19 +38,19 @@ const mockAppointments = [
 ];
 
 const statusColors = {
-  scheduled: 'bg-neutral-100 text-neutral-800',
-  confirmed: 'bg-primary-100 text-primary-800',
-  'in-progress': 'bg-warning-100 text-warning-800',
-  completed: 'bg-success-100 text-success-800',
-  cancelled: 'bg-error-100 text-error-800',
-  'no-show': 'bg-error-100 text-error-800',
+  scheduled: 'bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-300',
+  confirmed: 'bg-primary-100 text-primary-800 dark:bg-primary-950 dark:text-primary-300',
+  'in-progress': 'bg-warning-100 text-warning-800 dark:bg-warning-950 dark:text-warning-300',
+  completed: 'bg-success-100 text-success-800 dark:bg-success-950 dark:text-success-300',
+  cancelled: 'bg-error-100 text-error-800 dark:bg-error-950 dark:text-error-300',
+  'no-show': 'bg-error-100 text-error-800 dark:bg-error-950 dark:text-error-300',
 };
 
 const typeColors = {
-  consultation: 'bg-blue-100 text-blue-800',
-  'follow-up': 'bg-green-100 text-green-800',
-  emergency: 'bg-red-100 text-red-800',
-  'routine-checkup': 'bg-purple-100 text-purple-800',
+  consultation: 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300',
+  'follow-up': 'bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-300',
+  emergency: 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300',
+  'routine-checkup': 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300',
 };
 
 export function AppointmentList() {
@@ -59,8 +59,8 @@ export function AppointmentList() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-neutral-900">Appointments</h1>
-          <p className="text-neutral-600">Manage patient appointments and schedules</p>
+          <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-50">Appointments</h1>
+          <p className="text-neutral-600 dark:text-neutral-400">Manage patient appointments and schedules</p>
         </div>
         <Button>
           <Plus className="mr-2 h-4 w-4" />
@@ -74,11 +74,11 @@ export function AppointmentList() {
           <div className="flex items-center space-x-4">
             <div className="flex-1">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400 dark:text-neutral-500" />
                 <input
                   type="text"
                   placeholder="Search appointments by patient, doctor, or reason..."
-                  className="w-full rounded-lg border border-neutral-300 py-2 pl-10 pr-4 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                  className="w-full rounded-lg border border-neutral-300 py-2 pl-10 pr-4 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 dark:placeholder:text-neutral-500"
                 />
               </div>
             </div>
@@ -102,42 +102,42 @@ export function AppointmentList() {
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="border-b border-neutral-200 bg-neutral-50">
+              <thead className="border-b border-neutral-200 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500">
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-500">
                     Time
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500">
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-500">
                     Patient
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500">
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-500">
                     Doctor
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500">
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-500">
                     Type
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500">
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-500">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500">
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-500">
                     Reason
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500">
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-500">
                     Actions
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-neutral-200">
+              <tbody className="divide-y divide-neutral-200 dark:divide-neutral-800">
                 {mockAppointments.map((appointment) => (
-                  <tr key={appointment.id} className="hover:bg-neutral-50">
+                  <tr key={appointment.id} className="hover:bg-neutral-50 dark:hover:bg-neutral-800">
                     <td className="px-6 py-4">
                       <div className="flex items-center space-x-2">
-                        <Clock className="h-4 w-4 text-neutral-400" />
+                        <Clock className="h-4 w-4 text-neutral-400 dark:text-neutral-500" />
                         <div>
-                          <div className="text-sm font-medium text-neutral-900">
+                          <div className="text-sm font-medium text-neutral-900 dark:text-neutral-50">
                             {formatTime(appointment.dateTime, { hour: '2-digit', minute: '2-digit' })}
                           </div>
-                          <div className="text-xs text-neutral-500">
+                          <div className="text-xs text-neutral-500 dark:text-neutral-500">
                             {appointment.duration} min
                           </div>
                         </div>
@@ -145,19 +145,19 @@ export function AppointmentList() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center">
-                        <div className="h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center">
-                          <span className="text-xs font-medium text-primary-700">
+                        <div className="h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center dark:bg-primary-950">
+                          <span className="text-xs font-medium text-primary-700 dark:text-primary-300">
                             {appointment.patientName.split(' ').map(n => n[0]).join('')}
                           </span>
                         </div>
                         <div className="ml-3">
-                          <div className="text-sm font-medium text-neutral-900">
+                          <div className="text-sm font-medium text-neutral-900 dark:text-neutral-50">
                             {appointment.patientName}
                           </div>
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-sm text-neutral-900">
+                    <td className="px-6 py-4 text-sm text-neutral-900 dark:text-neutral-100">
                       {appointment.doctorName}
                     </td>
                     <td className="px-6 py-4">
@@ -170,7 +170,7 @@ export function AppointmentList() {
                         {appointment.status.replace('-', ' ')}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-sm text-neutral-900 max-w-xs truncate">
+                    <td className="px-6 py-4 text-sm text-neutral-900 dark:text-neutral-100 max-w-xs truncate">
                       {appointment.reason}
                     </td>
                     <td className="px-6 py-4">

@@ -18,20 +18,20 @@ interface MetricCardProps {
 }
 
 const iconTones: Record<MetricTone, string> = {
-  secondary: "bg-secondary-50 text-secondary-600",
-  primary: "bg-primary-50 text-primary-600",
-  success: "bg-success-50 text-success-600",
-  warning: "bg-warning-50 text-warning-600",
-  error: "bg-error-50 text-error-600",
+  secondary: "bg-secondary-50 text-secondary-600 dark:bg-secondary-950 dark:text-secondary-300",
+  primary: "bg-primary-50 text-primary-600 dark:bg-primary-950 dark:text-primary-300",
+  success: "bg-success-50 text-success-600 dark:bg-success-950 dark:text-success-300",
+  warning: "bg-warning-50 text-warning-600 dark:bg-warning-950 dark:text-warning-300",
+  error: "bg-error-50 text-error-600 dark:bg-error-950 dark:text-error-300",
 };
 
 const valueTones: Record<NonNullable<MetricCardProps["valueTone"]>, string> = {
-  default: "text-neutral-900",
-  secondary: "text-secondary-600",
-  primary: "text-primary-600",
-  success: "text-success-600",
-  warning: "text-warning-500",
-  error: "text-error-600",
+  default: "text-neutral-900 dark:text-neutral-50",
+  secondary: "text-secondary-600 dark:text-secondary-400",
+  primary: "text-primary-600 dark:text-primary-400",
+  success: "text-success-600 dark:text-success-400",
+  warning: "text-warning-500 dark:text-warning-400",
+  error: "text-error-600 dark:text-error-400",
 };
 
 /**
@@ -50,12 +50,12 @@ export function MetricCard({
   return (
     <div
       className={cn(
-        "rounded-2xl border border-neutral-100 bg-white p-5",
+        "rounded-2xl border border-neutral-100 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900",
         className,
       )}
     >
       <div className="flex items-start justify-between gap-2">
-        <p className="text-xs font-semibold uppercase tracking-wider text-neutral-400">
+        <p className="text-xs font-semibold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
           {label}
         </p>
         {Icon && (
@@ -77,7 +77,11 @@ export function MetricCard({
       >
         {value}
       </p>
-      {sub && <div className="mt-1.5 text-xs text-neutral-500">{sub}</div>}
+      {sub && (
+        <div className="mt-1.5 text-xs text-neutral-500 dark:text-neutral-400">
+          {sub}
+        </div>
+      )}
     </div>
   );
 }
@@ -97,12 +101,18 @@ export function MetricTrend({
       <span
         className={cn(
           "font-semibold",
-          direction === "up" ? "text-success-600" : "text-error-600",
+          direction === "up"
+            ? "text-success-600 dark:text-success-400"
+            : "text-error-600 dark:text-error-400",
         )}
       >
         {direction === "up" ? "↑" : "↓"} {label}
       </span>
-      {suffix && <span className="text-neutral-400">{suffix}</span>}
+      {suffix && (
+        <span className="text-neutral-400 dark:text-neutral-500">
+          {suffix}
+        </span>
+      )}
     </span>
   );
 }

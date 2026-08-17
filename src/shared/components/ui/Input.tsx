@@ -36,7 +36,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
         {label && (
           <label
             htmlFor={inputId}
-            className="mb-2 block text-xs font-semibold uppercase tracking-wider text-neutral-500"
+            className="mb-2 block text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400"
           >
             {label} {required && <span className="text-error-500">*</span>}
           </label>
@@ -44,7 +44,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
 
         <div className="relative">
           {LeftIcon && (
-            <LeftIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
+            <LeftIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400 dark:text-neutral-500" />
           )}
 
           <input
@@ -53,10 +53,10 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             required={required}
             aria-invalid={Boolean(error)}
             className={cn(
-              "w-full rounded-lg border bg-neutral-50 px-4 py-2.5 text-sm text-neutral-900 placeholder:text-neutral-400 transition-colors duration-150 focus:outline-none focus:ring-2",
+              "w-full rounded-lg border bg-neutral-50 px-4 py-2.5 text-sm text-neutral-900 placeholder:text-neutral-400 transition-colors duration-150 focus:outline-none focus:ring-2 dark:bg-neutral-800 dark:text-neutral-100 dark:placeholder:text-neutral-500",
               error
-                ? "border-error-300 focus:border-error-500 focus:ring-error-500"
-                : "border-neutral-200 focus:border-transparent focus:ring-secondary-500",
+                ? "border-error-300 focus:border-error-500 focus:ring-error-500 dark:border-error-700"
+                : "border-neutral-200 focus:border-transparent focus:ring-secondary-500 dark:border-neutral-700",
               LeftIcon && "pl-9",
               RightIcon && "pr-9",
               className,
@@ -65,7 +65,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           />
 
           {RightIcon && (
-            <RightIcon className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
+            <RightIcon className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400 dark:text-neutral-500" />
           )}
         </div>
 
@@ -77,7 +77,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
               animate={{ opacity: 1, height: "auto", marginTop: 6 }}
               exit={{ opacity: 0, height: 0, marginTop: 0 }}
               transition={{ duration: 0.15, ease: "easeOut" }}
-              className="overflow-hidden text-xs text-error-600"
+              className="overflow-hidden text-xs text-error-600 dark:text-error-400"
             >
               {error}
             </motion.p>
@@ -88,7 +88,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
               animate={{ opacity: 1, height: "auto", marginTop: 6 }}
               exit={{ opacity: 0, height: 0, marginTop: 0 }}
               transition={{ duration: 0.15, ease: "easeOut" }}
-              className="overflow-hidden text-xs text-neutral-400"
+              className="overflow-hidden text-xs text-neutral-400 dark:text-neutral-500"
             >
               {hint}
             </motion.p>

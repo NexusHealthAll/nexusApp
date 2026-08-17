@@ -54,7 +54,7 @@ export function ShiftDetailScreen({
     return (
       <>
         <Header title="Shift Details" onBack={onBack} />
-        <main className="px-5 py-8 text-center text-sm text-neutral-500">{loadError}</main>
+        <main className="px-5 py-8 text-center text-sm text-neutral-500 dark:text-neutral-500">{loadError}</main>
       </>
     );
   }
@@ -63,7 +63,7 @@ export function ShiftDetailScreen({
     return (
       <>
         <Header title="Shift Details" onBack={onBack} />
-        <main className="px-5 py-8 text-center text-sm text-neutral-500">Loading...</main>
+        <main className="px-5 py-8 text-center text-sm text-neutral-500 dark:text-neutral-500">Loading...</main>
       </>
     );
   }
@@ -72,12 +72,12 @@ export function ShiftDetailScreen({
     <>
       <Header title="Shift Details" onBack={onBack} />
       <main className="space-y-4 px-5 py-4">
-        <section className="rounded-3xl bg-white p-4 shadow-sm">
-          <div className="h-28 rounded-2xl bg-gradient-to-br from-brand-50 to-brand-100" />
+        <section className="rounded-3xl bg-white p-4 shadow-sm dark:bg-neutral-900">
+          <div className="h-28 rounded-2xl bg-gradient-to-br from-brand-50 to-brand-100 dark:from-brand-950 dark:to-brand-900" />
           <div className="mt-4 flex items-start justify-between">
             <div>
               <h2 className="text-lg font-bold">{shift.hospital_name ?? "Hospital"}</h2>
-              <p className="text-xs text-neutral-500">{shift.department ?? shift.specialty ?? ""}</p>
+              <p className="text-xs text-neutral-500 dark:text-neutral-500">{shift.department ?? shift.specialty ?? ""}</p>
               <div className="mt-2 flex flex-wrap gap-2">
                 <StatusBadge>{shift.role_title}</StatusBadge>
                 {shift.priority === "stat" && <StatusBadge tone="red">STAT Need</StatusBadge>}
@@ -116,11 +116,11 @@ export function ShiftDetailScreen({
           <CardHeader className="p-4 pb-2">
             <CardTitle className="text-base">Shift Overview</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3 p-4 pt-0 text-sm text-neutral-600">
+          <CardContent className="space-y-3 p-4 pt-0 text-sm text-neutral-600 dark:text-neutral-400">
             <p>{shift.job_description || "No description provided for this shift."}</p>
             {shift.notes && (
-              <div className="rounded-xl bg-neutral-50 px-3 py-2 font-medium text-neutral-700">
-                <Check className="mr-2 inline h-4 w-4 text-success-600" />
+              <div className="rounded-xl bg-neutral-50 px-3 py-2 font-medium text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300">
+                <Check className="mr-2 inline h-4 w-4 text-success-600 dark:text-success-400" />
                 {shift.notes}
               </div>
             )}

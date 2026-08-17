@@ -46,8 +46,8 @@ export function PatientList() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-neutral-900">Patients</h1>
-          <p className="text-neutral-600">Manage patient records and information</p>
+          <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-50">Patients</h1>
+          <p className="text-neutral-600 dark:text-neutral-400">Manage patient records and information</p>
         </div>
         <Button>
           <Plus className="mr-2 h-4 w-4" />
@@ -61,11 +61,11 @@ export function PatientList() {
           <div className="flex items-center space-x-4">
             <div className="flex-1">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400 dark:text-neutral-500" />
                 <input
                   type="text"
                   placeholder="Search patients by name, email, or phone..."
-                  className="w-full rounded-lg border border-neutral-300 py-2 pl-10 pr-4 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                  className="w-full rounded-lg border border-neutral-300 py-2 pl-10 pr-4 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-50 dark:placeholder:text-neutral-500"
                 />
               </div>
             </div>
@@ -85,59 +85,59 @@ export function PatientList() {
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="border-b border-neutral-200 bg-neutral-50">
+              <thead className="border-b border-neutral-200 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-800">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500">
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
                     Patient
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500">
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
                     Contact
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500">
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
                     Age
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500">
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
                     Last Visit
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500">
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
                     Next Appointment
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500">
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
                     Actions
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-neutral-200">
+              <tbody className="divide-y divide-neutral-200 dark:divide-neutral-800">
                 {mockPatients.map((patient) => (
-                  <tr key={patient.id} className="hover:bg-neutral-50">
+                  <tr key={patient.id} className="hover:bg-neutral-50 dark:hover:bg-neutral-800">
                     <td className="px-6 py-4">
                       <div className="flex items-center">
-                        <div className="h-10 w-10 rounded-full bg-primary-100 flex items-center justify-center">
-                          <span className="text-sm font-medium text-primary-700">
+                        <div className="h-10 w-10 rounded-full bg-primary-100 dark:bg-primary-950 flex items-center justify-center">
+                          <span className="text-sm font-medium text-primary-700 dark:text-primary-300">
                             {patient.firstName[0]}{patient.lastName[0]}
                           </span>
                         </div>
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-neutral-900">
+                          <div className="text-sm font-medium text-neutral-900 dark:text-neutral-50">
                             {patient.firstName} {patient.lastName}
                           </div>
-                          <div className="text-sm text-neutral-500 capitalize">
+                          <div className="text-sm text-neutral-500 dark:text-neutral-400 capitalize">
                             {patient.gender}
                           </div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-sm text-neutral-900">{patient.email}</div>
-                      <div className="text-sm text-neutral-500">{patient.phone}</div>
+                      <div className="text-sm text-neutral-900 dark:text-neutral-50">{patient.email}</div>
+                      <div className="text-sm text-neutral-500 dark:text-neutral-400">{patient.phone}</div>
                     </td>
-                    <td className="px-6 py-4 text-sm text-neutral-900">
+                    <td className="px-6 py-4 text-sm text-neutral-900 dark:text-neutral-50">
                       {new Date().getFullYear() - new Date(patient.dateOfBirth).getFullYear()}
                     </td>
-                    <td className="px-6 py-4 text-sm text-neutral-900">
+                    <td className="px-6 py-4 text-sm text-neutral-900 dark:text-neutral-50">
                       {formatDate(patient.lastVisit)}
                     </td>
-                    <td className="px-6 py-4 text-sm text-neutral-900">
+                    <td className="px-6 py-4 text-sm text-neutral-900 dark:text-neutral-50">
                       {patient.upcomingAppointment
                         ? formatDate(patient.upcomingAppointment)
                         : 'None scheduled'

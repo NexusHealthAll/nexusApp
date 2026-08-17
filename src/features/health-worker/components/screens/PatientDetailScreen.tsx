@@ -17,13 +17,13 @@ export function PatientDetailScreen({
     <>
       <Header title="Patient Detail" onBack={onBack} />
       <main className="space-y-5 px-5 py-4">
-        <section className="flex items-center gap-3 rounded-2xl bg-white p-4 shadow-sm">
-          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-neutral-200">
-            <User className="h-7 w-7 text-neutral-500" />
+        <section className="flex items-center gap-3 rounded-2xl bg-white p-4 shadow-sm dark:bg-neutral-900">
+          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-neutral-200 dark:bg-neutral-800">
+            <User className="h-7 w-7 text-neutral-500 dark:text-neutral-500" />
           </div>
           <div>
             <h2 className="font-bold">{patient.name}</h2>
-            <p className="text-xs text-neutral-500">
+            <p className="text-xs text-neutral-500 dark:text-neutral-500">
               {patient.age}y • {patient.gender}
             </p>
           </div>
@@ -33,7 +33,7 @@ export function PatientDetailScreen({
           <CardHeader className="p-4 pb-2">
             <CardTitle className="text-base">Chief Complaint</CardTitle>
           </CardHeader>
-          <CardContent className="p-4 pt-0 text-sm text-neutral-600">
+          <CardContent className="p-4 pt-0 text-sm text-neutral-600 dark:text-neutral-400">
             {patient.chiefComplaint}
           </CardContent>
         </Card>
@@ -51,7 +51,7 @@ export function PatientDetailScreen({
           </div>
         </section>
 
-        <p className="rounded-xl bg-neutral-50 px-4 py-3 text-xs text-neutral-500">
+        <p className="rounded-xl bg-neutral-50 px-4 py-3 text-xs text-neutral-500 dark:bg-neutral-900 dark:text-neutral-500">
           No clinical history or medication records are available — this app doesn't have a patient
           records system connected yet. This detail reflects only what was entered at intake.
         </p>

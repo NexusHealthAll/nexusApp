@@ -5,8 +5,8 @@ interface DirectionalStepperProps {
 
 export function DirectionalStepper({ title, steps }: DirectionalStepperProps) {
   return (
-    <article className="rounded-3xl border border-neutral-200 bg-white p-6 shadow-soft sm:p-8">
-      <h3 className="text-2xl font-semibold text-onboarding-primaryBlue sm:text-3xl">
+    <article className="rounded-3xl border border-neutral-200 bg-white p-6 shadow-soft sm:p-8 dark:border-neutral-800 dark:bg-neutral-900">
+      <h3 className="text-2xl font-semibold text-onboarding-primaryBlue sm:text-3xl dark:text-[#5AA6D6]">
         {title}
       </h3>
 
@@ -22,10 +22,10 @@ export function DirectionalStepper({ title, steps }: DirectionalStepperProps) {
                 </div>
 
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-neutral-500">
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-neutral-500 dark:text-neutral-400">
                     Step {index + 1}
                   </p>
-                  <p className="mt-1 text-sm font-medium leading-7 text-neutral-800 sm:text-base">
+                  <p className="mt-1 text-sm font-medium leading-7 text-neutral-800 sm:text-base dark:text-neutral-200">
                     {step}
                   </p>
                 </div>

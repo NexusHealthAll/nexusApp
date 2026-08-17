@@ -72,12 +72,12 @@ export function DashboardOverview() {
       {/* Greeting header */}
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-sm text-neutral-400">{today}</p>
-          <h1 className="mt-1 text-2xl font-bold text-neutral-900 lg:text-3xl">
+          <p className="text-sm text-neutral-400 dark:text-neutral-500">{today}</p>
+          <h1 className="mt-1 text-2xl font-bold text-neutral-900 lg:text-3xl dark:text-neutral-50">
             {greetingForNow()}
             {adminFirstName ? `, ${adminFirstName}` : ""}
           </h1>
-          <p className="mt-1 text-sm text-neutral-500">
+          <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
             {profile?.name ?? ""}
             {stats
               ? ` • ${stats.needsAttentionToday} shift${
@@ -88,7 +88,7 @@ export function DashboardOverview() {
         </div>
         <button
           onClick={handleExportReport}
-          className="flex h-9 items-center gap-2 rounded-lg border border-neutral-200 bg-white px-3.5 text-sm font-semibold text-neutral-700 transition-colors hover:bg-neutral-50"
+          className="flex h-9 items-center gap-2 rounded-lg border border-neutral-200 bg-white px-3.5 text-sm font-semibold text-neutral-700 transition-colors hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800"
         >
           <Download className="h-4 w-4" />
           Export Report
@@ -123,7 +123,7 @@ export function DashboardOverview() {
             tone="warning"
             sub={
               stats.urgentOpenShifts > 0 ? (
-                <span className="font-semibold text-warning-600">
+                <span className="font-semibold text-warning-600 dark:text-warning-400">
                   {stats.urgentOpenShifts} urgent · needs review
                 </span>
               ) : (

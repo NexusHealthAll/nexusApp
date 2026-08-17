@@ -104,22 +104,22 @@ export function AITranscriberView({ patientId, onSaveNotes, onCompleteConsultati
   };
 
   return (
-    <div className="h-screen flex flex-col bg-neutral-50">
+    <div className="h-screen flex flex-col bg-neutral-50 dark:bg-neutral-950">
       {/* Header */}
-      <div className="bg-white border-b border-neutral-200 px-6 py-4">
+      <div className="bg-white border-b border-neutral-200 px-6 py-4 dark:bg-neutral-900 dark:border-neutral-800">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-semibold text-neutral-900">AI Transcriber/Translation</h1>
-            <p className="text-sm text-neutral-600">Patient #{patientId} • Live Session</p>
+            <h1 className="text-xl font-semibold text-neutral-900 dark:text-neutral-50">AI Transcriber/Translation</h1>
+            <p className="text-sm text-neutral-600 dark:text-neutral-400">Patient #{patientId} • Live Session</p>
           </div>
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2 text-sm">
-              <Languages className="h-4 w-4 text-primary-600" />
+              <Languages className="h-4 w-4 text-primary-600 dark:text-primary-400" />
               <span>{mockTranscriptionData.sourceLanguage} → {mockTranscriptionData.targetLanguage}</span>
             </div>
             <div className="text-right">
-              <p className="text-lg font-semibold text-neutral-900">{recordingDuration}</p>
-              <p className="text-xs text-neutral-500">Recording Time</p>
+              <p className="text-lg font-semibold text-neutral-900 dark:text-neutral-50">{recordingDuration}</p>
+              <p className="text-xs text-neutral-500 dark:text-neutral-500">Recording Time</p>
             </div>
           </div>
         </div>
@@ -204,22 +204,22 @@ export function AITranscriberView({ patientId, onSaveNotes, onCompleteConsultati
 
               {/* Translation History */}
               <div className="space-y-3 max-h-60 overflow-y-auto">
-                <h4 className="font-medium text-neutral-900">Translation History</h4>
+                <h4 className="font-medium text-neutral-900 dark:text-neutral-50">Translation History</h4>
                 {mockTranscriptionData.transcriptionHistory.map((item, index) => (
-                  <div key={index} className="grid grid-cols-2 gap-4 p-3 bg-neutral-50 rounded-lg">
+                  <div key={index} className="grid grid-cols-2 gap-4 p-3 bg-neutral-50 rounded-lg dark:bg-neutral-800">
                     <div>
-                      <div className="text-xs font-medium text-neutral-500 mb-1">
+                      <div className="text-xs font-medium text-neutral-500 mb-1 dark:text-neutral-500">
                         {item.timestamp} • Hausa
                       </div>
-                      <div className="text-sm text-neutral-900 font-medium">
+                      <div className="text-sm text-neutral-900 font-medium dark:text-neutral-50">
                         {item.hausa}
                       </div>
                     </div>
                     <div>
-                      <div className="text-xs font-medium text-neutral-500 mb-1">
+                      <div className="text-xs font-medium text-neutral-500 mb-1 dark:text-neutral-500">
                         English • {Math.round(item.confidence * 100)}% confidence
                       </div>
-                      <div className="text-sm text-neutral-900">
+                      <div className="text-sm text-neutral-900 dark:text-neutral-50">
                         {item.english}
                       </div>
                     </div>
@@ -233,7 +233,7 @@ export function AITranscriberView({ patientId, onSaveNotes, onCompleteConsultati
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
-                <FileText className="h-5 w-5 text-primary-600" />
+                <FileText className="h-5 w-5 text-primary-600 dark:text-primary-400" />
                 <span>Live Generated Note</span>
               </CardTitle>
             </CardHeader>
@@ -241,11 +241,11 @@ export function AITranscriberView({ patientId, onSaveNotes, onCompleteConsultati
               <div className="space-y-6">
                 {/* Chief Complaint */}
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-2">
+                  <label className="block text-sm font-medium text-neutral-700 mb-2 dark:text-neutral-400">
                     Chief Complaint
                   </label>
-                  <div className="p-3 bg-primary-50 border border-primary-200 rounded-lg">
-                    <p className="text-sm text-primary-900">
+                  <div className="p-3 bg-primary-50 border border-primary-200 rounded-lg dark:bg-primary-950 dark:border-primary-800">
+                    <p className="text-sm text-primary-900 dark:text-primary-300">
                       {mockTranscriptionData.generatedNotes.chiefComplaint}
                     </p>
                   </div>
@@ -253,11 +253,11 @@ export function AITranscriberView({ patientId, onSaveNotes, onCompleteConsultati
 
                 {/* Assessment */}
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-2">
+                  <label className="block text-sm font-medium text-neutral-700 mb-2 dark:text-neutral-400">
                     Assessment
                   </label>
-                  <div className="p-3 bg-secondary-50 border border-secondary-200 rounded-lg">
-                    <p className="text-sm text-secondary-900">
+                  <div className="p-3 bg-secondary-50 border border-secondary-200 rounded-lg dark:bg-secondary-950 dark:border-secondary-800">
+                    <p className="text-sm text-secondary-900 dark:text-secondary-300">
                       {mockTranscriptionData.generatedNotes.assessment}
                     </p>
                   </div>
@@ -265,18 +265,18 @@ export function AITranscriberView({ patientId, onSaveNotes, onCompleteConsultati
 
                 {/* Plan */}
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-2">
+                  <label className="block text-sm font-medium text-neutral-700 mb-2 dark:text-neutral-400">
                     Plan
                   </label>
-                  <div className="p-3 bg-success-50 border border-success-200 rounded-lg">
-                    <pre className="text-sm text-success-900 whitespace-pre-wrap font-sans">
+                  <div className="p-3 bg-success-50 border border-success-200 rounded-lg dark:bg-success-950 dark:border-success-800">
+                    <pre className="text-sm text-success-900 whitespace-pre-wrap font-sans dark:text-success-300">
                       {mockTranscriptionData.generatedNotes.plan}
                     </pre>
                   </div>
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex justify-end space-x-3 pt-4 border-t border-neutral-200">
+                <div className="flex justify-end space-x-3 pt-4 border-t border-neutral-200 dark:border-neutral-800">
                   <Button variant="outline" onClick={() => onSaveNotes(mockTranscriptionData.generatedNotes)}>
                     <Save className="h-4 w-4 mr-2" />
                     Save Notes
@@ -292,20 +292,20 @@ export function AITranscriberView({ patientId, onSaveNotes, onCompleteConsultati
         </div>
 
         {/* Patient Info Sidebar */}
-        <div className="w-80 bg-white border-l border-neutral-200 p-4">
-          <h3 className="font-semibold text-neutral-900 mb-4">Patient Information</h3>
+        <div className="w-80 bg-white border-l border-neutral-200 p-4 dark:bg-neutral-900 dark:border-neutral-800">
+          <h3 className="font-semibold text-neutral-900 mb-4 dark:text-neutral-50">Patient Information</h3>
           <div className="space-y-4">
-            <div className="p-3 bg-neutral-50 rounded-lg">
-              <p className="text-sm font-medium text-neutral-700">Patient ID</p>
-              <p className="text-lg font-semibold text-neutral-900">#{patientId}</p>
+            <div className="p-3 bg-neutral-50 rounded-lg dark:bg-neutral-800">
+              <p className="text-sm font-medium text-neutral-700 dark:text-neutral-400">Patient ID</p>
+              <p className="text-lg font-semibold text-neutral-900 dark:text-neutral-50">#{patientId}</p>
             </div>
-            <div className="p-3 bg-neutral-50 rounded-lg">
-              <p className="text-sm font-medium text-neutral-700">Session Duration</p>
-              <p className="text-lg font-semibold text-neutral-900">{recordingDuration}</p>
+            <div className="p-3 bg-neutral-50 rounded-lg dark:bg-neutral-800">
+              <p className="text-sm font-medium text-neutral-700 dark:text-neutral-400">Session Duration</p>
+              <p className="text-lg font-semibold text-neutral-900 dark:text-neutral-50">{recordingDuration}</p>
             </div>
-            <div className="p-3 bg-neutral-50 rounded-lg">
-              <p className="text-sm font-medium text-neutral-700">Language Detected</p>
-              <p className="text-lg font-semibold text-neutral-900">{mockTranscriptionData.sourceLanguage}</p>
+            <div className="p-3 bg-neutral-50 rounded-lg dark:bg-neutral-800">
+              <p className="text-sm font-medium text-neutral-700 dark:text-neutral-400">Language Detected</p>
+              <p className="text-lg font-semibold text-neutral-900 dark:text-neutral-50">{mockTranscriptionData.sourceLanguage}</p>
             </div>
           </div>
         </div>

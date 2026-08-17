@@ -28,17 +28,17 @@ export function LegalVerificationStep() {
   );
 
   return (
-    <div className="min-h-screen bg-[#F3FAFF]">
+    <div className="min-h-screen bg-[#F3FAFF] dark:bg-neutral-950">
       {/* Top Navigation */}
       <OnboardingNavbar />
 
       <div className="mx-auto max-w-4xl px-4 pb-8 pt-8">
-        <div className="rounded-2xl bg-white px-8 py-10 shadow-md">
+        <div className="rounded-2xl bg-white px-8 py-10 shadow-md dark:bg-neutral-900">
           {/* Title */}
-          <h1 className="mb-1 text-2xl font-bold text-onboarding-textPrimary">
+          <h1 className="mb-1 text-2xl font-bold text-onboarding-textPrimary dark:text-neutral-50">
             Legal Verification
           </h1>
-          <p className="mb-5 max-w-xl text-sm text-onboarding-textSecondary">
+          <p className="mb-5 max-w-xl text-sm text-onboarding-textSecondary dark:text-neutral-400">
             Please provide high-resolution copies of your institution's
             operational credentials. These documents are required for
             institutional accreditation on the LUTH platform.
@@ -49,13 +49,13 @@ export function LegalVerificationStep() {
           {/* Top row: Operational License + Compliance Check */}
           <div className="mb-4 grid gap-4 lg:grid-cols-2">
             {/* Operational License */}
-            <div className="rounded-xl border border-neutral-200 bg-white p-5">
+            <div className="rounded-xl border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
               <div className="mb-3 flex items-start justify-between">
                 <div>
-                  <h2 className="text-base font-semibold text-onboarding-textPrimary">
+                  <h2 className="text-base font-semibold text-onboarding-textPrimary dark:text-neutral-50">
                     Operational License
                   </h2>
-                  <p className="text-xs text-onboarding-textSecondary">
+                  <p className="text-xs text-onboarding-textSecondary dark:text-neutral-400">
                     Valid hospital registration from the Ministry of Health
                   </p>
                 </div>
@@ -92,20 +92,20 @@ export function LegalVerificationStep() {
                 onDrop={handleDrop}
                 className={`w-full cursor-pointer rounded-lg border border-dashed py-8 text-center transition-colors ${
                   isDragging
-                    ? "border-secondary-500 bg-secondary-50"
-                    : "border-neutral-300 bg-neutral-50 hover:border-secondary-400 hover:bg-secondary-50/40"
+                    ? "border-secondary-500 bg-secondary-50 dark:bg-secondary-950"
+                    : "border-neutral-300 bg-neutral-50 hover:border-secondary-400 hover:bg-secondary-50/40 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:bg-secondary-950/40"
                 }`}
               >
                 <UploadCloud
-                  className={`mx-auto mb-2 h-7 w-7 ${isDragging ? "text-secondary-500" : "text-secondary-600"}`}
+                  className={`mx-auto mb-2 h-7 w-7 ${isDragging ? "text-secondary-500" : "text-secondary-600 dark:text-secondary-400"}`}
                 />
-                <p className="text-sm font-semibold text-secondary-700">
+                <p className="text-sm font-semibold text-secondary-700 dark:text-secondary-300">
                   {operationalFile ??
                     (isDragging
                       ? "Drop file here"
                       : "Click to upload or drag and drop")}
                 </p>
-                <p className="text-xs text-neutral-500">
+                <p className="text-xs text-neutral-500 dark:text-neutral-400">
                   PDF, PNG, or JPG (Max 10MB)
                 </p>
               </div>
@@ -125,34 +125,34 @@ export function LegalVerificationStep() {
           {/* Bottom row: Medical Certificate + Tax Compliance */}
           <div className="mb-6 grid gap-4 lg:grid-cols-2">
             {/* Medical Certificate of Standards */}
-            <div className="rounded-xl border border-dashed border-neutral-300 p-5">
-              <h3 className="mb-0.5 text-sm font-semibold text-onboarding-textPrimary">
+            <div className="rounded-xl border border-dashed border-neutral-300 p-5 dark:border-neutral-700">
+              <h3 className="mb-0.5 text-sm font-semibold text-onboarding-textPrimary dark:text-neutral-50">
                 Medical Certificate of Standards
               </h3>
-              <p className="mb-4 text-xs text-onboarding-textSecondary">
+              <p className="mb-4 text-xs text-onboarding-textSecondary dark:text-neutral-400">
                 Certification of clinical quality and safety protocols
               </p>
-              <button className="flex items-center gap-2 text-sm font-semibold text-secondary-700 hover:text-secondary-900">
+              <button className="flex items-center gap-2 text-sm font-semibold text-secondary-700 hover:text-secondary-900 dark:text-secondary-300 dark:hover:text-secondary-100">
                 <FilePlus2 className="h-4 w-4" />
                 Add certification
               </button>
             </div>
 
             {/* Tax Compliance Certificate */}
-            <div className="rounded-xl border border-dashed border-neutral-300 p-5">
-              <h3 className="mb-0.5 text-sm font-semibold text-onboarding-textPrimary">
+            <div className="rounded-xl border border-dashed border-neutral-300 p-5 dark:border-neutral-700">
+              <h3 className="mb-0.5 text-sm font-semibold text-onboarding-textPrimary dark:text-neutral-50">
                 Tax Compliance Certificate
               </h3>
-              <p className="mb-4 text-xs text-onboarding-textSecondary">
+              <p className="mb-4 text-xs text-onboarding-textSecondary dark:text-neutral-400">
                 Proof of current tax status and commercial standing
               </p>
-              <div className="flex items-center gap-2 rounded-lg border border-secondary-100 bg-secondary-50 px-3 py-2">
-                <UploadCloud className="h-4 w-4 text-secondary-600" />
+              <div className="flex items-center gap-2 rounded-lg border border-secondary-100 bg-secondary-50 px-3 py-2 dark:border-secondary-900 dark:bg-secondary-950">
+                <UploadCloud className="h-4 w-4 text-secondary-600 dark:text-secondary-400" />
                 <div>
-                  <p className="text-sm font-semibold text-secondary-700">
+                  <p className="text-sm font-semibold text-secondary-700 dark:text-secondary-300">
                     Upload TCC Document
                   </p>
-                  <p className="text-[11px] text-onboarding-textSecondary">
+                  <p className="text-[11px] text-onboarding-textSecondary dark:text-neutral-400">
                     Must be valid for the current fiscal year
                   </p>
                 </div>
@@ -161,39 +161,39 @@ export function LegalVerificationStep() {
           </div>
 
           {/* Registration details row */}
-          <div className="mb-8 rounded-xl bg-onboarding-inputBackground p-5">
+          <div className="mb-8 rounded-xl bg-onboarding-inputBackground p-5 dark:bg-neutral-800">
             <div className="grid gap-4 sm:grid-cols-3">
               <div>
-                <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-neutral-500">
+                <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
                   Registration Number
                 </label>
                 <input
                   type="text"
                   value={regNumber}
                   onChange={(e) => setRegNumber(e.target.value)}
-                  className="w-full rounded-lg bg-white/70 px-3 py-2.5 text-sm text-neutral-800 outline-none placeholder:text-neutral-400"
+                  className="w-full rounded-lg bg-white/70 px-3 py-2.5 text-sm text-neutral-800 outline-none placeholder:text-neutral-400 dark:bg-neutral-900/70 dark:text-neutral-100"
                   placeholder="HOSP-XXXX-X"
                 />
               </div>
               <div>
-                <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-neutral-500">
+                <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
                   Expiry Date
                 </label>
                 <input
                   type="date"
                   value={expiryDate}
                   onChange={(e) => setExpiryDate(e.target.value)}
-                  className="w-full rounded-lg bg-white/70 px-3 py-2.5 text-sm text-neutral-800 outline-none"
+                  className="w-full rounded-lg bg-white/70 px-3 py-2.5 text-sm text-neutral-800 outline-none dark:bg-neutral-900/70 dark:text-neutral-100"
                 />
               </div>
               <div>
-                <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-neutral-500">
+                <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
                   Issuing Authority
                 </label>
                 <Select
                   value={issuingAuthority}
                   onChange={setIssuingAuthority}
-                  className="bg-white/70"
+                  className="bg-white/70 dark:bg-neutral-900/70"
                   options={[
                     { value: "Ministry of Health (Federal)", label: "Ministry of Health (Federal)" },
                     { value: "Ministry of Health (State)", label: "Ministry of Health (State)" },
@@ -209,7 +209,7 @@ export function LegalVerificationStep() {
           <div className="flex items-center justify-between">
             <button
               onClick={() => navigate(`${basePath}/onboarding/registration`)}
-              className="flex items-center gap-1.5 text-sm font-semibold text-neutral-600 hover:text-neutral-900"
+              className="flex items-center gap-1.5 text-sm font-semibold text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
             >
               <ArrowLeft className="h-4 w-4" />
               Back to Identity

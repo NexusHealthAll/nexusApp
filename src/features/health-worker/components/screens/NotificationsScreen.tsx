@@ -21,7 +21,9 @@ export function NotificationsScreen({ onBack }: { onBack: () => void }) {
               onClick={() => setFilter(f)}
               className={cn(
                 "rounded-full px-4 py-2 text-xs font-bold",
-                filter === f ? "bg-brand-700 text-white" : "bg-neutral-100 text-neutral-600",
+                filter === f
+                  ? "bg-brand-700 text-white"
+                  : "bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400",
               )}
             >
               {f}
@@ -30,7 +32,7 @@ export function NotificationsScreen({ onBack }: { onBack: () => void }) {
         </div>
 
         <EmptyState
-          className="bg-white"
+          className="bg-white dark:bg-neutral-900"
           icon={<BellOff className="h-10 w-10 text-brand-300" />}
           title="No notifications yet"
           description="This app doesn't have a notifications backend connected yet — shift offers, payment confirmations, and compliance alerts will show up here once it does."

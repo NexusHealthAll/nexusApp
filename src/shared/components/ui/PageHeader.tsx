@@ -29,28 +29,34 @@ export function PageHeader({
     <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
       <div className="min-w-0">
         {breadcrumbs && breadcrumbs.length > 0 && (
-          <nav className="mb-1 flex items-center gap-1.5 text-sm text-neutral-400">
+          <nav className="mb-1 flex items-center gap-1.5 text-sm text-neutral-400 dark:text-neutral-500">
             {breadcrumbs.map((crumb, index) => (
               <span key={index} className="flex items-center gap-1.5">
                 {index > 0 && <span>/</span>}
                 {crumb.href ? (
                   <Link
                     to={crumb.href}
-                    className="transition-colors hover:text-neutral-600"
+                    className="transition-colors hover:text-neutral-600 dark:hover:text-neutral-300"
                   >
                     {crumb.label}
                   </Link>
                 ) : (
-                  <span className="text-neutral-500">{crumb.label}</span>
+                  <span className="text-neutral-500 dark:text-neutral-400">
+                    {crumb.label}
+                  </span>
                 )}
               </span>
             ))}
           </nav>
         )}
-        <h1 className="truncate text-2xl font-bold text-neutral-900 lg:text-3xl">
+        <h1 className="truncate text-2xl font-bold text-neutral-900 lg:text-3xl dark:text-neutral-50">
           {title}
         </h1>
-        {subtitle && <p className="mt-1 text-sm text-neutral-500">{subtitle}</p>}
+        {subtitle && (
+          <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+            {subtitle}
+          </p>
+        )}
       </div>
       {actions && (
         <div className="flex flex-shrink-0 items-center gap-3">{actions}</div>

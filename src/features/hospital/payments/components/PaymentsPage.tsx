@@ -170,7 +170,7 @@ export function PaymentsPage() {
       )}
 
       {/* Transactions card */}
-      <div className="mt-6 rounded-2xl border border-neutral-100 bg-white p-5">
+      <div className="mt-6 rounded-2xl border border-neutral-100 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
         <UnderlineTabs<PaymentTab>
           options={[
             { label: "All Transactions", value: "all" },
@@ -193,7 +193,7 @@ export function PaymentsPage() {
             value={dateRange}
             onChange={setDateRange}
             containerClassName="w-40"
-            className="bg-white py-2"
+            className="bg-white py-2 dark:bg-neutral-800"
           />
           <Button
             variant="outline"
@@ -235,7 +235,7 @@ export function PaymentsPage() {
             <div className="overflow-x-auto">
               <table className="w-full min-w-[760px] text-sm">
                 <thead>
-                  <tr className="border-b border-neutral-100 text-left text-xs font-semibold uppercase tracking-wider text-neutral-400">
+                  <tr className="border-b border-neutral-100 text-left text-xs font-semibold uppercase tracking-wider text-neutral-400 dark:border-neutral-800 dark:text-neutral-500">
                     <th className="py-3 pr-4 font-semibold">Worker</th>
                     <th className="py-3 pr-4 font-semibold">Shift</th>
                     <th className="py-3 pr-4 font-semibold">Invoice #</th>
@@ -250,7 +250,7 @@ export function PaymentsPage() {
                     return (
                       <tr
                         key={t.id}
-                        className="border-b border-neutral-50 last:border-b-0"
+                        className="border-b border-neutral-50 last:border-b-0 dark:border-neutral-800"
                       >
                         <td className="py-4 pr-4">
                           <span className="flex items-center gap-2.5">
@@ -258,19 +258,19 @@ export function PaymentsPage() {
                               name={t.worker}
                               className="bg-primary-700 font-bold text-white"
                             />
-                            <span className="font-semibold text-neutral-900">
+                            <span className="font-semibold text-neutral-900 dark:text-neutral-50">
                               {t.worker}
                             </span>
                           </span>
                         </td>
-                        <td className="py-4 pr-4 text-neutral-600">{t.shift}</td>
-                        <td className="py-4 pr-4 text-neutral-500">
+                        <td className="py-4 pr-4 text-neutral-600 dark:text-neutral-400">{t.shift}</td>
+                        <td className="py-4 pr-4 text-neutral-500 dark:text-neutral-400">
                           {t.invoice}
                         </td>
-                        <td className="py-4 pr-4 text-neutral-600">
+                        <td className="py-4 pr-4 text-neutral-600 dark:text-neutral-400">
                           {t.dateLabel}
                         </td>
-                        <td className="py-4 pr-4 font-bold text-neutral-900">
+                        <td className="py-4 pr-4 font-bold text-neutral-900 dark:text-neutral-50">
                           {formatKobo(t.amountKobo)}
                         </td>
                         <td className="py-4 pr-4">
@@ -291,7 +291,7 @@ export function PaymentsPage() {
         </div>
 
         {overview !== null && filtered.length > 0 && (
-          <div className="mt-2 border-t border-neutral-100 pt-4">
+          <div className="mt-2 border-t border-neutral-100 pt-4 dark:border-neutral-800">
             <Pagination
               page={page}
               pageCount={pageCount}

@@ -109,11 +109,11 @@ export function HandoverView({ shiftData, onCompleteHandover, onCancelHandover }
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'critical': return 'bg-error-100 text-error-800 border-error-300';
-      case 'high': return 'bg-warning-100 text-warning-800 border-warning-300';
-      case 'medium': return 'bg-primary-100 text-primary-800 border-primary-300';
-      case 'low': return 'bg-success-100 text-success-800 border-success-300';
-      default: return 'bg-neutral-100 text-neutral-800 border-neutral-300';
+      case 'critical': return 'bg-error-100 text-error-800 border-error-300 dark:bg-error-950 dark:text-error-300 dark:border-error-800';
+      case 'high': return 'bg-warning-100 text-warning-800 border-warning-300 dark:bg-warning-950 dark:text-warning-300 dark:border-warning-800';
+      case 'medium': return 'bg-primary-100 text-primary-800 border-primary-300 dark:bg-primary-950 dark:text-primary-300 dark:border-primary-800';
+      case 'low': return 'bg-success-100 text-success-800 border-success-300 dark:bg-success-950 dark:text-success-300 dark:border-success-800';
+      default: return 'bg-neutral-100 text-neutral-800 border-neutral-300 dark:bg-neutral-800 dark:text-neutral-300 dark:border-neutral-700';
     }
   };
 
@@ -121,22 +121,22 @@ export function HandoverView({ shiftData, onCompleteHandover, onCancelHandover }
     // Simple vital sign assessment
     if (vital === 'heartRate') {
       const hr = value as number;
-      if (hr > 100 || hr < 60) return 'text-error-600';
-      return 'text-success-600';
+      if (hr > 100 || hr < 60) return 'text-error-600 dark:text-error-400';
+      return 'text-success-600 dark:text-success-400';
     }
     if (vital === 'temperature') {
       const temp = value as number;
-      if (temp > 38.5) return 'text-error-600';
-      if (temp > 37.5) return 'text-warning-600';
-      return 'text-success-600';
+      if (temp > 38.5) return 'text-error-600 dark:text-error-400';
+      if (temp > 37.5) return 'text-warning-600 dark:text-warning-400';
+      return 'text-success-600 dark:text-success-400';
     }
     if (vital === 'oxygenSaturation') {
       const spo2 = value as number;
-      if (spo2 < 95) return 'text-error-600';
-      if (spo2 < 98) return 'text-warning-600';
-      return 'text-success-600';
+      if (spo2 < 95) return 'text-error-600 dark:text-error-400';
+      if (spo2 < 98) return 'text-warning-600 dark:text-warning-400';
+      return 'text-success-600 dark:text-success-400';
     }
-    return 'text-neutral-600';
+    return 'text-neutral-600 dark:text-neutral-400';
   };
 
   const toggleTaskCompletion = (taskId: string) => {
@@ -148,13 +148,13 @@ export function HandoverView({ shiftData, onCompleteHandover, onCancelHandover }
   };
 
   return (
-    <div className="h-screen flex flex-col bg-neutral-50">
+    <div className="h-screen flex flex-col bg-neutral-50 dark:bg-neutral-950">
       {/* Header */}
-      <div className="bg-white border-b border-neutral-200 px-6 py-4">
+      <div className="bg-white border-b border-neutral-200 px-6 py-4 dark:bg-neutral-900 dark:border-neutral-800">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-semibold text-neutral-900">Complete Handover</h1>
-            <p className="text-sm text-neutral-600">
+            <h1 className="text-xl font-semibold text-neutral-900 dark:text-neutral-50">Complete Handover</h1>
+            <p className="text-sm text-neutral-600 dark:text-neutral-400">
               {shiftData.hospital} • {shiftData.department} • {shiftData.duration} shift
             </p>
           </div>
@@ -181,16 +181,16 @@ export function HandoverView({ shiftData, onCompleteHandover, onCancelHandover }
             <CardContent>
               <div className="grid grid-cols-3 gap-6">
                 <div className="text-center">
-                  <p className="text-3xl font-bold text-primary-600">{mockHandoverData.shiftSummary.totalPatients}</p>
-                  <p className="text-sm text-neutral-600">Total Patients</p>
+                  <p className="text-3xl font-bold text-primary-600 dark:text-primary-400">{mockHandoverData.shiftSummary.totalPatients}</p>
+                  <p className="text-sm text-neutral-600 dark:text-neutral-400">Total Patients</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-3xl font-bold text-error-600">{mockHandoverData.shiftSummary.criticalCases}</p>
-                  <p className="text-sm text-neutral-600">Critical Cases</p>
+                  <p className="text-3xl font-bold text-error-600 dark:text-error-400">{mockHandoverData.shiftSummary.criticalCases}</p>
+                  <p className="text-sm text-neutral-600 dark:text-neutral-400">Critical Cases</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-3xl font-bold text-success-600">{mockHandoverData.shiftSummary.discharges}</p>
-                  <p className="text-sm text-neutral-600">Discharges</p>
+                  <p className="text-3xl font-bold text-success-600 dark:text-success-400">{mockHandoverData.shiftSummary.discharges}</p>
+                  <p className="text-sm text-neutral-600 dark:text-neutral-400">Discharges</p>
                 </div>
               </div>
             </CardContent>
@@ -200,9 +200,9 @@ export function HandoverView({ shiftData, onCompleteHandover, onCancelHandover }
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
-                <AlertTriangle className="h-5 w-5 text-error-500" />
+                <AlertTriangle className="h-5 w-5 text-error-500 dark:text-error-400" />
                 <span>Critical Patients</span>
-                <span className="text-sm font-normal text-neutral-500">
+                <span className="text-sm font-normal text-neutral-500 dark:text-neutral-500">
                   ({mockHandoverData.criticalPatients.length} patients)
                 </span>
               </CardTitle>
@@ -214,75 +214,75 @@ export function HandoverView({ shiftData, onCompleteHandover, onCancelHandover }
                     key={patient.id}
                     className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
                       selectedPatient === patient.id
-                        ? 'border-primary-300 bg-primary-50'
-                        : 'border-neutral-200 hover:border-neutral-300'
+                        ? 'border-primary-300 bg-primary-50 dark:border-primary-700 dark:bg-primary-950'
+                        : 'border-neutral-200 hover:border-neutral-300 dark:border-neutral-800 dark:hover:border-neutral-700'
                     }`}
                     onClick={() => setSelectedPatient(patient.id)}
                   >
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center space-x-3">
-                        <div className="h-10 w-10 rounded-full bg-error-100 flex items-center justify-center">
-                          <User className="h-5 w-5 text-error-600" />
+                        <div className="h-10 w-10 rounded-full bg-error-100 flex items-center justify-center dark:bg-error-950">
+                          <User className="h-5 w-5 text-error-600 dark:text-error-400" />
                         </div>
                         <div>
-                          <h4 className="font-semibold text-neutral-900">
+                          <h4 className="font-semibold text-neutral-900 dark:text-neutral-50">
                             Patient {patient.id} • {patient.bedNumber}
                           </h4>
-                          <p className="text-sm text-neutral-600">{patient.condition}</p>
+                          <p className="text-sm text-neutral-600 dark:text-neutral-400">{patient.condition}</p>
                         </div>
                       </div>
                       <div className="flex items-center space-x-2">
                         <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getPriorityColor(patient.priority)}`}>
                           {patient.priority.toUpperCase()}
                         </span>
-                        <span className="text-xs text-neutral-500">{patient.lastUpdate}</span>
+                        <span className="text-xs text-neutral-500 dark:text-neutral-500">{patient.lastUpdate}</span>
                       </div>
                     </div>
 
                     {/* Vital Signs */}
                     <div className="grid grid-cols-4 gap-4 mb-3">
-                      <div className="text-center p-2 bg-neutral-50 rounded">
-                        <Heart className="h-4 w-4 mx-auto mb-1 text-error-500" />
+                      <div className="text-center p-2 bg-neutral-50 rounded dark:bg-neutral-800">
+                        <Heart className="h-4 w-4 mx-auto mb-1 text-error-500 dark:text-error-400" />
                         <p className={`text-sm font-semibold ${getVitalStatus('heartRate', patient.vitals.heartRate)}`}>
                           {patient.vitals.heartRate}
                         </p>
-                        <p className="text-xs text-neutral-500">HR</p>
+                        <p className="text-xs text-neutral-500 dark:text-neutral-500">HR</p>
                       </div>
-                      <div className="text-center p-2 bg-neutral-50 rounded">
-                        <Activity className="h-4 w-4 mx-auto mb-1 text-primary-500" />
-                        <p className="text-sm font-semibold text-neutral-900">
+                      <div className="text-center p-2 bg-neutral-50 rounded dark:bg-neutral-800">
+                        <Activity className="h-4 w-4 mx-auto mb-1 text-primary-500 dark:text-primary-400" />
+                        <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-50">
                           {patient.vitals.bloodPressure}
                         </p>
-                        <p className="text-xs text-neutral-500">BP</p>
+                        <p className="text-xs text-neutral-500 dark:text-neutral-500">BP</p>
                       </div>
-                      <div className="text-center p-2 bg-neutral-50 rounded">
-                        <Thermometer className="h-4 w-4 mx-auto mb-1 text-warning-500" />
+                      <div className="text-center p-2 bg-neutral-50 rounded dark:bg-neutral-800">
+                        <Thermometer className="h-4 w-4 mx-auto mb-1 text-warning-500 dark:text-warning-400" />
                         <p className={`text-sm font-semibold ${getVitalStatus('temperature', patient.vitals.temperature)}`}>
                           {patient.vitals.temperature}°C
                         </p>
-                        <p className="text-xs text-neutral-500">Temp</p>
+                        <p className="text-xs text-neutral-500 dark:text-neutral-500">Temp</p>
                       </div>
-                      <div className="text-center p-2 bg-neutral-50 rounded">
-                        <Activity className="h-4 w-4 mx-auto mb-1 text-secondary-500" />
+                      <div className="text-center p-2 bg-neutral-50 rounded dark:bg-neutral-800">
+                        <Activity className="h-4 w-4 mx-auto mb-1 text-secondary-500 dark:text-secondary-400" />
                         <p className={`text-sm font-semibold ${getVitalStatus('oxygenSaturation', patient.vitals.oxygenSaturation)}`}>
                           {patient.vitals.oxygenSaturation}%
                         </p>
-                        <p className="text-xs text-neutral-500">SpO2</p>
+                        <p className="text-xs text-neutral-500 dark:text-neutral-500">SpO2</p>
                       </div>
                     </div>
 
                     {/* Clinical Notes */}
-                    <div className="p-3 bg-warning-50 border border-warning-200 rounded mb-3">
-                      <p className="text-sm text-warning-900">{patient.notes}</p>
+                    <div className="p-3 bg-warning-50 border border-warning-200 rounded mb-3 dark:bg-warning-950 dark:border-warning-800">
+                      <p className="text-sm text-warning-900 dark:text-warning-300">{patient.notes}</p>
                     </div>
 
                     {/* Next Action */}
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-xs font-medium text-neutral-700">Next Action:</p>
-                        <p className="text-sm text-neutral-900">{patient.nextAction}</p>
+                        <p className="text-xs font-medium text-neutral-700 dark:text-neutral-400">Next Action:</p>
+                        <p className="text-sm text-neutral-900 dark:text-neutral-50">{patient.nextAction}</p>
                       </div>
-                      <ArrowRight className="h-4 w-4 text-neutral-400" />
+                      <ArrowRight className="h-4 w-4 text-neutral-400 dark:text-neutral-500" />
                     </div>
                   </div>
                 ))}
@@ -294,9 +294,9 @@ export function HandoverView({ shiftData, onCompleteHandover, onCancelHandover }
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
-                <Clock className="h-5 w-5 text-warning-500" />
+                <Clock className="h-5 w-5 text-warning-500 dark:text-warning-400" />
                 <span>Pending Tasks</span>
-                <span className="text-sm font-normal text-neutral-500">
+                <span className="text-sm font-normal text-neutral-500 dark:text-neutral-500">
                   ({mockHandoverData.pendingTasks.filter(t => !t.completed && !completedTasks.includes(t.id)).length} remaining)
                 </span>
               </CardTitle>
@@ -309,9 +309,9 @@ export function HandoverView({ shiftData, onCompleteHandover, onCancelHandover }
                     <div
                       key={task.id}
                       className={`p-4 rounded-lg border transition-all ${
-                        isCompleted 
-                          ? 'bg-success-50 border-success-200' 
-                          : 'bg-white border-neutral-200 hover:border-neutral-300'
+                        isCompleted
+                          ? 'bg-success-50 border-success-200 dark:bg-success-950 dark:border-success-800'
+                          : 'bg-white border-neutral-200 hover:border-neutral-300 dark:bg-neutral-900 dark:border-neutral-800 dark:hover:border-neutral-700'
                       }`}
                     >
                       <div className="flex items-center justify-between">
@@ -321,7 +321,7 @@ export function HandoverView({ shiftData, onCompleteHandover, onCancelHandover }
                             className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
                               isCompleted
                                 ? 'bg-success-600 border-success-600'
-                                : 'border-neutral-300 hover:border-neutral-400'
+                                : 'border-neutral-300 hover:border-neutral-400 dark:border-neutral-700 dark:hover:border-neutral-600'
                             }`}
                           >
                             {isCompleted && <CheckCircle className="h-3 w-3 text-white" />}
@@ -330,14 +330,14 @@ export function HandoverView({ shiftData, onCompleteHandover, onCancelHandover }
                             <h4 className={`font-medium ${isCompleted ? 'line-through' : ''}`}>
                               {task.task}
                             </h4>
-                            <p className="text-sm text-neutral-600">{task.description}</p>
+                            <p className="text-sm text-neutral-600 dark:text-neutral-400">{task.description}</p>
                           </div>
                         </div>
                         <div className="text-right">
                           <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getPriorityColor(task.priority)}`}>
                             {task.priority}
                           </span>
-                          <p className="text-xs text-neutral-500 mt-1">Due in {task.dueTime}</p>
+                          <p className="text-xs text-neutral-500 mt-1 dark:text-neutral-500">Due in {task.dueTime}</p>
                         </div>
                       </div>
                     </div>
@@ -349,31 +349,31 @@ export function HandoverView({ shiftData, onCompleteHandover, onCancelHandover }
         </div>
 
         {/* Handover Checklist Sidebar */}
-        <div className="w-80 bg-white border-l border-neutral-200 p-4">
-          <h3 className="font-semibold text-neutral-900 mb-4">Handover Checklist</h3>
+        <div className="w-80 bg-white border-l border-neutral-200 p-4 dark:bg-neutral-900 dark:border-neutral-800">
+          <h3 className="font-semibold text-neutral-900 mb-4 dark:text-neutral-50">Handover Checklist</h3>
           <div className="space-y-3">
             <div className="flex items-center space-x-2">
-              <CheckCircle className="h-4 w-4 text-success-600" />
+              <CheckCircle className="h-4 w-4 text-success-600 dark:text-success-400" />
               <span className="text-sm">All critical patients reviewed</span>
             </div>
             <div className="flex items-center space-x-2">
-              <CheckCircle className="h-4 w-4 text-success-600" />
+              <CheckCircle className="h-4 w-4 text-success-600 dark:text-success-400" />
               <span className="text-sm">Medication schedules updated</span>
             </div>
             <div className="flex items-center space-x-2">
-              <Clock className="h-4 w-4 text-warning-500" />
+              <Clock className="h-4 w-4 text-warning-500 dark:text-warning-400" />
               <span className="text-sm">Pending tasks documented</span>
             </div>
             <div className="flex items-center space-x-2">
-              <CheckCircle className="h-4 w-4 text-success-600" />
+              <CheckCircle className="h-4 w-4 text-success-600 dark:text-success-400" />
               <span className="text-sm">Equipment status checked</span>
             </div>
           </div>
 
-          <div className="mt-6 p-4 bg-primary-50 rounded-lg">
-            <h4 className="font-medium text-primary-900 mb-2">Shift Earnings</h4>
-            <p className="text-2xl font-bold text-primary-600">₦{(parseFloat(shiftData.duration) * 8000).toLocaleString()}</p>
-            <p className="text-sm text-primary-700">{shiftData.duration} hours @ ₦8,000/hr</p>
+          <div className="mt-6 p-4 bg-primary-50 rounded-lg dark:bg-primary-950">
+            <h4 className="font-medium text-primary-900 mb-2 dark:text-primary-300">Shift Earnings</h4>
+            <p className="text-2xl font-bold text-primary-600 dark:text-primary-400">₦{(parseFloat(shiftData.duration) * 8000).toLocaleString()}</p>
+            <p className="text-sm text-primary-700 dark:text-primary-400">{shiftData.duration} hours @ ₦8,000/hr</p>
           </div>
         </div>
       </div>

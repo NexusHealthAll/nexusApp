@@ -183,7 +183,7 @@ export function WaitlistJoinModalFlow() {
         "max-h-[calc(100dvh-2rem)] overflow-y-auto",
         modalStep === "role" ? "max-w-4xl" : "max-w-2xl",
         modalStep === "role"
-          ? "border-neutral-200 bg-white"
+          ? "border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900"
           : "border-white/45 bg-[linear-gradient(180deg,_rgba(236,241,246,0.95)_0%,_rgba(169,196,208,0.82)_54%,_rgba(48,100,144,0.72)_100%)] backdrop-blur-xl",
       )}
     >
@@ -202,7 +202,7 @@ export function WaitlistJoinModalFlow() {
                   "group relative overflow-hidden rounded-2xl border text-left shadow-strong transition-all",
                   isSelected
                     ? "border-3 shadow-2xl drop-shadow-2xl"
-                    : "border-neutral-200 hover:border-secondary-300",
+                    : "border-neutral-200 hover:border-secondary-300 dark:border-neutral-800",
                 )}
               >
                 <img

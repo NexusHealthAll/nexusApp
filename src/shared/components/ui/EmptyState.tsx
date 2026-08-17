@@ -12,15 +12,29 @@ interface EmptyStateProps {
   className?: string;
 }
 
-const defaultIcon = <Inbox className="h-10 w-10 text-neutral-300" />;
+const defaultIcon = (
+  <Inbox className="h-10 w-10 text-neutral-300 dark:text-neutral-600" />
+);
 
 type EmptyStateTone = "secondary" | "primary" | "warning" | "neutral";
 
 const iconTones: Record<EmptyStateTone, { bubble: string; icon: string }> = {
-  secondary: { bubble: "bg-secondary-50", icon: "text-secondary-500" },
-  primary: { bubble: "bg-primary-50", icon: "text-primary-500" },
-  warning: { bubble: "bg-warning-50", icon: "text-warning-500" },
-  neutral: { bubble: "bg-neutral-100", icon: "text-neutral-400" },
+  secondary: {
+    bubble: "bg-secondary-50 dark:bg-secondary-950",
+    icon: "text-secondary-500 dark:text-secondary-400",
+  },
+  primary: {
+    bubble: "bg-primary-50 dark:bg-primary-950",
+    icon: "text-primary-500 dark:text-primary-400",
+  },
+  warning: {
+    bubble: "bg-warning-50 dark:bg-warning-950",
+    icon: "text-warning-500 dark:text-warning-400",
+  },
+  neutral: {
+    bubble: "bg-neutral-100 dark:bg-neutral-800",
+    icon: "text-neutral-400 dark:text-neutral-500",
+  },
 };
 
 /**
@@ -63,14 +77,18 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        "flex min-h-[200px] flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-neutral-200 px-6 py-10 text-center",
+        "flex min-h-[200px] flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-neutral-200 px-6 py-10 text-center dark:border-neutral-700",
         className,
       )}
     >
       {icon}
-      <p className="text-sm font-semibold text-neutral-800">{title}</p>
+      <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-100">
+        {title}
+      </p>
       {description && (
-        <p className="max-w-[260px] text-xs text-neutral-400">{description}</p>
+        <p className="max-w-[260px] text-xs text-neutral-400 dark:text-neutral-500">
+          {description}
+        </p>
       )}
       {action}
     </div>

@@ -40,7 +40,7 @@ export function HospitalRegistrationStep() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F3FAFF]">
+    <div className="min-h-screen bg-[#F3FAFF] dark:bg-neutral-950">
       {/* Top Navigation */}
       <OnboardingNavbar />
 
@@ -50,11 +50,11 @@ export function HospitalRegistrationStep() {
 
       {/* Main Card */}
       <div className="mx-auto max-w-2xl px-4 pb-8">
-        <div className="rounded-2xl bg-white p-7 shadow-md py-10">
-          <h1 className="mb-1 text-2xl font-bold text-onboarding-textPrimary">
+        <div className="rounded-2xl bg-white p-7 shadow-md py-10 dark:bg-neutral-900">
+          <h1 className="mb-1 text-2xl font-bold text-onboarding-textPrimary dark:text-neutral-50">
             Hospital Registration
           </h1>
-          <p className="mb-6 text-sm text-onboarding-textSecondary">
+          <p className="mb-6 text-sm text-onboarding-textSecondary dark:text-neutral-400">
             Please verify and complete your institutional credentials to
             continue with staffing excellence.
           </p>
@@ -62,16 +62,16 @@ export function HospitalRegistrationStep() {
           <div className="space-y-5">
             {/* Hospital Name */}
             <div>
-              <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-neutral-500">
+              <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
                 Hospital Name
               </label>
-              <div className="flex items-center gap-2.5 rounded-lg bg-onboarding-inputBackground px-3 py-2.5">
+              <div className="flex items-center gap-2.5 rounded-lg bg-onboarding-inputBackground px-3 py-2.5 dark:bg-neutral-800">
                 <SquarePlus className="h-4 w-4 flex-shrink-0 text-secondary-600" />
                 <input
                   type="text"
                   value={form.hospitalName}
                   onChange={(e) => handleChange("hospitalName", e.target.value)}
-                  className="flex-1 bg-transparent text-sm text-neutral-800 outline-none placeholder:text-neutral-400"
+                  className="flex-1 bg-transparent text-sm text-neutral-800 outline-none placeholder:text-neutral-400 dark:text-neutral-100"
                   placeholder="Enter hospital name"
                 />
               </div>
@@ -80,10 +80,10 @@ export function HospitalRegistrationStep() {
             {/* Registration Number + Email */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-neutral-500">
+                <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
                   Registration Number
                 </label>
-                <div className="flex items-center gap-2 rounded-lg bg-onboarding-inputBackground px-3 py-2.5">
+                <div className="flex items-center gap-2 rounded-lg bg-onboarding-inputBackground px-3 py-2.5 dark:bg-neutral-800">
                   <FileText className="h-4 w-4 flex-shrink-0 text-secondary-600" />
                   <input
                     type="text"
@@ -91,22 +91,22 @@ export function HospitalRegistrationStep() {
                     onChange={(e) =>
                       handleChange("registrationNumber", e.target.value)
                     }
-                    className="min-w-0 flex-1 bg-transparent text-sm text-neutral-800 outline-none"
+                    className="min-w-0 flex-1 bg-transparent text-sm text-neutral-800 outline-none dark:text-neutral-100"
                     placeholder="RC-XXXXXXX"
                   />
                 </div>
               </div>
               <div>
-                <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-neutral-500">
+                <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
                   Email
                 </label>
-                <div className="flex items-center gap-2 rounded-lg bg-onboarding-inputBackground px-3 py-2.5">
+                <div className="flex items-center gap-2 rounded-lg bg-onboarding-inputBackground px-3 py-2.5 dark:bg-neutral-800">
                   <Mail className="h-4 w-4 flex-shrink-0 text-secondary-600" />
                   <input
                     type="email"
                     value={form.email}
                     onChange={(e) => handleChange("email", e.target.value)}
-                    className="min-w-0 flex-1 bg-transparent text-sm text-neutral-800 outline-none"
+                    className="min-w-0 flex-1 bg-transparent text-sm text-neutral-800 outline-none dark:text-neutral-100"
                     placeholder="admin@hospital.org"
                   />
                 </div>
@@ -115,16 +115,16 @@ export function HospitalRegistrationStep() {
 
             {/* Address */}
             <div>
-              <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-neutral-500">
+              <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
                 Address
               </label>
-              <div className="flex items-center gap-2.5 rounded-lg bg-onboarding-inputBackground px-3 py-2.5">
+              <div className="flex items-center gap-2.5 rounded-lg bg-onboarding-inputBackground px-3 py-2.5 dark:bg-neutral-800">
                 <MapPin className="h-4 w-4 flex-shrink-0 text-secondary-600" />
                 <input
                   type="text"
                   value={form.address}
                   onChange={(e) => handleChange("address", e.target.value)}
-                  className="flex-1 bg-transparent text-sm text-neutral-800 outline-none"
+                  className="flex-1 bg-transparent text-sm text-neutral-800 outline-none dark:text-neutral-100"
                   placeholder="Street, City, State"
                 />
               </div>
@@ -132,16 +132,16 @@ export function HospitalRegistrationStep() {
 
             {/* Phone Number */}
             <div>
-              <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-neutral-500">
+              <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
                 Phone Number
               </label>
-              <div className="flex items-center gap-2.5 rounded-lg bg-onboarding-inputBackground px-3 py-2.5">
+              <div className="flex items-center gap-2.5 rounded-lg bg-onboarding-inputBackground px-3 py-2.5 dark:bg-neutral-800">
                 <Phone className="h-4 w-4 flex-shrink-0 text-secondary-600" />
                 <input
                   type="tel"
                   value={form.phoneNumber}
                   onChange={(e) => handleChange("phoneNumber", e.target.value)}
-                  className="flex-1 bg-transparent text-sm text-neutral-800 outline-none"
+                  className="flex-1 bg-transparent text-sm text-neutral-800 outline-none dark:text-neutral-100"
                   placeholder="+234 XXX XXX XXXX"
                 />
               </div>
@@ -156,7 +156,7 @@ export function HospitalRegistrationStep() {
           >
             Continue
           </Button>
-          <p className="mt-3 text-center text-[11px] text-onboarding-textSecondary">
+          <p className="mt-3 text-center text-[11px] text-onboarding-textSecondary dark:text-neutral-400">
             Information provided here will be subject to verification against
             the CAC register.
           </p>
@@ -185,13 +185,13 @@ export function HospitalRegistrationStep() {
           ).map(({ icon: Icon, title, desc }) => (
             <div
               key={title}
-              className="flex flex-col gap-2 rounded-xl bg-onboarding-fadedGreen/80 p-4 shadow-sm"
+              className="flex flex-col gap-2 rounded-xl bg-onboarding-fadedGreen/80 p-4 shadow-sm dark:bg-neutral-900"
             >
-              <Icon className="mb-2 h-5 w-5 text-secondary-600" />
-              <p className="mb-1 text-sm font-semibold text-onboarding-textPrimary">
+              <Icon className="mb-2 h-5 w-5 text-secondary-600 dark:text-secondary-400" />
+              <p className="mb-1 text-sm font-semibold text-onboarding-textPrimary dark:text-neutral-50">
                 {title}
               </p>
-              <p className="text-[11px] text-onboarding-textSecondary">
+              <p className="text-[11px] text-onboarding-textSecondary dark:text-neutral-400">
                 {desc}
               </p>
             </div>
@@ -200,18 +200,18 @@ export function HospitalRegistrationStep() {
 
         {/* Footer */}
         <div className="mt-8 space-y-2 text-center">
-          <div className="flex justify-center gap-4 text-[11px] uppercase tracking-wider text-neutral-400">
-            <a href="#" className="hover:text-neutral-600">
+          <div className="flex justify-center gap-4 text-[11px] uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+            <a href="#" className="hover:text-neutral-600 dark:hover:text-neutral-300">
               Privacy Policy
             </a>
-            <a href="#" className="hover:text-neutral-600">
+            <a href="#" className="hover:text-neutral-600 dark:hover:text-neutral-300">
               Terms of Service
             </a>
-            <a href="#" className="hover:text-neutral-600">
+            <a href="#" className="hover:text-neutral-600 dark:hover:text-neutral-300">
               Help Center
             </a>
           </div>
-          <p className="text-[11px] uppercase tracking-wider text-neutral-400">
+          <p className="text-[11px] uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
             © 2024 Lagos University Teaching Hospital. Editorial Excellence in
             Clinical Staffing.
           </p>

@@ -16,8 +16,8 @@ export function ConsultationWrapper() {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="text-center">
-          <h2 className="text-xl font-semibold text-neutral-900 mb-2">Invalid Consultation</h2>
-          <p className="text-neutral-600 mb-4">Missing appointment or patient information.</p>
+          <h2 className="text-xl font-semibold text-neutral-900 dark:text-neutral-50 mb-2">Invalid Consultation</h2>
+          <p className="text-neutral-600 dark:text-neutral-400 mb-4">Missing appointment or patient information.</p>
           <button
             onClick={handleClose}
             className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"

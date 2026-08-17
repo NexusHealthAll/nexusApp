@@ -22,7 +22,7 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
         {label && (
           <label
             htmlFor={textareaId}
-            className="mb-2 block text-xs font-semibold uppercase tracking-wider text-neutral-500"
+            className="mb-2 block text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400"
           >
             {label} {required && <span className="text-error-500">*</span>}
           </label>
@@ -35,10 +35,10 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           rows={rows}
           aria-invalid={Boolean(error)}
           className={cn(
-            "w-full resize-y rounded-lg border bg-neutral-50 px-4 py-2.5 text-sm text-neutral-900 placeholder:text-neutral-400 transition-colors duration-150 focus:outline-none focus:ring-2",
+            "w-full resize-y rounded-lg border bg-neutral-50 px-4 py-2.5 text-sm text-neutral-900 placeholder:text-neutral-400 transition-colors duration-150 focus:outline-none focus:ring-2 dark:bg-neutral-800 dark:text-neutral-100 dark:placeholder:text-neutral-500",
             error
-              ? "border-error-300 focus:border-error-500 focus:ring-error-500"
-              : "border-neutral-200 focus:border-transparent focus:ring-secondary-500",
+              ? "border-error-300 focus:border-error-500 focus:ring-error-500 dark:border-error-700"
+              : "border-neutral-200 focus:border-transparent focus:ring-secondary-500 dark:border-neutral-700",
             className,
           )}
           {...props}
@@ -52,7 +52,7 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
               animate={{ opacity: 1, height: "auto", marginTop: 6 }}
               exit={{ opacity: 0, height: 0, marginTop: 0 }}
               transition={{ duration: 0.15, ease: "easeOut" }}
-              className="overflow-hidden text-xs text-error-600"
+              className="overflow-hidden text-xs text-error-600 dark:text-error-400"
             >
               {error}
             </motion.p>
@@ -63,7 +63,7 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
               animate={{ opacity: 1, height: "auto", marginTop: 6 }}
               exit={{ opacity: 0, height: 0, marginTop: 0 }}
               transition={{ duration: 0.15, ease: "easeOut" }}
-              className="overflow-hidden text-xs text-neutral-400"
+              className="overflow-hidden text-xs text-neutral-400 dark:text-neutral-500"
             >
               {hint}
             </motion.p>

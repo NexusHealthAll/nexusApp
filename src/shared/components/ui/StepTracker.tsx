@@ -17,7 +17,9 @@ export function StepTracker({ activeIndex }: StepTrackerProps) {
           <div key={idx} className="flex-1">
             <div
               className={`h-1 w-full rounded-full ${
-                idx <= activeIndex ? "bg-secondary-600" : "bg-neutral-200"
+                idx <= activeIndex
+                  ? "bg-secondary-600"
+                  : "bg-neutral-200 dark:bg-neutral-700"
               }`}
             />
           </div>
@@ -29,10 +31,10 @@ export function StepTracker({ activeIndex }: StepTrackerProps) {
             <span
               className={`text-[10px] font-semibold tracking-wider ${
                 idx === activeIndex
-                  ? "text-secondary-700"
+                  ? "text-secondary-700 dark:text-secondary-400"
                   : idx < activeIndex
-                    ? "text-neutral-500"
-                    : "text-neutral-300"
+                    ? "text-neutral-500 dark:text-neutral-400"
+                    : "text-neutral-300 dark:text-neutral-600"
               }`}
             >
               {step}

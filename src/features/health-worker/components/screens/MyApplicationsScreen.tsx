@@ -64,21 +64,21 @@ export function MyApplicationsScreen({
     <>
       <Header title="My Applications" subtitle="Pending placements" onBack={onBack} />
       <main className="space-y-4 px-5 py-4">
-        <p className="text-sm text-neutral-500">
+        <p className="text-sm text-neutral-500 dark:text-neutral-500">
           Review your submitted interest and applications. Hospitals usually respond within 24
           hours. "Respond to Offer" only works once a hospital has actually sent one for that
           shift — otherwise it'll tell you there's nothing pending yet.
         </p>
 
         {loadError && (
-          <p className="rounded-xl bg-error-50 px-4 py-3 text-sm text-error-700">{loadError}</p>
+          <p className="rounded-xl bg-error-50 px-4 py-3 text-sm text-error-700 dark:bg-error-950 dark:text-error-300">{loadError}</p>
         )}
 
-        {isLoading && <p className="text-sm text-neutral-500">Loading...</p>}
+        {isLoading && <p className="text-sm text-neutral-500 dark:text-neutral-500">Loading...</p>}
 
         {!isLoading && !loadError && entries.length === 0 && (
           <EmptyState
-            className="bg-white"
+            className="bg-white dark:bg-neutral-900"
             icon={<ClipboardList className="h-10 w-10 text-brand-300" />}
             title="No applications yet"
             description="Browse the marketplace to express interest in a shift."
@@ -91,7 +91,7 @@ export function MyApplicationsScreen({
               <CardContent className="space-y-3 p-4">
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="text-[10px] font-bold uppercase text-neutral-400">
+                    <p className="text-[10px] font-bold uppercase text-neutral-400 dark:text-neutral-500">
                       {entry.kind === "interest" ? "Interest" : "Application"}
                     </p>
                     <h3 className="font-bold">{entry.role_title}</h3>
@@ -100,7 +100,7 @@ export function MyApplicationsScreen({
                     {statusLabel(entry)}
                   </StatusBadge>
                 </div>
-                <p className="text-xs text-neutral-500">
+                <p className="text-xs text-neutral-500 dark:text-neutral-500">
                   {new Date(entry.scheduled_start).toLocaleString("en-NG", {
                     month: "short",
                     day: "numeric",
@@ -113,7 +113,7 @@ export function MyApplicationsScreen({
                     <Button
                       type="button"
                       variant="outline"
-                      className="border-error-200 text-error-600 hover:bg-error-50"
+                      className="border-error-200 text-error-600 hover:bg-error-50 dark:border-error-800 dark:text-error-400 dark:hover:bg-error-950"
                       isLoading={withdrawingId === entry.shift_id}
                       disabled={
                         withdrawingId === entry.shift_id ||
@@ -132,7 +132,7 @@ export function MyApplicationsScreen({
                     </Button>
                   </div>
                 ) : (
-                  <p className="text-xs text-neutral-400">
+                  <p className="text-xs text-neutral-400 dark:text-neutral-500">
                     Formal applications can't be withdrawn yet — contact the hospital directly if
                     needed.
                   </p>

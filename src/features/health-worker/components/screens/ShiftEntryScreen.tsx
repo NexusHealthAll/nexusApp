@@ -133,15 +133,15 @@ export function ShiftEntryScreen({
       <main className="space-y-5 px-5 py-4">
         <Card>
           <CardContent className="p-5">
-            <p className="text-xs font-bold uppercase text-neutral-500">Current Facility</p>
+            <p className="text-xs font-bold uppercase text-neutral-500 dark:text-neutral-500">Current Facility</p>
             <h2 className="mt-2 text-xl font-bold">{shift.hospital_name ?? "Hospital"}</h2>
             <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
               <p>
-                <span className="block text-xs text-neutral-500">Role</span>
+                <span className="block text-xs text-neutral-500 dark:text-neutral-500">Role</span>
                 {shift.role_title}
               </p>
               <p>
-                <span className="block text-xs text-neutral-500">Type</span>
+                <span className="block text-xs text-neutral-500 dark:text-neutral-500">Type</span>
                 {shift.shift_type === "virtual" ? "Virtual" : "In-person"}
               </p>
             </div>
@@ -151,9 +151,9 @@ export function ShiftEntryScreen({
         {stage === "out-of-range" && (
           <Card>
             <CardContent className="space-y-3 p-5 text-center">
-              <MapPin className="mx-auto h-8 w-8 text-error-600" />
+              <MapPin className="mx-auto h-8 w-8 text-error-600 dark:text-error-400" />
               <h3 className="font-bold">Outside geofence range</h3>
-              <p className="text-xs text-neutral-500">
+              <p className="text-xs text-neutral-500 dark:text-neutral-500">
                 We couldn't confirm you're on-site. Submit a photo of the entrance for hospital
                 review instead.
               </p>
@@ -183,7 +183,7 @@ export function ShiftEntryScreen({
           <Card>
             <CardContent className="space-y-2 p-5 text-center">
               <h3 className="font-bold">Submitted for review</h3>
-              <p className="text-xs text-neutral-500">
+              <p className="text-xs text-neutral-500 dark:text-neutral-500">
                 The hospital needs to approve this before you can clock in manually. Check back
                 shortly.
               </p>
@@ -201,7 +201,7 @@ export function ShiftEntryScreen({
         )}
 
         {error && (
-          <p className="rounded-xl bg-error-50 px-4 py-3 text-center text-sm text-error-700">
+          <p className="rounded-xl bg-error-50 px-4 py-3 text-center text-sm text-error-700 dark:bg-error-950 dark:text-error-300">
             {error}
           </p>
         )}
