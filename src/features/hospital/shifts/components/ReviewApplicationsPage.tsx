@@ -116,12 +116,12 @@ export function ReviewApplicationsPage() {
   };
 
   return (
-    <div className="fixed inset-0 z-40 flex flex-col overflow-y-auto bg-neutral-50">
+    <div className="fixed inset-0 z-40 flex flex-col overflow-y-auto bg-neutral-50 dark:bg-neutral-950">
       {/* Top bar */}
-      <div className="sticky top-0 z-10 flex h-14 flex-shrink-0 items-center justify-between border-b border-neutral-200 bg-white px-4 lg:px-6">
+      <div className="sticky top-0 z-10 flex h-14 flex-shrink-0 items-center justify-between border-b border-neutral-200 bg-white px-4 lg:px-6 dark:border-neutral-800 dark:bg-neutral-900">
         <button
           onClick={backToShift}
-          className="flex items-center gap-2 text-sm font-semibold text-neutral-800 transition-colors hover:text-neutral-900"
+          className="flex items-center gap-2 text-sm font-semibold text-neutral-800 transition-colors hover:text-neutral-900 dark:text-neutral-200 dark:hover:text-neutral-50"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to Shift
@@ -129,14 +129,14 @@ export function ReviewApplicationsPage() {
 
         {applications.length > 0 && (
           <div className="flex items-center gap-3">
-            <span className="text-sm text-neutral-500">
+            <span className="text-sm text-neutral-500 dark:text-neutral-400">
               Applicant {Math.min(index + 1, applications.length)} of{" "}
               {applications.length}
             </span>
             <button
               onClick={() => setIndex((i) => Math.max(0, i - 1))}
               disabled={index === 0}
-              className="flex h-8 items-center gap-1 rounded-lg border border-neutral-200 px-3 text-sm font-semibold text-neutral-700 transition-colors hover:bg-neutral-50 disabled:opacity-40"
+              className="flex h-8 items-center gap-1 rounded-lg border border-neutral-200 px-3 text-sm font-semibold text-neutral-700 transition-colors hover:bg-neutral-50 disabled:opacity-40 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
             >
               <ChevronLeft className="h-4 w-4" />
               Prev
@@ -146,7 +146,7 @@ export function ReviewApplicationsPage() {
                 setIndex((i) => Math.min(applications.length - 1, i + 1))
               }
               disabled={index >= applications.length - 1}
-              className="flex h-8 items-center gap-1 rounded-lg border border-neutral-200 px-3 text-sm font-semibold text-neutral-700 transition-colors hover:bg-neutral-50 disabled:opacity-40"
+              className="flex h-8 items-center gap-1 rounded-lg border border-neutral-200 px-3 text-sm font-semibold text-neutral-700 transition-colors hover:bg-neutral-50 disabled:opacity-40 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
             >
               Next
               <ChevronRight className="h-4 w-4" />
@@ -167,7 +167,7 @@ export function ReviewApplicationsPage() {
             action={
               <button
                 onClick={backToShift}
-                className="mt-2 rounded-lg border border-neutral-200 bg-white px-4 py-2 text-xs font-semibold text-neutral-700 transition-colors hover:bg-neutral-50"
+                className="mt-2 rounded-lg border border-neutral-200 bg-white px-4 py-2 text-xs font-semibold text-neutral-700 transition-colors hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800"
               >
                 Back to Shift
               </button>
@@ -175,7 +175,7 @@ export function ReviewApplicationsPage() {
           />
         ) : (
           <>
-            <div className="rounded-2xl border border-neutral-100 bg-white p-6 shadow-soft">
+            <div className="rounded-2xl border border-neutral-100 bg-white p-6 shadow-soft dark:border-neutral-800 dark:bg-neutral-900">
               {/* Identity */}
               <div className="flex items-start gap-4">
                 <AvatarInitials
@@ -183,10 +183,10 @@ export function ReviewApplicationsPage() {
                   className="h-14 w-14 bg-secondary-600 text-lg font-bold text-white"
                 />
                 <div className="min-w-0 flex-1">
-                  <h1 className="text-xl font-bold text-neutral-900">
+                  <h1 className="text-xl font-bold text-neutral-900 dark:text-neutral-50">
                     {current.applicant_name}
                   </h1>
-                  <p className="mt-0.5 text-sm text-neutral-500">
+                  <p className="mt-0.5 text-sm text-neutral-500 dark:text-neutral-400">
                     {current.role} • {current.years_experience} yrs experience
                   </p>
                 </div>
@@ -202,13 +202,13 @@ export function ReviewApplicationsPage() {
               </div>
 
               {/* Stats strip */}
-              <div className="mt-6 grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-neutral-100 bg-neutral-100 sm:grid-cols-4">
+              <div className="mt-6 grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-neutral-100 bg-neutral-100 sm:grid-cols-4 dark:border-neutral-800 dark:bg-neutral-800">
                 {[
                   {
                     label: "Rating",
                     value: rankedInfo ? (
                       <span className="flex items-center gap-1">
-                        <Star className="h-3.5 w-3.5 fill-neutral-900 text-neutral-900" />
+                        <Star className="h-3.5 w-3.5 fill-neutral-900 text-neutral-900 dark:fill-neutral-50 dark:text-neutral-50" />
                         {rankedInfo.rating.toFixed(2)}
                       </span>
                     ) : (
@@ -229,21 +229,21 @@ export function ReviewApplicationsPage() {
                   {
                     label: "License",
                     value: current.license_number ? (
-                      <span className="font-semibold text-success-600">
+                      <span className="font-semibold text-success-600 dark:text-success-400">
                         Verified
                       </span>
                     ) : (
-                      <span className="font-semibold text-warning-600">
+                      <span className="font-semibold text-warning-600 dark:text-warning-400">
                         Pending
                       </span>
                     ),
                   },
                 ].map((stat) => (
-                  <div key={stat.label} className="bg-neutral-50/80 px-4 py-3">
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">
+                  <div key={stat.label} className="bg-neutral-50/80 px-4 py-3 dark:bg-neutral-900/80">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
                       {stat.label}
                     </p>
-                    <div className="mt-1 text-sm font-bold text-neutral-900">
+                    <div className="mt-1 text-sm font-bold text-neutral-900 dark:text-neutral-50">
                       {stat.value}
                     </div>
                   </div>
@@ -253,10 +253,10 @@ export function ReviewApplicationsPage() {
               {/* Application note */}
               {current.experience_summary && (
                 <div className="mt-6">
-                  <h2 className="text-sm font-bold text-neutral-900">
+                  <h2 className="text-sm font-bold text-neutral-900 dark:text-neutral-50">
                     Application Note
                   </h2>
-                  <div className="mt-2 rounded-xl bg-neutral-50 px-4 py-3.5 text-sm leading-relaxed text-neutral-600">
+                  <div className="mt-2 rounded-xl bg-neutral-50 px-4 py-3.5 text-sm leading-relaxed text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400">
                     {current.experience_summary}
                   </div>
                 </div>
@@ -265,15 +265,15 @@ export function ReviewApplicationsPage() {
               {/* License */}
               {current.license_number && (
                 <div className="mt-6">
-                  <h2 className="text-sm font-bold text-neutral-900">
+                  <h2 className="text-sm font-bold text-neutral-900 dark:text-neutral-50">
                     Certificates & Qualifications
                   </h2>
                   <div className="mt-2 flex flex-wrap gap-2">
-                    <span className="rounded-full bg-primary-50 px-3 py-1 text-xs font-semibold text-primary-700">
+                    <span className="rounded-full bg-primary-50 px-3 py-1 text-xs font-semibold text-primary-700 dark:bg-primary-950 dark:text-primary-300">
                       License {current.license_number}
                     </span>
                     {rankedInfo?.quals_match && (
-                      <span className="rounded-full bg-primary-50 px-3 py-1 text-xs font-semibold text-primary-700">
+                      <span className="rounded-full bg-primary-50 px-3 py-1 text-xs font-semibold text-primary-700 dark:bg-primary-950 dark:text-primary-300">
                         Meets shift qualifications
                       </span>
                     )}
@@ -284,7 +284,7 @@ export function ReviewApplicationsPage() {
 
             {/* Actions / confirmation */}
             {decision === "accepted" ? (
-              <div className="mt-6 rounded-xl bg-success-50 px-6 py-4 text-center text-sm font-semibold text-success-700">
+              <div className="mt-6 rounded-xl bg-success-50 px-6 py-4 text-center text-sm font-semibold text-success-700 dark:bg-success-950 dark:text-success-300">
                 {current.applicant_name} has been accepted for this shift.
               </div>
             ) : (
@@ -293,7 +293,7 @@ export function ReviewApplicationsPage() {
                   onClick={handleReject}
                   disabled={decision === "rejected"}
                   className={cn(
-                    "h-12 rounded-xl border border-neutral-200 bg-white text-sm font-bold text-error-600 transition-colors hover:bg-error-50",
+                    "h-12 rounded-xl border border-neutral-200 bg-white text-sm font-bold text-error-600 transition-colors hover:bg-error-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-error-400 dark:hover:bg-error-950",
                     decision === "rejected" && "opacity-50",
                   )}
                 >
@@ -301,7 +301,7 @@ export function ReviewApplicationsPage() {
                 </button>
                 <button
                   onClick={() => navigate(PATHS.hospital.messages)}
-                  className="h-12 rounded-xl border border-neutral-200 bg-white text-sm font-bold text-neutral-900 transition-colors hover:bg-neutral-50"
+                  className="h-12 rounded-xl border border-neutral-200 bg-white text-sm font-bold text-neutral-900 transition-colors hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-50 dark:hover:bg-neutral-800"
                 >
                   Message
                 </button>

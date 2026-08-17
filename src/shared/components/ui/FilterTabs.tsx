@@ -21,7 +21,7 @@ export function FilterTabs<T extends string = string>({
   return (
     <div
       className={cn(
-        "inline-flex items-center gap-1 rounded-xl border border-neutral-100 bg-white p-1",
+        "inline-flex items-center gap-1 rounded-xl border border-neutral-100 bg-white p-1 dark:border-neutral-800 dark:bg-neutral-900",
         className,
       )}
     >
@@ -35,8 +35,8 @@ export function FilterTabs<T extends string = string>({
             className={cn(
               "rounded-lg px-3.5 py-1.5 text-sm font-medium transition-colors",
               isActive
-                ? "bg-neutral-900 text-white"
-                : "text-neutral-500 hover:bg-neutral-50 hover:text-neutral-800",
+                ? "bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900"
+                : "text-neutral-500 hover:bg-neutral-50 hover:text-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100",
             )}
           >
             {option.label}

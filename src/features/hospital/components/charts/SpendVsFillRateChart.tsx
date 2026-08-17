@@ -35,15 +35,15 @@ export function SpendVsFillRateChart() {
   }, []);
 
   return (
-    <div className="rounded-2xl border border-neutral-100 bg-white p-5">
+    <div className="rounded-2xl border border-neutral-100 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
       <div className="mb-4 flex flex-wrap items-start justify-between gap-2">
         <div>
-          <h3 className="text-base font-bold text-neutral-900">
+          <h3 className="text-base font-bold text-neutral-900 dark:text-neutral-50">
             Weekly Spending vs. Fill Rate
           </h3>
-          <p className="text-xs text-neutral-400">Last 7 weeks</p>
+          <p className="text-xs text-neutral-400 dark:text-neutral-500">Last 7 weeks</p>
         </div>
-        <div className="flex items-center gap-4 text-xs text-neutral-500">
+        <div className="flex items-center gap-4 text-xs text-neutral-500 dark:text-neutral-400">
           <span className="flex items-center gap-1.5">
             <span className="h-2 w-2 rounded-full bg-[#2563eb]" />
             Spending

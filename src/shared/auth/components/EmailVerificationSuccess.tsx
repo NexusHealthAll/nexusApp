@@ -55,31 +55,31 @@ export function EmailVerificationSuccess() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#F3FAFF] via-[#F8FBFF] to-[#EDF7FF] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-[#F3FAFF] via-[#F8FBFF] to-[#EDF7FF] dark:from-neutral-950 dark:via-neutral-950 dark:to-neutral-900 flex items-center justify-center p-4">
       <div className="w-full max-w-lg">
         {/* Main Verification Card with enhanced effects */}
         <Card
-          className={`bg-white/95 backdrop-blur-sm border border-gray-200/50 shadow-2xl shadow-green-500/10 rounded-3xl overflow-hidden min-h-[90vh] sm:min-h-[80vh] flex flex-col transition-all duration-700 ease-out ${
+          className={`bg-white/95 dark:bg-neutral-900/95 backdrop-blur-sm border border-gray-200/50 dark:border-neutral-800 shadow-2xl shadow-green-500/10 dark:shadow-none rounded-3xl overflow-hidden min-h-[90vh] sm:min-h-[80vh] flex flex-col transition-all duration-700 ease-out ${
             isVisible
               ? "translate-y-0 opacity-100 scale-100"
               : "translate-y-8 opacity-0 scale-95"
           }`}
         >
           {/* Header */}
-          <div className="bg-white/80 backdrop-blur-sm px-6 py-4 border-b border-gray-100/50 flex-shrink-0">
+          <div className="bg-white/80 dark:bg-neutral-900/80 backdrop-blur-sm px-6 py-4 border-b border-gray-100/50 dark:border-neutral-800 flex-shrink-0">
             <div className="flex items-center justify-between">
               <div className="transition-transform duration-300 hover:scale-105">
                 <NexusCareLogo size="sm" />
               </div>
-              <div className="w-6 h-6 rounded-full bg-gradient-to-br from-green-100 to-green-200 flex items-center justify-center shadow-inner">
+              <div className="w-6 h-6 rounded-full bg-gradient-to-br from-green-100 to-green-200 dark:from-green-900 dark:to-green-800 flex items-center justify-center shadow-inner">
                 <div className="w-2 h-2 bg-gradient-to-br from-green-400 to-green-500 rounded-full animate-pulse"></div>
               </div>
             </div>
           </div>
 
           {/* Enhanced Progress Bar */}
-          <div className="bg-white/80 backdrop-blur-sm px-6 pb-2">
-            <div className="w-full bg-gray-200/80 rounded-full h-1.5 overflow-hidden">
+          <div className="bg-white/80 dark:bg-neutral-900/80 backdrop-blur-sm px-6 pb-2">
+            <div className="w-full bg-gray-200/80 dark:bg-neutral-800 rounded-full h-1.5 overflow-hidden">
               <div className="bg-gradient-to-r from-onboarding-primaryGreen to-onboarding-primaryBlue h-full rounded-full w-2/4 transition-all duration-1000 ease-out shadow-sm"></div>
             </div>
           </div>
@@ -118,17 +118,17 @@ export function EmailVerificationSuccess() {
                   : "translate-y-4 opacity-0"
               }`}
             >
-              <h1 className="text-3xl font-bold text-onboarding-textPrimary mb-2">
+              <h1 className="text-3xl font-bold text-onboarding-textPrimary dark:text-neutral-50 mb-2">
                 Email Verification
               </h1>
-              <h2 className="text-3xl font-bold bg-gradient-to-r from-[#0EA5E9] to-[#06B6D4] bg-clip-text text-transparent mb-6">
+              <h2 className="text-3xl font-bold bg-gradient-to-r from-[#0EA5E9] to-[#06B6D4] dark:from-[#38BDF8] dark:to-[#22D3EE] bg-clip-text text-transparent mb-6">
                 Confirmed.
               </h2>
             </div>
 
             {/* Enhanced Description */}
             <p
-              className={`text-base text-onboarding-textSecondary mb-10 leading-relaxed px-2 transition-all duration-700 delay-500 ease-out ${
+              className={`text-base text-onboarding-textSecondary dark:text-neutral-400 mb-10 leading-relaxed px-2 transition-all duration-700 delay-500 ease-out ${
                 isVisible
                   ? "translate-y-0 opacity-100"
                   : "translate-y-4 opacity-0"
@@ -147,45 +147,45 @@ export function EmailVerificationSuccess() {
               }`}
             >
               {/* Secure Access */}
-              <div className="flex items-start space-x-4 text-left bg-gradient-to-r from-blue-50 to-blue-100/50 p-4 rounded-xl border border-blue-100/50 shadow-sm hover:shadow-md transition-all duration-300 hover:scale-[1.02]">
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center flex-shrink-0 mt-1 shadow-inner">
-                  <Lock className="w-5 h-5 text-blue-600" />
+              <div className="flex items-start space-x-4 text-left bg-gradient-to-r from-blue-50 to-blue-100/50 dark:from-blue-950 dark:to-blue-900/50 p-4 rounded-xl border border-blue-100/50 dark:border-blue-900 shadow-sm hover:shadow-md transition-all duration-300 hover:scale-[1.02]">
+                <div className="w-10 h-10 bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900 dark:to-blue-800 rounded-lg flex items-center justify-center flex-shrink-0 mt-1 shadow-inner">
+                  <Lock className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-onboarding-textPrimary text-base">
+                  <h3 className="font-semibold text-onboarding-textPrimary dark:text-neutral-50 text-base">
                     Secure Access
                   </h3>
-                  <p className="text-sm text-onboarding-textSecondary leading-relaxed mt-1">
+                  <p className="text-sm text-onboarding-textSecondary dark:text-neutral-400 leading-relaxed mt-1">
                     Multi-layer encryption active on your account.
                   </p>
                 </div>
               </div>
 
               {/* Advanced Insights */}
-              <div className="flex items-start space-x-4 text-left bg-gradient-to-r from-green-50 to-emerald-100/50 p-4 rounded-xl border border-green-100/50 shadow-sm hover:shadow-md transition-all duration-300 hover:scale-[1.02] animation-delay-200">
-                <div className="w-10 h-10 bg-gradient-to-br from-green-100 to-green-200 rounded-lg flex items-center justify-center flex-shrink-0 mt-1 shadow-inner">
-                  <BarChart3 className="w-5 h-5 text-green-600" />
+              <div className="flex items-start space-x-4 text-left bg-gradient-to-r from-green-50 to-emerald-100/50 dark:from-green-950 dark:to-emerald-900/50 p-4 rounded-xl border border-green-100/50 dark:border-green-900 shadow-sm hover:shadow-md transition-all duration-300 hover:scale-[1.02] animation-delay-200">
+                <div className="w-10 h-10 bg-gradient-to-br from-green-100 to-green-200 dark:from-green-900 dark:to-green-800 rounded-lg flex items-center justify-center flex-shrink-0 mt-1 shadow-inner">
+                  <BarChart3 className="w-5 h-5 text-green-600 dark:text-green-400" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-onboarding-textPrimary text-base">
+                  <h3 className="font-semibold text-onboarding-textPrimary dark:text-neutral-50 text-base">
                     Advanced Insights
                   </h3>
-                  <p className="text-sm text-onboarding-textSecondary leading-relaxed mt-1">
+                  <p className="text-sm text-onboarding-textSecondary dark:text-neutral-400 leading-relaxed mt-1">
                     Real-time clinical data and patient performance analytics.
                   </p>
                 </div>
               </div>
 
               {/* Automatic Syncing */}
-              <div className="flex items-start space-x-4 text-left bg-gradient-to-r from-purple-50 to-purple-100/50 p-4 rounded-xl border border-purple-100/50 shadow-sm hover:shadow-md transition-all duration-300 hover:scale-[1.02] animation-delay-400">
-                <div className="w-10 h-10 bg-gradient-to-br from-purple-100 to-purple-200 rounded-lg flex items-center justify-center flex-shrink-0 mt-1 shadow-inner">
-                  <Repeat className="w-5 h-5 text-purple-600" />
+              <div className="flex items-start space-x-4 text-left bg-gradient-to-r from-purple-50 to-purple-100/50 dark:from-purple-950 dark:to-purple-900/50 p-4 rounded-xl border border-purple-100/50 dark:border-purple-900 shadow-sm hover:shadow-md transition-all duration-300 hover:scale-[1.02] animation-delay-400">
+                <div className="w-10 h-10 bg-gradient-to-br from-purple-100 to-purple-200 dark:from-purple-900 dark:to-purple-800 rounded-lg flex items-center justify-center flex-shrink-0 mt-1 shadow-inner">
+                  <Repeat className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-onboarding-textPrimary text-base">
+                  <h3 className="font-semibold text-onboarding-textPrimary dark:text-neutral-50 text-base">
                     Automatic Syncing
                   </h3>
-                  <p className="text-sm text-onboarding-textSecondary leading-relaxed mt-1">
+                  <p className="text-sm text-onboarding-textSecondary dark:text-neutral-400 leading-relaxed mt-1">
                     Cross-platform integration with clinical terminals.
                   </p>
                 </div>
@@ -215,13 +215,13 @@ export function EmailVerificationSuccess() {
 
             {/* Enhanced Verification ID */}
             <div
-              className={`mt-8 pt-6 border-t border-gray-100/50 flex-shrink-0 transition-all duration-700 delay-1000 ease-out ${
+              className={`mt-8 pt-6 border-t border-gray-100/50 dark:border-neutral-800 flex-shrink-0 transition-all duration-700 delay-1000 ease-out ${
                 showFeatures
                   ? "translate-y-0 opacity-100"
                   : "translate-y-4 opacity-0"
               }`}
             >
-              <p className="text-sm text-gray-400 font-mono tracking-wider bg-gray-50/50 px-4 py-2 rounded-lg border border-gray-100/50">
+              <p className="text-sm text-gray-400 dark:text-neutral-500 font-mono tracking-wider bg-gray-50/50 dark:bg-neutral-800/50 px-4 py-2 rounded-lg border border-gray-100/50 dark:border-neutral-800">
                 VERIFICATION ID: NX-992-KLR
               </p>
             </div>

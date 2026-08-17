@@ -116,8 +116,8 @@ export function WaitlistEmailForm({
             : "flex-col",
         )}
       >
-        <div className="flex min-h-[3.25rem] flex-1 items-center gap-3 rounded-xl border border-white/50 bg-white/90 px-4 shadow-soft backdrop-blur">
-          <Mail aria-hidden="true" className="h-4 w-4 text-secondary-700" />
+        <div className="flex min-h-[3.25rem] flex-1 items-center gap-3 rounded-xl border border-white/50 bg-white/90 px-4 shadow-soft backdrop-blur dark:border-neutral-800 dark:bg-neutral-900/90">
+          <Mail aria-hidden="true" className="h-4 w-4 text-secondary-700 dark:text-secondary-400" />
           <input
             id={inputId}
             type="email"
@@ -127,7 +127,7 @@ export function WaitlistEmailForm({
             placeholder="Enter your work email"
             aria-invalid={submitState === "error"}
             aria-describedby={`${inputId}-feedback`}
-            className="h-full w-full bg-transparent text-sm text-neutral-800 outline-none placeholder:text-neutral-400"
+            className="h-full w-full bg-transparent text-sm text-neutral-800 outline-none placeholder:text-neutral-400 dark:text-neutral-100 dark:placeholder:text-neutral-500"
           />
         </div>
 
@@ -149,9 +149,9 @@ export function WaitlistEmailForm({
         aria-live="polite"
         className={cn(
           "text-sm",
-          submitState === "success" && "text-success-700",
-          submitState === "error" && "text-error-700",
-          submitState === "idle" && "text-neutral-500",
+          submitState === "success" && "text-success-700 dark:text-success-400",
+          submitState === "error" && "text-error-700 dark:text-error-400",
+          submitState === "idle" && "text-neutral-500 dark:text-neutral-400",
         )}
       >
         {feedbackMessage ||

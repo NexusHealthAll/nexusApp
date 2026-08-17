@@ -142,7 +142,7 @@ export function ConsultationView({
         <div
           key={i}
           className={`w-1 rounded-full transition-all duration-100 ${
-            isRecording ? "bg-primary-500" : "bg-neutral-300"
+            isRecording ? "bg-primary-500" : "bg-neutral-300 dark:bg-neutral-600"
           }`}
           style={{ height: `${Math.min(height, 80)}px` }}
         />,
@@ -152,9 +152,9 @@ export function ConsultationView({
   };
 
   return (
-    <div className="min-h-screen bg-neutral-50 flex flex-col">
+    <div className="min-h-screen bg-neutral-50 flex flex-col dark:bg-neutral-950">
       {/* Header */}
-      <div className="bg-white border-b border-neutral-200 px-4 sm:px-6 py-4">
+      <div className="bg-white border-b border-neutral-200 px-4 sm:px-6 py-4 dark:bg-neutral-900 dark:border-neutral-800">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <Button
@@ -166,20 +166,20 @@ export function ConsultationView({
               <ArrowLeft className="h-4 w-4 mr-2" />
               <span className="hidden sm:inline">Back to Dashboard</span>
             </Button>
-            <div className="h-6 w-px bg-neutral-300 hidden sm:block" />
+            <div className="h-6 w-px bg-neutral-300 hidden sm:block dark:bg-neutral-700" />
             <div className="flex items-center space-x-3">
-              <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0">
-                <User className="h-4 w-4 sm:h-5 sm:w-5 text-primary-600" />
+              <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0 dark:bg-primary-950">
+                <User className="h-4 w-4 sm:h-5 sm:w-5 text-primary-600 dark:text-primary-400" />
               </div>
               <div className="min-w-0">
-                <h1 className="text-base sm:text-lg font-semibold text-neutral-900 truncate">
+                <h1 className="text-base sm:text-lg font-semibold text-neutral-900 truncate dark:text-neutral-50">
                   {mockPatientData.name}
                 </h1>
-                <p className="text-xs sm:text-sm text-neutral-600">
+                <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400">
                   {mockPatientData.age} years • {mockPatientData.gender} •{" "}
                   {mockPatientData.visitReason}
                 </p>
-                <p className="text-xs text-neutral-500">
+                <p className="text-xs text-neutral-500 dark:text-neutral-500">
                   Visit #{appointmentId} • Patient #{patientId}
                 </p>
               </div>
@@ -199,14 +199,14 @@ export function ConsultationView({
       </div>
 
       {/* Navigation Tabs */}
-      <div className="bg-white border-b border-neutral-200 px-4 sm:px-6">
+      <div className="bg-white border-b border-neutral-200 px-4 sm:px-6 dark:bg-neutral-900 dark:border-neutral-800">
         <div className="flex space-x-8">
           <button
             onClick={() => setActiveTab("transcript")}
             className={`py-3 px-1 border-b-2 font-medium text-sm transition-colors ${
               activeTab === "transcript"
-                ? "border-primary-500 text-primary-600"
-                : "border-transparent text-neutral-500 hover:text-neutral-700 hover:border-neutral-300"
+                ? "border-primary-500 text-primary-600 dark:border-primary-400 dark:text-primary-400"
+                : "border-transparent text-neutral-500 hover:text-neutral-700 hover:border-neutral-300 dark:text-neutral-500 dark:hover:text-neutral-300 dark:hover:border-neutral-700"
             }`}
           >
             Live Transcript
@@ -215,8 +215,8 @@ export function ConsultationView({
             onClick={() => setActiveTab("history")}
             className={`py-3 px-1 border-b-2 font-medium text-sm transition-colors ${
               activeTab === "history"
-                ? "border-primary-500 text-primary-600"
-                : "border-transparent text-neutral-500 hover:text-neutral-700 hover:border-neutral-300"
+                ? "border-primary-500 text-primary-600 dark:border-primary-400 dark:text-primary-400"
+                : "border-transparent text-neutral-500 hover:text-neutral-700 hover:border-neutral-300 dark:text-neutral-500 dark:hover:text-neutral-300 dark:hover:border-neutral-700"
             }`}
           >
             Patient Medical History
@@ -230,15 +230,15 @@ export function ConsultationView({
           {activeTab === "transcript" ? (
             <>
               {/* Live Recording Audio Waveform Block */}
-              <Card className="bg-gradient-to-r from-primary-50 to-secondary-50 border-primary-200">
+              <Card className="bg-gradient-to-r from-primary-50 to-secondary-50 border-primary-200 dark:from-primary-950 dark:to-secondary-950 dark:border-primary-800">
                 <CardHeader className="pb-4">
                   <CardTitle className="flex items-center justify-between text-lg">
                     <span className="flex items-center space-x-2">
-                      <Mic className="h-5 w-5 text-primary-600" />
+                      <Mic className="h-5 w-5 text-primary-600 dark:text-primary-400" />
                       <span>Live Audio Recording</span>
                     </span>
                     <div className="flex items-center space-x-3">
-                      <div className="flex items-center space-x-2 text-sm font-normal text-neutral-600">
+                      <div className="flex items-center space-x-2 text-sm font-normal text-neutral-600 dark:text-neutral-400">
                         <Clock className="h-4 w-4" />
                         <span>{formatDuration(recordingDuration)}</span>
                       </div>
@@ -250,7 +250,7 @@ export function ConsultationView({
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {/* Waveform Visualization */}
-                  <div className="bg-white rounded-lg p-6 border border-neutral-200">
+                  <div className="bg-white rounded-lg p-6 border border-neutral-200 dark:bg-neutral-900 dark:border-neutral-800">
                     <div className="flex items-end justify-center space-x-1 h-20">
                       {generateWaveformBars()}
                     </div>
@@ -344,16 +344,16 @@ export function ConsultationView({
               </Card>
 
               {/* Hausa ⇄ English Translation Toggle Bar */}
-              <Card className="border-secondary-200 bg-secondary-50">
+              <Card className="border-secondary-200 bg-secondary-50 dark:border-secondary-800 dark:bg-secondary-950">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
-                      <Languages className="h-6 w-6 text-secondary-600" />
+                      <Languages className="h-6 w-6 text-secondary-600 dark:text-secondary-400" />
                       <div>
-                        <p className="font-semibold text-secondary-900">
+                        <p className="font-semibold text-secondary-900 dark:text-secondary-300">
                           Hausa ⇄ English Translation
                         </p>
-                        <p className="text-sm text-secondary-700">
+                        <p className="text-sm text-secondary-700 dark:text-secondary-400">
                           {isTranslationEnabled
                             ? "Real-time translation active"
                             : "Translation disabled"}{" "}
@@ -396,7 +396,7 @@ export function ConsultationView({
                   <CardHeader>
                     <CardTitle className="text-lg flex items-center justify-between">
                       <span>Chief Complaint</span>
-                      <span className="text-sm font-normal text-neutral-500">
+                      <span className="text-sm font-normal text-neutral-500 dark:text-neutral-500">
                         {clinicalNotes.chiefComplaint.length}/500
                       </span>
                     </CardTitle>
@@ -409,7 +409,7 @@ export function ConsultationView({
                       }
                       placeholder="What is the patient's primary concern? Document the main reason for today's visit..."
                       maxLength={500}
-                      className="w-full h-24 sm:h-32 p-4 border border-neutral-300 rounded-lg resize-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm sm:text-base"
+                      className="w-full h-24 sm:h-32 p-4 border border-neutral-300 rounded-lg resize-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm sm:text-base dark:border-neutral-700 dark:bg-neutral-800"
                     />
                   </CardContent>
                 </Card>
@@ -419,7 +419,7 @@ export function ConsultationView({
                   <CardHeader>
                     <CardTitle className="text-lg flex items-center justify-between">
                       <span>History of Present Illness</span>
-                      <span className="text-sm font-normal text-neutral-500">
+                      <span className="text-sm font-normal text-neutral-500 dark:text-neutral-500">
                         {clinicalNotes.historyOfPresentIllness.length}/1000
                       </span>
                     </CardTitle>
@@ -435,7 +435,7 @@ export function ConsultationView({
                       }
                       placeholder="Detailed history of the current illness: onset, duration, severity, associated symptoms, aggravating/relieving factors..."
                       maxLength={1000}
-                      className="w-full h-32 sm:h-40 p-4 border border-neutral-300 rounded-lg resize-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm sm:text-base"
+                      className="w-full h-32 sm:h-40 p-4 border border-neutral-300 rounded-lg resize-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm sm:text-base dark:border-neutral-700 dark:bg-neutral-800"
                     />
                   </CardContent>
                 </Card>
@@ -445,7 +445,7 @@ export function ConsultationView({
                   <CardHeader>
                     <CardTitle className="text-lg flex items-center justify-between">
                       <span>Assessment</span>
-                      <span className="text-sm font-normal text-neutral-500">
+                      <span className="text-sm font-normal text-neutral-500 dark:text-neutral-500">
                         {clinicalNotes.assessment.length}/1000
                       </span>
                     </CardTitle>
@@ -458,7 +458,7 @@ export function ConsultationView({
                       }
                       placeholder="Clinical assessment, differential diagnosis, examination findings, and medical impression..."
                       maxLength={1000}
-                      className="w-full h-32 sm:h-40 p-4 border border-neutral-300 rounded-lg resize-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm sm:text-base"
+                      className="w-full h-32 sm:h-40 p-4 border border-neutral-300 rounded-lg resize-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm sm:text-base dark:border-neutral-700 dark:bg-neutral-800"
                     />
                   </CardContent>
                 </Card>
@@ -488,39 +488,39 @@ export function ConsultationView({
                   {/* Medical History Sections */}
                   <div className="grid gap-6 md:grid-cols-2">
                     <div className="space-y-4">
-                      <h4 className="font-semibold text-neutral-900">
+                      <h4 className="font-semibold text-neutral-900 dark:text-neutral-50">
                         Previous Visits
                       </h4>
                       <div className="space-y-3">
-                        <div className="p-3 bg-neutral-50 rounded-lg border">
+                        <div className="p-3 bg-neutral-50 rounded-lg border dark:bg-neutral-800 dark:border-neutral-700">
                           <div className="flex justify-between items-start mb-2">
-                            <span className="text-sm font-medium text-neutral-900">
+                            <span className="text-sm font-medium text-neutral-900 dark:text-neutral-50">
                               Oct 15, 2024
                             </span>
-                            <span className="text-xs px-2 py-1 bg-success-100 text-success-800 rounded-full">
+                            <span className="text-xs px-2 py-1 bg-success-100 text-success-800 rounded-full dark:bg-success-950 dark:text-success-300">
                               Resolved
                             </span>
                           </div>
-                          <p className="text-sm text-neutral-700">
+                          <p className="text-sm text-neutral-700 dark:text-neutral-400">
                             Headache, prescribed paracetamol
                           </p>
-                          <p className="text-xs text-neutral-500 mt-1">
+                          <p className="text-xs text-neutral-500 mt-1 dark:text-neutral-500">
                             Dr. Ibrahim Musa
                           </p>
                         </div>
-                        <div className="p-3 bg-neutral-50 rounded-lg border">
+                        <div className="p-3 bg-neutral-50 rounded-lg border dark:bg-neutral-800 dark:border-neutral-700">
                           <div className="flex justify-between items-start mb-2">
-                            <span className="text-sm font-medium text-neutral-900">
+                            <span className="text-sm font-medium text-neutral-900 dark:text-neutral-50">
                               Sep 28, 2024
                             </span>
-                            <span className="text-xs px-2 py-1 bg-success-100 text-success-800 rounded-full">
+                            <span className="text-xs px-2 py-1 bg-success-100 text-success-800 rounded-full dark:bg-success-950 dark:text-success-300">
                               Resolved
                             </span>
                           </div>
-                          <p className="text-sm text-neutral-700">
+                          <p className="text-sm text-neutral-700 dark:text-neutral-400">
                             Routine checkup, all normal
                           </p>
-                          <p className="text-xs text-neutral-500 mt-1">
+                          <p className="text-xs text-neutral-500 mt-1 dark:text-neutral-500">
                             Dr. Fatima Ali
                           </p>
                         </div>
@@ -528,23 +528,23 @@ export function ConsultationView({
                     </div>
 
                     <div className="space-y-4">
-                      <h4 className="font-semibold text-neutral-900">
+                      <h4 className="font-semibold text-neutral-900 dark:text-neutral-50">
                         Allergies & Medications
                       </h4>
                       <div className="space-y-3">
-                        <div className="p-3 bg-warning-50 rounded-lg border border-warning-200">
-                          <h5 className="text-sm font-medium text-warning-800 mb-1">
+                        <div className="p-3 bg-warning-50 rounded-lg border border-warning-200 dark:bg-warning-950 dark:border-warning-800">
+                          <h5 className="text-sm font-medium text-warning-800 mb-1 dark:text-warning-300">
                             Known Allergies
                           </h5>
-                          <p className="text-sm text-warning-700">
+                          <p className="text-sm text-warning-700 dark:text-warning-400">
                             Penicillin - Skin rash
                           </p>
                         </div>
-                        <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                          <h5 className="text-sm font-medium text-blue-800 mb-1">
+                        <div className="p-3 bg-blue-50 rounded-lg border border-blue-200 dark:bg-blue-950 dark:border-blue-800">
+                          <h5 className="text-sm font-medium text-blue-800 mb-1 dark:text-blue-300">
                             Current Medications
                           </h5>
-                          <p className="text-sm text-blue-700">None reported</p>
+                          <p className="text-sm text-blue-700 dark:text-blue-400">None reported</p>
                         </div>
                       </div>
                     </div>
@@ -552,62 +552,62 @@ export function ConsultationView({
 
                   {/* Vital Signs History */}
                   <div>
-                    <h4 className="font-semibold text-neutral-900 mb-4">
+                    <h4 className="font-semibold text-neutral-900 mb-4 dark:text-neutral-50">
                       Recent Vital Signs
                     </h4>
                     <div className="overflow-x-auto">
                       <table className="w-full text-sm">
                         <thead>
-                          <tr className="border-b border-neutral-200">
-                            <th className="text-left py-2 px-3 font-medium text-neutral-700">
+                          <tr className="border-b border-neutral-200 dark:border-neutral-800">
+                            <th className="text-left py-2 px-3 font-medium text-neutral-700 dark:text-neutral-400">
                               Date
                             </th>
-                            <th className="text-left py-2 px-3 font-medium text-neutral-700">
+                            <th className="text-left py-2 px-3 font-medium text-neutral-700 dark:text-neutral-400">
                               BP
                             </th>
-                            <th className="text-left py-2 px-3 font-medium text-neutral-700">
+                            <th className="text-left py-2 px-3 font-medium text-neutral-700 dark:text-neutral-400">
                               Temp
                             </th>
-                            <th className="text-left py-2 px-3 font-medium text-neutral-700">
+                            <th className="text-left py-2 px-3 font-medium text-neutral-700 dark:text-neutral-400">
                               Pulse
                             </th>
-                            <th className="text-left py-2 px-3 font-medium text-neutral-700">
+                            <th className="text-left py-2 px-3 font-medium text-neutral-700 dark:text-neutral-400">
                               Weight
                             </th>
                           </tr>
                         </thead>
                         <tbody>
-                          <tr className="border-b border-neutral-100">
-                            <td className="py-2 px-3 text-neutral-900">
+                          <tr className="border-b border-neutral-100 dark:border-neutral-800">
+                            <td className="py-2 px-3 text-neutral-900 dark:text-neutral-50">
                               Oct 15, 2024
                             </td>
-                            <td className="py-2 px-3 text-neutral-700">
+                            <td className="py-2 px-3 text-neutral-700 dark:text-neutral-400">
                               120/80
                             </td>
-                            <td className="py-2 px-3 text-neutral-700">
+                            <td className="py-2 px-3 text-neutral-700 dark:text-neutral-400">
                               36.5°C
                             </td>
-                            <td className="py-2 px-3 text-neutral-700">
+                            <td className="py-2 px-3 text-neutral-700 dark:text-neutral-400">
                               72 bpm
                             </td>
-                            <td className="py-2 px-3 text-neutral-700">
+                            <td className="py-2 px-3 text-neutral-700 dark:text-neutral-400">
                               65 kg
                             </td>
                           </tr>
-                          <tr className="border-b border-neutral-100">
-                            <td className="py-2 px-3 text-neutral-900">
+                          <tr className="border-b border-neutral-100 dark:border-neutral-800">
+                            <td className="py-2 px-3 text-neutral-900 dark:text-neutral-50">
                               Sep 28, 2024
                             </td>
-                            <td className="py-2 px-3 text-neutral-700">
+                            <td className="py-2 px-3 text-neutral-700 dark:text-neutral-400">
                               118/78
                             </td>
-                            <td className="py-2 px-3 text-neutral-700">
+                            <td className="py-2 px-3 text-neutral-700 dark:text-neutral-400">
                               36.2°C
                             </td>
-                            <td className="py-2 px-3 text-neutral-700">
+                            <td className="py-2 px-3 text-neutral-700 dark:text-neutral-400">
                               68 bpm
                             </td>
-                            <td className="py-2 px-3 text-neutral-700">
+                            <td className="py-2 px-3 text-neutral-700 dark:text-neutral-400">
                               64 kg
                             </td>
                           </tr>
@@ -618,23 +618,23 @@ export function ConsultationView({
 
                   {/* Family History */}
                   <div>
-                    <h4 className="font-semibold text-neutral-900 mb-4">
+                    <h4 className="font-semibold text-neutral-900 mb-4 dark:text-neutral-50">
                       Family History
                     </h4>
                     <div className="grid gap-4 sm:grid-cols-2">
-                      <div className="p-3 bg-neutral-50 rounded-lg">
-                        <h5 className="text-sm font-medium text-neutral-900 mb-1">
+                      <div className="p-3 bg-neutral-50 rounded-lg dark:bg-neutral-800">
+                        <h5 className="text-sm font-medium text-neutral-900 mb-1 dark:text-neutral-50">
                           Maternal
                         </h5>
-                        <p className="text-sm text-neutral-700">
+                        <p className="text-sm text-neutral-700 dark:text-neutral-400">
                           Hypertension (Mother)
                         </p>
                       </div>
-                      <div className="p-3 bg-neutral-50 rounded-lg">
-                        <h5 className="text-sm font-medium text-neutral-900 mb-1">
+                      <div className="p-3 bg-neutral-50 rounded-lg dark:bg-neutral-800">
+                        <h5 className="text-sm font-medium text-neutral-900 mb-1 dark:text-neutral-50">
                           Paternal
                         </h5>
-                        <p className="text-sm text-neutral-700">
+                        <p className="text-sm text-neutral-700 dark:text-neutral-400">
                           Diabetes Type 2 (Father)
                         </p>
                       </div>
@@ -659,38 +659,38 @@ export function ConsultationView({
         </div>
 
         {/* Patient Info Sidebar - Hidden on mobile, shown on larger screens */}
-        <div className="hidden lg:block w-80 bg-white border-l border-neutral-200 p-6">
+        <div className="hidden lg:block w-80 bg-white border-l border-neutral-200 p-6 dark:bg-neutral-900 dark:border-neutral-800">
           <div className="space-y-6">
             <div>
-              <h3 className="font-semibold text-neutral-900 mb-3">
+              <h3 className="font-semibold text-neutral-900 mb-3 dark:text-neutral-50">
                 Patient Information
               </h3>
               <div className="space-y-3">
-                <div className="p-3 bg-neutral-50 rounded-lg">
-                  <p className="text-sm font-medium text-neutral-700">
+                <div className="p-3 bg-neutral-50 rounded-lg dark:bg-neutral-800">
+                  <p className="text-sm font-medium text-neutral-700 dark:text-neutral-400">
                     Patient ID
                   </p>
-                  <p className="text-neutral-900">{mockPatientData.id}</p>
+                  <p className="text-neutral-900 dark:text-neutral-50">{mockPatientData.id}</p>
                 </div>
-                <div className="p-3 bg-neutral-50 rounded-lg">
-                  <p className="text-sm font-medium text-neutral-700">
+                <div className="p-3 bg-neutral-50 rounded-lg dark:bg-neutral-800">
+                  <p className="text-sm font-medium text-neutral-700 dark:text-neutral-400">
                     Primary Language
                   </p>
-                  <p className="text-neutral-900">{mockPatientData.language}</p>
+                  <p className="text-neutral-900 dark:text-neutral-50">{mockPatientData.language}</p>
                 </div>
-                <div className="p-3 bg-neutral-50 rounded-lg">
-                  <p className="text-sm font-medium text-neutral-700">
+                <div className="p-3 bg-neutral-50 rounded-lg dark:bg-neutral-800">
+                  <p className="text-sm font-medium text-neutral-700 dark:text-neutral-400">
                     Visit Reason
                   </p>
-                  <p className="text-neutral-900">
+                  <p className="text-neutral-900 dark:text-neutral-50">
                     {mockPatientData.visitReason}
                   </p>
                 </div>
-                <div className="p-3 bg-neutral-50 rounded-lg">
-                  <p className="text-sm font-medium text-neutral-700">
+                <div className="p-3 bg-neutral-50 rounded-lg dark:bg-neutral-800">
+                  <p className="text-sm font-medium text-neutral-700 dark:text-neutral-400">
                     Demographics
                   </p>
-                  <p className="text-neutral-900">
+                  <p className="text-neutral-900 dark:text-neutral-50">
                     {mockPatientData.age} years, {mockPatientData.gender}
                   </p>
                 </div>
@@ -698,35 +698,35 @@ export function ConsultationView({
             </div>
 
             <div>
-              <h3 className="font-semibold text-neutral-900 mb-3">
+              <h3 className="font-semibold text-neutral-900 mb-3 dark:text-neutral-50">
                 Session Status
               </h3>
               <div className="space-y-2">
-                <div className="flex items-center justify-between p-3 bg-neutral-50 rounded-lg">
-                  <span className="text-sm font-medium text-neutral-700">
+                <div className="flex items-center justify-between p-3 bg-neutral-50 rounded-lg dark:bg-neutral-800">
+                  <span className="text-sm font-medium text-neutral-700 dark:text-neutral-400">
                     Recording
                   </span>
                   <span
-                    className={`text-sm font-semibold ${isRecording ? "text-error-600" : "text-neutral-500"}`}
+                    className={`text-sm font-semibold ${isRecording ? "text-error-600 dark:text-error-400" : "text-neutral-500 dark:text-neutral-500"}`}
                   >
                     {isRecording ? "LIVE" : "Stopped"}
                   </span>
                 </div>
-                <div className="flex items-center justify-between p-3 bg-neutral-50 rounded-lg">
-                  <span className="text-sm font-medium text-neutral-700">
+                <div className="flex items-center justify-between p-3 bg-neutral-50 rounded-lg dark:bg-neutral-800">
+                  <span className="text-sm font-medium text-neutral-700 dark:text-neutral-400">
                     Translation
                   </span>
                   <span
-                    className={`text-sm font-semibold ${isTranslationEnabled ? "text-success-600" : "text-neutral-500"}`}
+                    className={`text-sm font-semibold ${isTranslationEnabled ? "text-success-600 dark:text-success-400" : "text-neutral-500 dark:text-neutral-500"}`}
                   >
                     {isTranslationEnabled ? "Active" : "Disabled"}
                   </span>
                 </div>
-                <div className="flex items-center justify-between p-3 bg-neutral-50 rounded-lg">
-                  <span className="text-sm font-medium text-neutral-700">
+                <div className="flex items-center justify-between p-3 bg-neutral-50 rounded-lg dark:bg-neutral-800">
+                  <span className="text-sm font-medium text-neutral-700 dark:text-neutral-400">
                     Duration
                   </span>
-                  <span className="text-sm font-semibold text-neutral-900">
+                  <span className="text-sm font-semibold text-neutral-900 dark:text-neutral-50">
                     {formatDuration(recordingDuration)}
                   </span>
                 </div>

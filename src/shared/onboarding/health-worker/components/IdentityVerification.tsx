@@ -187,28 +187,28 @@ export function IdentityVerification() {
   const handleSkip = () => navigate("/medical-staff/dashboard");
 
   return (
-    <div className="min-h-screen bg-[#F3FAFF] flex items-center justify-center p-4 relative">
+    <div className="min-h-screen bg-[#F3FAFF] dark:bg-neutral-950 flex items-center justify-center p-4 relative">
       {/* Modal to choose between NIN and BVN */}
       {showChoiceModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl space-y-6">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl space-y-6 dark:bg-neutral-900">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-4 dark:border-neutral-800">
               <div className="flex items-center space-x-2">
-                <ShieldCheck className="h-6 w-6 text-teal-600" />
-                <h3 className="text-lg font-bold text-slate-900">
+                <ShieldCheck className="h-6 w-6 text-teal-600 dark:text-teal-400" />
+                <h3 className="text-lg font-bold text-slate-900 dark:text-neutral-50">
                   Select Verification Method
                 </h3>
               </div>
               <button
                 type="button"
                 onClick={() => setShowChoiceModal(false)}
-                className="rounded-full p-1 text-slate-400 hover:bg-slate-100 transition-colors"
+                className="rounded-full p-1 text-slate-400 hover:bg-slate-100 transition-colors dark:hover:bg-neutral-800"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
-            <p className="text-sm text-slate-600 leading-relaxed">
+            <p className="text-sm text-slate-600 leading-relaxed dark:text-neutral-400">
               Please choose how you would like to verify your identity. Your details will be populated and locked for clinical profile matching.
             </p>
 
@@ -224,23 +224,23 @@ export function IdentityVerification() {
                 }}
                 className={`flex items-start space-x-4 p-4 rounded-xl border-2 text-left transition-all ${
                   idType === "NIN"
-                    ? "border-teal-500 bg-teal-50/60 ring-2 ring-teal-200"
-                    : "border-slate-200 hover:border-slate-300 hover:bg-slate-50"
+                    ? "border-teal-500 bg-teal-50/60 ring-2 ring-teal-200 dark:bg-teal-950/60 dark:ring-teal-900"
+                    : "border-slate-200 hover:border-slate-300 hover:bg-slate-50 dark:border-neutral-700 dark:hover:border-neutral-600 dark:hover:bg-neutral-800"
                 }`}
               >
-                <div className="p-3 bg-teal-100 rounded-lg text-teal-700 flex-shrink-0 mt-0.5">
+                <div className="p-3 bg-teal-100 rounded-lg text-teal-700 flex-shrink-0 mt-0.5 dark:bg-teal-950 dark:text-teal-300">
                   <UserCheck className="h-6 w-6" />
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center justify-between">
-                    <h4 className="font-bold text-slate-900 text-base">
+                    <h4 className="font-bold text-slate-900 text-base dark:text-neutral-50">
                       NIN (National Identity)
                     </h4>
                     {idType === "NIN" && (
-                      <CheckCircle2 className="h-5 w-5 text-teal-600" />
+                      <CheckCircle2 className="h-5 w-5 text-teal-600 dark:text-teal-400" />
                     )}
                   </div>
-                  <p className="text-xs text-slate-600 mt-1">
+                  <p className="text-xs text-slate-600 mt-1 dark:text-neutral-400">
                     Verify using your 11-digit National Identification Number issued by NIMC.
                   </p>
                 </div>
@@ -257,23 +257,23 @@ export function IdentityVerification() {
                 }}
                 className={`flex items-start space-x-4 p-4 rounded-xl border-2 text-left transition-all ${
                   idType === "BVN"
-                    ? "border-teal-500 bg-teal-50/60 ring-2 ring-teal-200"
-                    : "border-slate-200 hover:border-slate-300 hover:bg-slate-50"
+                    ? "border-teal-500 bg-teal-50/60 ring-2 ring-teal-200 dark:bg-teal-950/60 dark:ring-teal-900"
+                    : "border-slate-200 hover:border-slate-300 hover:bg-slate-50 dark:border-neutral-700 dark:hover:border-neutral-600 dark:hover:bg-neutral-800"
                 }`}
               >
-                <div className="p-3 bg-blue-100 rounded-lg text-blue-700 flex-shrink-0 mt-0.5">
+                <div className="p-3 bg-blue-100 rounded-lg text-blue-700 flex-shrink-0 mt-0.5 dark:bg-blue-950 dark:text-blue-300">
                   <CreditCard className="h-6 w-6" />
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center justify-between">
-                    <h4 className="font-bold text-slate-900 text-base">
+                    <h4 className="font-bold text-slate-900 text-base dark:text-neutral-50">
                       BVN (Bank Verification)
                     </h4>
                     {idType === "BVN" && (
-                      <CheckCircle2 className="h-5 w-5 text-teal-600" />
+                      <CheckCircle2 className="h-5 w-5 text-teal-600 dark:text-teal-400" />
                     )}
                   </div>
-                  <p className="text-xs text-slate-600 mt-1">
+                  <p className="text-xs text-slate-600 mt-1 dark:text-neutral-400">
                     Verify using your 11-digit Bank Verification Number linked to your bank accounts.
                   </p>
                 </div>
@@ -293,7 +293,7 @@ export function IdentityVerification() {
 
       <div className="w-full max-w-md">
         {/* Header */}
-        <div className="bg-white rounded-t-2xl px-6 py-4 border-b border-slate-100">
+        <div className="bg-white rounded-t-2xl px-6 py-4 border-b border-slate-100 dark:bg-neutral-900 dark:border-neutral-800">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <button
@@ -307,7 +307,7 @@ export function IdentityVerification() {
                     navigate(-1);
                   }
                 }}
-                className="rounded-full p-2 text-slate-600 hover:bg-slate-100 transition-colors"
+                className="rounded-full p-2 text-slate-600 hover:bg-slate-100 transition-colors dark:text-neutral-400 dark:hover:bg-neutral-800"
                 aria-label="Go back"
               >
                 <ArrowLeft className="h-4 w-4" />
@@ -315,34 +315,34 @@ export function IdentityVerification() {
               <NexusCareLogo size="md" />
             </div>
             <div className="flex items-center space-x-3">
-              <Bell className="h-5 w-5 text-slate-400" />
+              <Bell className="h-5 w-5 text-slate-400 dark:text-neutral-500" />
               <button
                 type="button"
                 onClick={handleClose}
-                className="p-1 hover:bg-slate-100 rounded-full transition-colors"
+                className="p-1 hover:bg-slate-100 rounded-full transition-colors dark:hover:bg-neutral-800"
               >
-                <X className="h-5 w-5 text-slate-400" />
+                <X className="h-5 w-5 text-slate-400 dark:text-neutral-500" />
               </button>
             </div>
           </div>
 
           <div className="space-y-3">
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">
+            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide dark:text-neutral-400">
               STEP 01 OF 04
             </p>
             <div className="flex items-center justify-between">
-              <h1 className="text-2xl font-bold text-onboarding-textPrimary">
+              <h1 className="text-2xl font-bold text-onboarding-textPrimary dark:text-neutral-50">
                 Identity Verification
               </h1>
               <button
                 type="button"
                 onClick={() => setShowChoiceModal(true)}
-                className="text-xs text-teal-600 hover:text-teal-700 font-semibold underline"
+                className="text-xs text-teal-600 hover:text-teal-700 font-semibold underline dark:text-teal-400 dark:hover:text-teal-300"
               >
                 Choose NIN / BVN
               </button>
             </div>
-            <div className="w-full bg-slate-200 rounded-full h-1">
+            <div className="w-full bg-slate-200 rounded-full h-1 dark:bg-neutral-800">
               <div
                 className="bg-gradient-to-r from-onboarding-primaryGreen to-onboarding-primaryBlue h-1 rounded-full"
                 style={{ width: "25%" }}
@@ -354,31 +354,31 @@ export function IdentityVerification() {
         {/* Content */}
         <Card className="bg-white rounded-t-none rounded-b-2xl border-t-0 shadow-md">
           <CardContent className="p-6 space-y-6">
-            <p className="text-onboarding-textSecondary leading-relaxed">
+            <p className="text-onboarding-textSecondary leading-relaxed dark:text-neutral-400">
               Verify your identity using your 11-digit{" "}
-              <span className="font-bold text-slate-800">{idType}</span> to populate
+              <span className="font-bold text-slate-800 dark:text-neutral-200">{idType}</span> to populate
               and lock your profile credentials.
             </p>
 
             <div className="space-y-3">
-              <div className="flex items-start space-x-3 p-4 bg-slate-50 rounded-xl">
-                <ShieldCheck className="h-5 w-5 flex-shrink-0 text-secondary-600 mt-0.5" />
+              <div className="flex items-start space-x-3 p-4 bg-slate-50 rounded-xl dark:bg-neutral-800">
+                <ShieldCheck className="h-5 w-5 flex-shrink-0 text-secondary-600 mt-0.5 dark:text-secondary-400" />
                 <div>
-                  <h4 className="font-semibold text-slate-900 mb-1">
+                  <h4 className="font-semibold text-slate-900 mb-1 dark:text-neutral-50">
                     Data Security & Verification
                   </h4>
-                  <p className="text-sm text-slate-600">
+                  <p className="text-sm text-slate-600 dark:text-neutral-400">
                     Your {idType} is encrypted and checked in real-time. Names retrieved will be strictly non-editable.
                   </p>
                 </div>
               </div>
-              <div className="flex items-start space-x-3 p-4 bg-slate-50 rounded-xl">
-                <Landmark className="h-5 w-5 flex-shrink-0 text-secondary-600 mt-0.5" />
+              <div className="flex items-start space-x-3 p-4 bg-slate-50 rounded-xl dark:bg-neutral-800">
+                <Landmark className="h-5 w-5 flex-shrink-0 text-secondary-600 mt-0.5 dark:text-secondary-400" />
                 <div>
-                  <h4 className="font-semibold text-slate-900 mb-1">
+                  <h4 className="font-semibold text-slate-900 mb-1 dark:text-neutral-50">
                     Selected Method: {idType}
                   </h4>
-                  <p className="text-sm text-slate-600">
+                  <p className="text-sm text-slate-600 dark:text-neutral-400">
                     Instant validation via secure central identity databases.
                   </p>
                 </div>
@@ -389,24 +389,24 @@ export function IdentityVerification() {
               <form onSubmit={handleInitiate} className="space-y-6">
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <label className="block text-[10px] font-semibold uppercase tracking-widest text-neutral-500">
+                    <label className="block text-[10px] font-semibold uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
                       {idType} Number (11 digits)
                     </label>
                     <button
                       type="button"
                       onClick={() => setShowChoiceModal(true)}
-                      className="text-[11px] text-teal-600 hover:text-teal-700 font-medium"
+                      className="text-[11px] text-teal-600 hover:text-teal-700 font-medium dark:text-teal-400 dark:hover:text-teal-300"
                     >
                       Switch to {idType === "NIN" ? "BVN" : "NIN"}
                     </button>
                   </div>
-                  <div className="flex items-center gap-2.5 rounded-lg bg-onboarding-inputBackground px-3 py-2.5">
+                  <div className="flex items-center gap-2.5 rounded-lg bg-onboarding-inputBackground px-3 py-2.5 dark:bg-neutral-800">
                     <input
                       type="text"
                       inputMode="numeric"
                       value={idNumber}
                       onChange={(e) => handleNumberChange(e.target.value)}
-                      className="flex-1 bg-transparent text-sm text-neutral-800 outline-none placeholder:text-neutral-400 font-mono"
+                      className="flex-1 bg-transparent text-sm text-neutral-800 outline-none placeholder:text-neutral-400 font-mono dark:text-neutral-100"
                       placeholder={`Enter 11-digit ${idType}`}
                     />
                   </div>
@@ -429,10 +429,10 @@ export function IdentityVerification() {
             ) : (
               <form onSubmit={handleValidate} className="space-y-6">
                 <div className="space-y-3">
-                  <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-neutral-500">
+                  <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
                     Enter the code sent to your registered phone number
                   </label>
-                  <div className="flex items-center gap-2.5 rounded-lg bg-onboarding-inputBackground px-3 py-2.5">
+                  <div className="flex items-center gap-2.5 rounded-lg bg-onboarding-inputBackground px-3 py-2.5 dark:bg-neutral-800">
                     <input
                       type="text"
                       inputMode="numeric"
@@ -441,7 +441,7 @@ export function IdentityVerification() {
                         setOtp(e.target.value.replace(/\D/g, ""));
                         if (error) setError("");
                       }}
-                      className="flex-1 bg-transparent text-sm text-neutral-800 outline-none placeholder:text-neutral-400 font-mono tracking-widest"
+                      className="flex-1 bg-transparent text-sm text-neutral-800 outline-none placeholder:text-neutral-400 font-mono tracking-widest dark:text-neutral-100"
                       placeholder="123456"
                     />
                   </div>
@@ -468,7 +468,7 @@ export function IdentityVerification() {
                       setOtp("");
                       setError("");
                     }}
-                    className="text-sm text-slate-500 hover:text-slate-700 transition-colors"
+                    className="text-sm text-slate-500 hover:text-slate-700 transition-colors dark:text-neutral-400 dark:hover:text-neutral-200"
                   >
                     Use a different {idType}
                   </button>

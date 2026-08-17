@@ -379,14 +379,14 @@ export function ShiftSchedulePage() {
           value={department}
           onChange={setDepartment}
           containerClassName="w-44"
-          className="bg-white py-2"
+          className="bg-white py-2 dark:bg-neutral-800"
         />
         <Select
           options={selectOptions(roles, "All Roles")}
           value={role}
           onChange={setRole}
           containerClassName="w-40"
-          className="bg-white py-2"
+          className="bg-white py-2 dark:bg-neutral-800"
         />
         <Select
           options={[
@@ -399,16 +399,16 @@ export function ShiftSchedulePage() {
           value={status}
           onChange={setStatus}
           containerClassName="w-40"
-          className="bg-white py-2"
+          className="bg-white py-2 dark:bg-neutral-800"
         />
         <div className="ml-auto flex items-center gap-2">
-          <span className="text-sm text-neutral-400">Sort:</span>
+          <span className="text-sm text-neutral-400 dark:text-neutral-500">Sort:</span>
           <Dropdown
             align="right"
             trigger={
-              <span className="flex items-center gap-1 text-sm font-semibold text-neutral-800">
+              <span className="flex items-center gap-1 text-sm font-semibold text-neutral-800 dark:text-neutral-200">
                 {sortOptions.find((o) => o.value === sortKey)?.label}
-                <ChevronDown className="h-4 w-4 text-neutral-400" />
+                <ChevronDown className="h-4 w-4 text-neutral-400 dark:text-neutral-500" />
               </span>
             }
             panelClassName="w-44"
@@ -427,10 +427,10 @@ export function ShiftSchedulePage() {
       </div>
 
       {/* Table card */}
-      <div className="mt-5 overflow-hidden rounded-2xl border border-neutral-100 bg-white">
+      <div className="mt-5 overflow-hidden rounded-2xl border border-neutral-100 bg-white dark:border-neutral-800 dark:bg-neutral-900">
         {/* Bulk actions bar */}
         {selected.size > 0 && (
-          <div className="flex flex-wrap items-center gap-4 bg-neutral-900 px-5 py-3 text-sm text-white">
+          <div className="flex flex-wrap items-center gap-4 bg-neutral-900 px-5 py-3 text-sm text-white dark:bg-neutral-800">
             <span className="font-semibold">
               {selected.size} shift{selected.size === 1 ? "" : "s"} selected
             </span>
@@ -475,7 +475,7 @@ export function ShiftSchedulePage() {
               action={
                 <button
                   onClick={() => navigate(PATHS.hospital.createShift)}
-                  className="mt-2 flex items-center gap-1.5 rounded-lg bg-neutral-900 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-neutral-800"
+                  className="mt-2 flex items-center gap-1.5 rounded-lg bg-neutral-900 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-neutral-800 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-200"
                 >
                   <Plus className="h-3.5 w-3.5" />
                   Create Shift
@@ -487,7 +487,7 @@ export function ShiftSchedulePage() {
           <div className="overflow-x-auto">
             <table className="w-full min-w-[880px] text-sm">
               <thead>
-                <tr className="border-b border-neutral-100 bg-neutral-50/60 text-left text-xs font-semibold uppercase tracking-wider text-neutral-400">
+                <tr className="border-b border-neutral-100 bg-neutral-50/60 text-left text-xs font-semibold uppercase tracking-wider text-neutral-400 dark:border-neutral-800 dark:bg-neutral-800/60 dark:text-neutral-500">
                   <th className="w-12 px-4 py-3">
                     <input
                       type="checkbox"
@@ -517,8 +517,8 @@ export function ShiftSchedulePage() {
                     <tr
                       key={shift.id}
                       className={cn(
-                        "border-b border-neutral-50 transition-colors last:border-b-0 hover:bg-neutral-50/60",
-                        isSelected && "bg-primary-50/40",
+                        "border-b border-neutral-50 transition-colors last:border-b-0 hover:bg-neutral-50/60 dark:border-neutral-800 dark:hover:bg-neutral-800/60",
+                        isSelected && "bg-primary-50/40 dark:bg-primary-950/40",
                       )}
                     >
                       <td className="px-4 py-4">
@@ -536,20 +536,20 @@ export function ShiftSchedulePage() {
                           }
                           className="text-left"
                         >
-                          <p className="font-semibold text-neutral-900 hover:underline">
+                          <p className="font-semibold text-neutral-900 hover:underline dark:text-neutral-50">
                             {shift.shift_label ?? shift.role_title}
                           </p>
-                          <p className="mt-0.5 text-xs text-neutral-400">
+                          <p className="mt-0.5 text-xs text-neutral-400 dark:text-neutral-500">
                             {shift.role_title} · {priorityLabel[shift.priority]}
                           </p>
                         </button>
                       </td>
-                      <td className="py-4 pr-4 text-neutral-600">
+                      <td className="py-4 pr-4 text-neutral-600 dark:text-neutral-400">
                         {shift.department ?? "—"}
                       </td>
                       <td className="py-4 pr-4">
-                        <p className="font-medium text-neutral-800">{date}</p>
-                        <p className="mt-0.5 text-xs text-neutral-400">{time}</p>
+                        <p className="font-medium text-neutral-800 dark:text-neutral-200">{date}</p>
+                        <p className="mt-0.5 text-xs text-neutral-400 dark:text-neutral-500">{time}</p>
                       </td>
                       <td className="py-4 pr-4">
                         {shift.assigned_clinician_id ? (
@@ -558,16 +558,16 @@ export function ShiftSchedulePage() {
                               name={shift.assigned_clinician_id}
                               className="bg-primary-600 text-white"
                             />
-                            <span className="text-neutral-800">Assigned</span>
+                            <span className="text-neutral-800 dark:text-neutral-200">Assigned</span>
                           </span>
                         ) : (
-                          <span className="text-neutral-400">Unassigned</span>
+                          <span className="text-neutral-400 dark:text-neutral-500">Unassigned</span>
                         )}
                       </td>
-                      <td className="py-4 pr-4 text-center text-neutral-700">
+                      <td className="py-4 pr-4 text-center text-neutral-700 dark:text-neutral-300">
                         {applicants}
                       </td>
-                      <td className="py-4 pr-4 font-bold text-neutral-900">
+                      <td className="py-4 pr-4 font-bold text-neutral-900 dark:text-neutral-50">
                         {rateLabel(shift)}
                       </td>
                       <td className="py-4 pr-4">
@@ -582,7 +582,7 @@ export function ShiftSchedulePage() {
                         <Dropdown
                           align="right"
                           trigger={
-                            <span className="flex h-8 w-8 items-center justify-center rounded-lg text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-600">
+                            <span className="flex h-8 w-8 items-center justify-center rounded-lg text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-600 dark:hover:bg-neutral-800 dark:hover:text-neutral-300">
                               <MoreVertical className="h-4 w-4" />
                             </span>
                           }
@@ -628,7 +628,7 @@ export function ShiftSchedulePage() {
         )}
 
         {!isLoading && filteredRows.length > 0 && (
-          <div className="border-t border-neutral-100 px-5 py-4">
+          <div className="border-t border-neutral-100 px-5 py-4 dark:border-neutral-800">
             <Pagination
               page={page}
               pageCount={pageCount}
@@ -650,7 +650,7 @@ export function ShiftSchedulePage() {
         size="sm"
       >
         <div className="space-y-4">
-          <p className="text-sm text-neutral-600">
+          <p className="text-sm text-neutral-600 dark:text-neutral-400">
             {cancelTarget && cancelTarget.length === 1
               ? "This shift will be cancelled and removed from the marketplace."
               : `Open, assigned, and upcoming shifts among the ${cancelTarget?.length ?? 0} selected will be cancelled and removed from the marketplace.`}{" "}

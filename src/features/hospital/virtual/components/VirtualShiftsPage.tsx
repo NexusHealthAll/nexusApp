@@ -99,13 +99,13 @@ export function VirtualShiftsPage() {
         ]}
         actions={
           <>
-            <span className="flex items-center gap-1.5 rounded-full bg-success-50 px-3 py-1 text-xs font-semibold text-success-700">
+            <span className="flex items-center gap-1.5 rounded-full bg-success-50 px-3 py-1 text-xs font-semibold text-success-700 dark:bg-success-950 dark:text-success-300">
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-success-500" />
               Live
             </span>
             <button
               onClick={() => navigate(PATHS.hospital.createShift)}
-              className="flex h-9 items-center gap-1.5 rounded-lg bg-neutral-900 px-3.5 text-sm font-semibold text-white transition-colors hover:bg-neutral-800"
+              className="flex h-9 items-center gap-1.5 rounded-lg bg-neutral-900 px-3.5 text-sm font-semibold text-white transition-colors hover:bg-neutral-800 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-200"
             >
               <Plus className="h-4 w-4" />
               Create Virtual Shift
@@ -135,20 +135,20 @@ export function VirtualShiftsPage() {
       </div>
 
       {/* How it works */}
-      <div className="mt-6 rounded-2xl border border-neutral-100 bg-white p-6">
-        <h2 className="text-base font-bold text-neutral-900">
+      <div className="mt-6 rounded-2xl border border-neutral-100 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
+        <h2 className="text-base font-bold text-neutral-900 dark:text-neutral-50">
           How Virtual Shifts Work
         </h2>
         <div className="mt-5 grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
           {HOW_IT_WORKS.map((item) => (
             <div key={item.step}>
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-secondary-50 text-sm font-bold text-secondary-700">
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-secondary-50 text-sm font-bold text-secondary-700 dark:bg-secondary-950 dark:text-secondary-300">
                 {item.step}
               </span>
-              <h3 className="mt-3 text-sm font-bold text-neutral-900">
+              <h3 className="mt-3 text-sm font-bold text-neutral-900 dark:text-neutral-50">
                 {item.title}
               </h3>
-              <p className="mt-1.5 text-xs leading-relaxed text-neutral-500">
+              <p className="mt-1.5 text-xs leading-relaxed text-neutral-500 dark:text-neutral-400">
                 {item.body}
               </p>
             </div>
@@ -178,7 +178,7 @@ export function VirtualShiftsPage() {
             action={
               <button
                 onClick={() => navigate(PATHS.hospital.createShift)}
-                className="mt-2 flex items-center gap-1.5 rounded-lg bg-neutral-900 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-neutral-800"
+                className="mt-2 flex items-center gap-1.5 rounded-lg bg-neutral-900 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-neutral-800 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-200"
               >
                 <Plus className="h-3.5 w-3.5" />
                 Create Virtual Shift
@@ -193,22 +193,22 @@ export function VirtualShiftsPage() {
               <Link
                 key={session.id}
                 to={`${PATHS.hospital.virtualShifts}/${session.id}`}
-                className="block rounded-2xl border border-neutral-100 bg-white p-5 transition-shadow hover:shadow-soft"
+                className="block rounded-2xl border border-neutral-100 bg-white p-5 transition-shadow hover:shadow-soft dark:border-neutral-800 dark:bg-neutral-900"
               >
                 <div className="flex items-start gap-4">
-                  <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-secondary-50 text-secondary-600">
+                  <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-secondary-50 text-secondary-600 dark:bg-secondary-950 dark:text-secondary-400">
                     <Video className="h-5 w-5" />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-bold text-neutral-900">
+                    <p className="text-sm font-bold text-neutral-900 dark:text-neutral-50">
                       {session.patientLabel} · {session.visitType}
                     </p>
-                    <p className="mt-0.5 text-xs text-neutral-400">
+                    <p className="mt-0.5 text-xs text-neutral-400 dark:text-neutral-500">
                       {session.kiosk} · {session.doctor} · {session.startedAt}
                     </p>
                   </div>
                   <Badge variant={status.variant}>{status.label}</Badge>
-                  <ChevronRight className="mt-0.5 h-5 w-5 flex-shrink-0 text-neutral-300" />
+                  <ChevronRight className="mt-0.5 h-5 w-5 flex-shrink-0 text-neutral-300 dark:text-neutral-600" />
                 </div>
 
                 {/* Stage progress */}
@@ -219,20 +219,22 @@ export function VirtualShiftsPage() {
                         key={stage}
                         className={cn(
                           "flex items-center gap-1.5 text-xs font-semibold",
-                          i <= reached ? "text-secondary-700" : "text-neutral-300",
+                          i <= reached
+                            ? "text-secondary-700 dark:text-secondary-400"
+                            : "text-neutral-300 dark:text-neutral-600",
                         )}
                       >
                         <span
                           className={cn(
                             "h-1.5 w-1.5 rounded-full",
-                            i <= reached ? "bg-secondary-500" : "bg-neutral-200",
+                            i <= reached ? "bg-secondary-500" : "bg-neutral-200 dark:bg-neutral-700",
                           )}
                         />
                         {stageLabels[stage]}
                       </span>
                     ))}
                   </div>
-                  <div className="mt-2 h-1 overflow-hidden rounded-full bg-neutral-100">
+                  <div className="mt-2 h-1 overflow-hidden rounded-full bg-neutral-100 dark:bg-neutral-800">
                     <div
                       className="h-full rounded-full bg-secondary-500 transition-all"
                       style={{

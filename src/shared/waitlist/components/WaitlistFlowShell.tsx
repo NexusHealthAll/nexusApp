@@ -159,10 +159,10 @@ export function WaitlistFlowShell() {
     const workerOpen = openAccordion === "health-worker";
 
     return (
-      <div className="mt-3 w-[22rem] overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-soft">
+      <div className="mt-3 w-[22rem] overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-soft dark:border-neutral-800 dark:bg-neutral-900">
         <div className="p-3">
           {/* Hospital accordion */}
-          <div className="rounded-xl border border-neutral-200/80 bg-white/80">
+          <div className="rounded-xl border border-neutral-200/80 bg-white/80 dark:border-neutral-800 dark:bg-neutral-900/80">
             <button
               type="button"
               className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
@@ -174,15 +174,15 @@ export function WaitlistFlowShell() {
               }
             >
               <div>
-                <p className="text-sm font-semibold text-neutral-900">
+                <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-50">
                   Hospital
                 </p>
-                <p className="text-xs text-neutral-600">
+                <p className="text-xs text-neutral-600 dark:text-neutral-400">
                   Join as a facility admin
                 </p>
               </div>
               <ChevronDown
-                className={`h-5 w-5 text-neutral-500 transition-transform duration-300 ${
+                className={`h-5 w-5 text-neutral-500 transition-transform duration-300 dark:text-neutral-400 ${
                   hospitalOpen ? "rotate-180" : "rotate-0"
                 }`}
               />
@@ -219,7 +219,7 @@ export function WaitlistFlowShell() {
           </div>
 
           {/* Health worker accordion */}
-          <div className="mt-3 rounded-xl border border-neutral-200/80 bg-white/80">
+          <div className="mt-3 rounded-xl border border-neutral-200/80 bg-white/80 dark:border-neutral-800 dark:bg-neutral-900/80">
             <button
               type="button"
               className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
@@ -231,13 +231,13 @@ export function WaitlistFlowShell() {
               }
             >
               <div>
-                <p className="text-sm font-semibold text-neutral-900">
+                <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-50">
                   Health worker
                 </p>
-                <p className="text-xs text-neutral-600">Join as a clinician</p>
+                <p className="text-xs text-neutral-600 dark:text-neutral-400">Join as a clinician</p>
               </div>
               <ChevronDown
-                className={`h-5 w-5 text-neutral-500 transition-transform duration-300 ${
+                className={`h-5 w-5 text-neutral-500 transition-transform duration-300 dark:text-neutral-400 ${
                   workerOpen ? "rotate-180" : "rotate-0"
                 }`}
               />
@@ -278,8 +278,8 @@ export function WaitlistFlowShell() {
   }, [openAccordion, handleLoginNavigation, handleRegisterNavigation]);
 
   return (
-    <div className="min-h-screen bg-white text-onboarding-textPrimary">
-      <header className="sticky top-0 z-20 border-b border-neutral-200/80 bg-white/90 backdrop-blur">
+    <div className="min-h-screen bg-white text-onboarding-textPrimary dark:bg-neutral-950 dark:text-neutral-100">
+      <header className="sticky top-0 z-20 border-b border-neutral-200/80 bg-white/90 backdrop-blur dark:border-neutral-800 dark:bg-neutral-950/90">
         <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
           <Link aria-label="NexusCare home" className="shrink-0" to="/">
             <NexusCareLogo size="md" />
@@ -293,7 +293,7 @@ export function WaitlistFlowShell() {
               <Link
                 key={item}
                 to="/"
-                className="text-sm font-medium text-neutral-600 transition-colors hover:text-onboarding-primaryBlue"
+                className="text-sm font-medium text-neutral-600 transition-colors hover:text-onboarding-primaryBlue dark:text-neutral-400"
               >
                 {item}
               </Link>
@@ -326,7 +326,7 @@ export function WaitlistFlowShell() {
                     className="bg-onboarding-primaryBlue font-bold text-white"
                   />
                   <ChevronDown
-                    className={`h-4 w-4 text-neutral-500 transition-transform duration-300 ${
+                    className={`h-4 w-4 text-neutral-500 transition-transform duration-300 dark:text-neutral-400 ${
                       isDropdownOpen ? "rotate-180" : "rotate-0"
                     }`}
                   />
@@ -337,7 +337,7 @@ export function WaitlistFlowShell() {
                   aria-haspopup="true"
                   aria-expanded={isDropdownOpen}
                   onClick={() => setIsDropdownOpen((v) => !v)}
-                  className="rounded-xl px-5 text-sm font-semibold text-onboarding-textPrimary bg-white hover:bg-white/80 border border-onboarding-textPrimary/50"
+                  className="rounded-xl px-5 text-sm font-semibold text-onboarding-textPrimary bg-white hover:bg-white/80 border border-onboarding-textPrimary/50 dark:bg-neutral-900 dark:text-neutral-100 dark:hover:bg-neutral-800 dark:border-neutral-100/30"
                 >
                   <span className="flex items-center gap-2">
                     Get started
@@ -364,9 +364,9 @@ export function WaitlistFlowShell() {
                 >
                   <div className="relative" role="menu">
                     {currentUser ? (
-                      <div className="mt-3 w-64 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-soft">
-                        <div className="border-b border-neutral-100 px-4 py-3">
-                          <p className="truncate text-sm font-semibold text-neutral-900">
+                      <div className="mt-3 w-64 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-soft dark:border-neutral-800 dark:bg-neutral-900">
+                        <div className="border-b border-neutral-100 px-4 py-3 dark:border-neutral-800">
+                          <p className="truncate text-sm font-semibold text-neutral-900 dark:text-neutral-50">
                             {currentUser.fullName || "Account"}
                           </p>
                           <p className="truncate text-xs text-neutral-500">
@@ -383,7 +383,7 @@ export function WaitlistFlowShell() {
                                 : "/medical-staff/dashboard",
                             )
                           }
-                          className="flex w-full items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-50"
+                          className="flex w-full items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-50 dark:text-neutral-300 dark:hover:bg-neutral-800"
                         >
                           <LayoutDashboard className="h-4 w-4" />
                           Go to Dashboard
@@ -396,7 +396,7 @@ export function WaitlistFlowShell() {
                             setCurrentUser(null);
                             setIsDropdownOpen(false);
                           }}
-                          className="flex w-full items-center gap-2.5 border-t border-neutral-100 px-4 py-2.5 text-sm font-medium text-error-600 transition-colors hover:bg-error-50"
+                          className="flex w-full items-center gap-2.5 border-t border-neutral-100 px-4 py-2.5 text-sm font-medium text-error-600 transition-colors hover:bg-error-50 dark:border-neutral-800 dark:hover:bg-error-950"
                         >
                           <LogOut className="h-4 w-4" />
                           Log out
@@ -419,11 +419,11 @@ export function WaitlistFlowShell() {
 
       <WaitlistJoinModalFlow />
 
-      <footer className="border-t border-neutral-200 bg-white px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
+      <footer className="border-t border-neutral-200 bg-white px-4 py-12 sm:px-6 lg:px-8 lg:py-16 dark:border-neutral-800 dark:bg-neutral-950">
         <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[1.2fr_repeat(3,_1fr)]">
           <div>
             <NexusCareLogo size="md" />
-            <p className="mt-5 max-w-xs text-sm leading-7 text-neutral-600">
+            <p className="mt-5 max-w-xs text-sm leading-7 text-neutral-600 dark:text-neutral-400">
               Editorial grace in every interaction. Clinical precision in every
               byte.
             </p>
@@ -431,10 +431,10 @@ export function WaitlistFlowShell() {
 
           {waitlistFooterSections.map((section) => (
             <div key={section.title}>
-              <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-neutral-900">
+              <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-neutral-900 dark:text-neutral-50">
                 {section.title}
               </h2>
-              <ul className="mt-5 space-y-3 text-sm text-neutral-600">
+              <ul className="mt-5 space-y-3 text-sm text-neutral-600 dark:text-neutral-400">
                 {section.links.map((link) => (
                   <li key={link}>
                     <Link
@@ -450,7 +450,7 @@ export function WaitlistFlowShell() {
           ))}
         </div>
 
-        <div className="mx-auto mt-12 flex max-w-7xl items-center justify-center border-t border-neutral-200 pt-6 text-center text-sm text-neutral-500">
+        <div className="mx-auto mt-12 flex max-w-7xl items-center justify-center border-t border-neutral-200 pt-6 text-center text-sm text-neutral-500 dark:border-neutral-800 dark:text-neutral-500">
           <CheckCircle2 className="mr-2 h-4 w-4 text-secondary-700" />
           <p>
             © 2024 NexusCare AI. Crafted with clinical precision and editorial

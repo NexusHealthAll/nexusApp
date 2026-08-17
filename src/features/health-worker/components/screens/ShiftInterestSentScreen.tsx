@@ -21,13 +21,13 @@ export function ShiftInterestSentScreen({
   return (
     <main className="flex min-h-screen flex-col px-5 py-8">
       <div className="mt-6 text-center">
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-success-100 text-success-700">
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-success-100 text-success-700 dark:bg-success-950 dark:text-success-300">
           <Check className="h-8 w-8" />
         </div>
         <h1 className="mt-5 text-2xl font-bold">Interest Confirmed!</h1>
-        <p className="mt-2 text-sm text-neutral-500">
+        <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-500">
           We've sent your profile to{" "}
-          <span className="font-semibold text-brand-700">
+          <span className="font-semibold text-brand-700 dark:text-brand-300">
             {shift.hospital_name ?? "the hospital"}
           </span>{" "}
           for review.
@@ -37,12 +37,12 @@ export function ShiftInterestSentScreen({
       <Card className="mt-8">
         <CardContent className="space-y-4 p-4">
           <div>
-            <p className="text-xs text-neutral-500">Facility</p>
-            <p className="font-bold text-brand-700">{shift.hospital_name ?? "Hospital"}</p>
+            <p className="text-xs text-neutral-500 dark:text-neutral-500">Facility</p>
+            <p className="font-bold text-brand-700 dark:text-brand-300">{shift.hospital_name ?? "Hospital"}</p>
           </div>
           <div className="grid grid-cols-2 gap-3 text-sm">
             <div>
-              <p className="text-xs text-neutral-500">Date</p>
+              <p className="text-xs text-neutral-500 dark:text-neutral-500">Date</p>
               <p className="font-bold">
                 {new Date(shift.scheduled_start).toLocaleDateString("en-NG", {
                   month: "short",
@@ -51,7 +51,7 @@ export function ShiftInterestSentScreen({
               </p>
             </div>
             <div>
-              <p className="text-xs text-neutral-500">Time</p>
+              <p className="text-xs text-neutral-500 dark:text-neutral-500">Time</p>
               <p className="font-bold">
                 {new Date(shift.scheduled_start).toLocaleTimeString("en-NG", {
                   hour: "numeric",
@@ -60,18 +60,18 @@ export function ShiftInterestSentScreen({
               </p>
             </div>
             <div>
-              <p className="text-xs text-neutral-500">Rate</p>
+              <p className="text-xs text-neutral-500 dark:text-neutral-500">Rate</p>
               <p className="font-bold">{rate}</p>
             </div>
             <div>
-              <p className="text-xs text-neutral-500">Role</p>
+              <p className="text-xs text-neutral-500 dark:text-neutral-500">Role</p>
               <p className="font-bold">{shift.role_title}</p>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      <div className="mt-5 rounded-2xl bg-brand-50 p-4 text-sm text-brand-800">
+      <div className="mt-5 rounded-2xl bg-brand-50 p-4 text-sm text-brand-800 dark:bg-brand-950 dark:text-brand-300">
         Hospitals typically review applications within a few hours. We'll notify you as soon as
         they respond.
       </div>
@@ -83,7 +83,7 @@ export function ShiftInterestSentScreen({
         <button
           type="button"
           onClick={onDashboard}
-          className="w-full text-center text-sm font-semibold text-neutral-500 hover:text-neutral-700"
+          className="w-full text-center text-sm font-semibold text-neutral-500 hover:text-neutral-700 dark:text-neutral-500 dark:hover:text-neutral-300"
         >
           Back to Dashboard
         </button>

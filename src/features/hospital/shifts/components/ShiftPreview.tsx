@@ -71,20 +71,20 @@ function AccordionSection({
   const [open, setOpen] = useState(defaultOpen);
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-neutral-200 bg-white">
+    <div className="overflow-hidden rounded-2xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center justify-between px-6 py-4 text-left hover:bg-neutral-50 transition-colors"
+        className="flex w-full items-center justify-between px-6 py-4 text-left hover:bg-neutral-50 transition-colors dark:hover:bg-neutral-800"
       >
-        <span className="text-sm font-bold text-neutral-900">{title}</span>
+        <span className="text-sm font-bold text-neutral-900 dark:text-neutral-50">{title}</span>
         {open ? (
-          <ChevronUp className="h-4 w-4 text-neutral-400" />
+          <ChevronUp className="h-4 w-4 text-neutral-400 dark:text-neutral-500" />
         ) : (
-          <ChevronDown className="h-4 w-4 text-neutral-400" />
+          <ChevronDown className="h-4 w-4 text-neutral-400 dark:text-neutral-500" />
         )}
       </button>
       {open && (
-        <div className="border-t border-neutral-100 px-6 pb-6 pt-4">
+        <div className="border-t border-neutral-100 px-6 pb-6 pt-4 dark:border-neutral-800">
           {children}
         </div>
       )}
@@ -95,10 +95,10 @@ function AccordionSection({
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-start justify-between gap-4 py-2">
-      <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400 flex-shrink-0">
+      <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 flex-shrink-0">
         {label}
       </span>
-      <span className="text-sm font-medium text-neutral-800 text-right">
+      <span className="text-sm font-medium text-neutral-800 dark:text-neutral-200 text-right">
         {value || "—"}
       </span>
     </div>
@@ -141,45 +141,45 @@ export function ShiftPreview({ data, onBack, onBroadcast }: Props) {
   return (
     <div>
         {/* Shift preview card */}
-        <div className="mb-6 overflow-hidden rounded-2xl border border-neutral-200 bg-white">
+        <div className="mb-6 overflow-hidden rounded-2xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
           <div className="p-5">
             <div className="mb-3 flex items-start justify-between">
               <div className="flex gap-2">
                 {isStatUrgency && (
-                  <span className="flex items-center gap-1 rounded-full bg-error-100 px-2.5 py-1 text-[11px] font-bold text-error-600">
+                  <span className="flex items-center gap-1 rounded-full bg-error-100 px-2.5 py-1 text-[11px] font-bold text-error-600 dark:bg-error-950 dark:text-error-300">
                     <Zap className="h-3 w-3" />
                     STAT
                   </span>
                 )}
               </div>
-              <button className="text-neutral-400 hover:text-neutral-600">
+              <button className="text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300">
                 <Bookmark className="h-4 w-4" />
               </button>
             </div>
 
-            <h2 className="mb-0.5 text-lg font-bold text-neutral-900">
+            <h2 className="mb-0.5 text-lg font-bold text-neutral-900 dark:text-neutral-50">
               {data.roleNeeded
                 ? `${data.specialty ? data.specialty + " " : ""}${data.roleNeeded}`
                 : "Emergency Doctor"}
             </h2>
-            <p className="mb-4 text-sm font-medium text-secondary-600">
+            <p className="mb-4 text-sm font-medium text-secondary-600 dark:text-secondary-400">
               LUTH &bull; 1.2km
             </p>
 
             <div className="mb-4 grid grid-cols-2 gap-4">
               <div>
-                <p className="mb-0.5 text-[10px] font-bold uppercase tracking-widest text-neutral-400">
+                <p className="mb-0.5 text-[10px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500">
                   Rate
                 </p>
-                <p className="text-sm font-bold text-neutral-900">
+                <p className="text-sm font-bold text-neutral-900 dark:text-neutral-50">
                   {rateDisplay(data)}
                 </p>
               </div>
               <div>
-                <p className="mb-0.5 text-[10px] font-bold uppercase tracking-widest text-neutral-400">
+                <p className="mb-0.5 text-[10px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500">
                   Schedule
                 </p>
-                <p className="text-sm font-bold text-neutral-900">
+                <p className="text-sm font-bold text-neutral-900 dark:text-neutral-50">
                   {scheduleDisplay(
                     data.startDate,
                     data.startTime,
@@ -194,32 +194,32 @@ export function ShiftPreview({ data, onBack, onBroadcast }: Props) {
                 {[1, 2, 3].map((i) => (
                   <div
                     key={i}
-                    className="h-6 w-6 rounded-full border-2 border-white bg-gradient-to-br from-secondary-400 to-secondary-600"
+                    className="h-6 w-6 rounded-full border-2 border-white bg-gradient-to-br from-secondary-400 to-secondary-600 dark:border-neutral-900"
                   />
                 ))}
               </div>
-              <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-xs font-semibold text-neutral-600">
+              <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-xs font-semibold text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300">
                 +45
               </span>
-              <span className="text-xs text-neutral-500">
+              <span className="text-xs text-neutral-500 dark:text-neutral-400">
                 Eligible clinicians nearby
               </span>
             </div>
           </div>
 
-          <div className="flex items-center justify-between border-t border-neutral-100 bg-neutral-50 px-5 py-3">
-            <div className="flex items-center gap-1.5 text-xs text-neutral-600">
+          <div className="flex items-center justify-between border-t border-neutral-100 bg-neutral-50 px-5 py-3 dark:border-neutral-800 dark:bg-neutral-800">
+            <div className="flex items-center gap-1.5 text-xs text-neutral-600 dark:text-neutral-400">
               <MapPin className="h-3.5 w-3.5" />
               <span>Idi-Araba, Lagos</span>
             </div>
-            <ArrowRight className="h-4 w-4 text-neutral-400" />
+            <ArrowRight className="h-4 w-4 text-neutral-400 dark:text-neutral-500" />
           </div>
         </div>
 
         {/* Accordions */}
         <div className="space-y-3 mb-8">
           <AccordionSection title="Basic Information">
-            <div className="divide-y divide-neutral-100">
+            <div className="divide-y divide-neutral-100 dark:divide-neutral-800">
               <InfoRow label="Role" value={data.roleNeeded} />
               <InfoRow label="Specialty" value={data.specialty} />
               <InfoRow
@@ -258,7 +258,7 @@ export function ShiftPreview({ data, onBack, onBroadcast }: Props) {
           </AccordionSection>
 
           <AccordionSection title="Compensation">
-            <div className="divide-y divide-neutral-100">
+            <div className="divide-y divide-neutral-100 dark:divide-neutral-800">
               <InfoRow
                 label="Pay Type"
                 value={data.payType === "hourly" ? "Hourly Rate" : "Fixed Rate"}
@@ -302,10 +302,10 @@ export function ShiftPreview({ data, onBack, onBroadcast }: Props) {
                 />
               )}
               <div className="flex items-center justify-between pt-3">
-                <span className="text-xs font-bold uppercase tracking-wider text-secondary-700">
+                <span className="text-xs font-bold uppercase tracking-wider text-secondary-700 dark:text-secondary-400">
                   Grand Total
                 </span>
-                <span className="text-base font-bold text-secondary-700">
+                <span className="text-base font-bold text-secondary-700 dark:text-secondary-400">
                   {formatNaira(grandTotal)}
                 </span>
               </div>
@@ -315,24 +315,24 @@ export function ShiftPreview({ data, onBack, onBroadcast }: Props) {
           <AccordionSection title="Description">
             {data.jobDescription && (
               <div className="mb-4">
-                <p className="mb-1 text-xs font-bold uppercase tracking-wider text-neutral-400">
+                <p className="mb-1 text-xs font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
                   Job Description
                 </p>
-                <p className="text-sm text-neutral-700 leading-relaxed">
+                <p className="text-sm text-neutral-700 dark:text-neutral-300 leading-relaxed">
                   {data.jobDescription}
                 </p>
               </div>
             )}
             {data.tasks.length > 0 && (
               <div className="mb-4">
-                <p className="mb-2 text-xs font-bold uppercase tracking-wider text-neutral-400">
+                <p className="mb-2 text-xs font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
                   Tasks
                 </p>
                 <ul className="space-y-1.5">
                   {data.tasks.map((t, i) => (
                     <li
                       key={i}
-                      className="flex items-start gap-2 text-sm text-neutral-700"
+                      className="flex items-start gap-2 text-sm text-neutral-700 dark:text-neutral-300"
                     >
                       <span className="mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-secondary-500" />
                       {t}
@@ -343,14 +343,14 @@ export function ShiftPreview({ data, onBack, onBroadcast }: Props) {
             )}
             {data.deliverables.length > 0 && (
               <div className="mb-4">
-                <p className="mb-2 text-xs font-bold uppercase tracking-wider text-neutral-400">
+                <p className="mb-2 text-xs font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
                   Deliverables
                 </p>
                 <ul className="space-y-1.5">
                   {data.deliverables.map((d) => (
                     <li
                       key={d.id}
-                      className="flex items-start gap-2 text-sm text-neutral-700"
+                      className="flex items-start gap-2 text-sm text-neutral-700 dark:text-neutral-300"
                     >
                       <span className="mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-secondary-500" />
                       {d.name}
@@ -361,14 +361,14 @@ export function ShiftPreview({ data, onBack, onBroadcast }: Props) {
             )}
             {data.equipment.length > 0 && (
               <div>
-                <p className="mb-2 text-xs font-bold uppercase tracking-wider text-neutral-400">
+                <p className="mb-2 text-xs font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
                   Equipment Provided
                 </p>
                 <ul className="space-y-1.5">
                   {data.equipment.map((e) => (
                     <li
                       key={e.id}
-                      className="flex items-start gap-2 text-sm text-neutral-700"
+                      className="flex items-start gap-2 text-sm text-neutral-700 dark:text-neutral-300"
                     >
                       <span className="mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-secondary-500" />
                       {e.name}
@@ -381,7 +381,7 @@ export function ShiftPreview({ data, onBack, onBroadcast }: Props) {
               !data.tasks.length &&
               !data.deliverables.length &&
               !data.equipment.length && (
-                <p className="text-sm text-neutral-400 italic">
+                <p className="text-sm text-neutral-400 dark:text-neutral-500 italic">
                   No description provided.
                 </p>
               )}
@@ -400,7 +400,7 @@ export function ShiftPreview({ data, onBack, onBroadcast }: Props) {
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-neutral-400 italic">
+              <p className="text-sm text-neutral-400 dark:text-neutral-500 italic">
                 No qualifications specified.
               </p>
             )}
@@ -419,11 +419,11 @@ export function ShiftPreview({ data, onBack, onBroadcast }: Props) {
           </Button>
           <button
             onClick={onBack}
-            className="w-full rounded-2xl border border-neutral-200 bg-white py-3.5 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 transition-colors"
+            className="w-full rounded-2xl border border-neutral-200 bg-white py-3.5 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 transition-colors dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800"
           >
             Back to Schedule Details
           </button>
-          <p className="text-center text-xs text-neutral-400">
+          <p className="text-center text-xs text-neutral-400 dark:text-neutral-500">
             By clicking broadcast, this position will be immediately published
             to the clinician marketplace. Charges will only apply once a
             clinician is successfully booked.

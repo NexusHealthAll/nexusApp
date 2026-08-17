@@ -56,7 +56,7 @@ export function ActiveShiftOverlay({
   };
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-neutral-200 shadow-md">
+    <div className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-neutral-200 shadow-md dark:bg-neutral-900 dark:border-neutral-800">
       <div className="px-6 py-4">
         <div className="flex items-center justify-between">
           {/* Left: Shift Info */}
@@ -66,30 +66,30 @@ export function ActiveShiftOverlay({
                 <Activity className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h3 className="font-semibold text-neutral-900">Active Shift</h3>
-                <p className="text-sm text-neutral-600">{shiftData.hospital}</p>
+                <h3 className="font-semibold text-neutral-900 dark:text-neutral-50">Active Shift</h3>
+                <p className="text-sm text-neutral-600 dark:text-neutral-400">{shiftData.hospital}</p>
               </div>
             </div>
 
             {/* Timer Display */}
             <div className="flex items-center space-x-2">
-              <Clock className="h-5 w-5 text-primary-600" />
+              <Clock className="h-5 w-5 text-primary-600 dark:text-primary-400" />
               <div className="text-center">
-                <p className="text-3xl font-bold text-primary-600">
+                <p className="text-3xl font-bold text-primary-600 dark:text-primary-400">
                   {elapsedTime}
                 </p>
-                <p className="text-xs text-neutral-500">Hours Active</p>
+                <p className="text-xs text-neutral-500 dark:text-neutral-500">Hours Active</p>
               </div>
             </div>
 
             {/* Patients Seen */}
             <div className="flex items-center space-x-2">
-              <Users className="h-5 w-5 text-secondary-600" />
+              <Users className="h-5 w-5 text-secondary-600 dark:text-secondary-400" />
               <div className="text-center">
-                <p className="text-2xl font-bold text-secondary-600">
+                <p className="text-2xl font-bold text-secondary-600 dark:text-secondary-400">
                   {patientsSeenToday}
                 </p>
-                <p className="text-xs text-neutral-500">Patients Today</p>
+                <p className="text-xs text-neutral-500 dark:text-neutral-500">Patients Today</p>
               </div>
             </div>
           </div>
@@ -125,7 +125,7 @@ export function ActiveShiftOverlay({
             <Button
               variant="outline"
               onClick={onEndShift}
-              className="px-4 py-3 border-error-300 text-error-600 hover:bg-error-50"
+              className="px-4 py-3 border-error-300 text-error-600 hover:bg-error-50 dark:border-error-800 dark:text-error-400 dark:hover:bg-error-950"
             >
               <Square className="mr-2 h-4 w-4" />
               End Shift
@@ -134,8 +134,8 @@ export function ActiveShiftOverlay({
         </div>
 
         {/* Status Indicators */}
-        <div className="flex items-center justify-between mt-3 pt-3 border-t border-neutral-200">
-          <div className="flex items-center space-x-6 text-sm text-neutral-600">
+        <div className="flex items-center justify-between mt-3 pt-3 border-t border-neutral-200 dark:border-neutral-800">
+          <div className="flex items-center space-x-6 text-sm text-neutral-600 dark:text-neutral-400">
             <div className="flex items-center space-x-2">
               <div
                 className={`w-2 h-2 rounded-full ${isPaused ? "bg-warning-500" : "bg-success-500"}`}
@@ -148,9 +148,9 @@ export function ActiveShiftOverlay({
             <div>Rate: ₦{shiftData.hourlyRate.toLocaleString()}/hour</div>
           </div>
 
-          <div className="text-sm text-neutral-600">
+          <div className="text-sm text-neutral-600 dark:text-neutral-400">
             <span>Estimated Earnings: </span>
-            <span className="font-semibold text-success-600">
+            <span className="font-semibold text-success-600 dark:text-success-400">
               ₦
               {(
                 parseFloat(elapsedTime.replace(":", ".")) * shiftData.hourlyRate

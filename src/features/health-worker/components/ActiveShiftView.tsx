@@ -94,21 +94,21 @@ export function ActiveShiftView({ shiftId, onEndShift }: ActiveShiftViewProps) {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-neutral-50">
+    <div className="h-screen flex flex-col bg-neutral-50 dark:bg-neutral-950">
       {/* Header */}
-      <div className="bg-white border-b border-neutral-200 px-6 py-4">
+      <div className="bg-white border-b border-neutral-200 px-6 py-4 dark:bg-neutral-900 dark:border-neutral-800">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <Button variant="ghost" size="sm" onClick={onEndShift}>
               <ArrowLeft className="h-4 w-4 mr-2" />
               End Shift
             </Button>
-            <div className="h-6 w-px bg-neutral-300" />
+            <div className="h-6 w-px bg-neutral-300 dark:bg-neutral-700" />
             <div>
-              <h1 className="text-lg font-semibold text-neutral-900">
+              <h1 className="text-lg font-semibold text-neutral-900 dark:text-neutral-50">
                 Active Shift
               </h1>
-              <p className="text-sm text-neutral-600">
+              <p className="text-sm text-neutral-600 dark:text-neutral-400">
                 {mockActiveShiftData.hospital} •{" "}
                 {mockActiveShiftData.department}
               </p>
@@ -116,16 +116,16 @@ export function ActiveShiftView({ shiftId, onEndShift }: ActiveShiftViewProps) {
           </div>
           <div className="flex items-center space-x-6">
             <div className="text-center">
-              <p className="text-2xl font-bold text-primary-600">
+              <p className="text-2xl font-bold text-primary-600 dark:text-primary-400">
                 {shiftDuration}
               </p>
-              <p className="text-xs text-neutral-500">Shift Duration</p>
+              <p className="text-xs text-neutral-500 dark:text-neutral-500">Shift Duration</p>
             </div>
             <div className="text-center">
-              <p className="text-lg font-semibold text-neutral-900">
+              <p className="text-lg font-semibold text-neutral-900 dark:text-neutral-50">
                 12 seen so far
               </p>
-              <p className="text-xs text-neutral-500">Patients</p>
+              <p className="text-xs text-neutral-500 dark:text-neutral-500">Patients</p>
             </div>
           </div>
         </div>
@@ -139,10 +139,10 @@ export function ActiveShiftView({ shiftId, onEndShift }: ActiveShiftViewProps) {
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <User className="h-5 w-5 text-primary-600" />
+                  <User className="h-5 w-5 text-primary-600 dark:text-primary-400" />
                   <span>Current Patient</span>
                 </div>
-                <span className="text-sm font-normal text-neutral-500">
+                <span className="text-sm font-normal text-neutral-500 dark:text-neutral-500">
                   Anonymous #{mockActiveShiftData.currentPatient.id}
                 </span>
               </CardTitle>
@@ -150,7 +150,7 @@ export function ActiveShiftView({ shiftId, onEndShift }: ActiveShiftViewProps) {
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <p className="text-sm font-medium text-neutral-700">
+                  <p className="text-sm font-medium text-neutral-700 dark:text-neutral-400">
                     Patient ID
                   </p>
                   <p className="text-lg font-semibold">
@@ -158,16 +158,16 @@ export function ActiveShiftView({ shiftId, onEndShift }: ActiveShiftViewProps) {
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-neutral-700">Age</p>
+                  <p className="text-sm font-medium text-neutral-700 dark:text-neutral-400">Age</p>
                   <p className="text-lg font-semibold">
                     {mockActiveShiftData.currentPatient.age} years
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-neutral-700">
+                  <p className="text-sm font-medium text-neutral-700 dark:text-neutral-400">
                     Chief Complaint
                   </p>
-                  <p className="text-sm text-neutral-600">
+                  <p className="text-sm text-neutral-600 dark:text-neutral-400">
                     {mockActiveShiftData.currentPatient.condition}
                   </p>
                 </div>
@@ -180,11 +180,11 @@ export function ActiveShiftView({ shiftId, onEndShift }: ActiveShiftViewProps) {
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <Mic className="h-5 w-5 text-primary-600" />
+                  <Mic className="h-5 w-5 text-primary-600 dark:text-primary-400" />
                   <span>AI Transcriber/Translation</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <span className="text-xs font-normal text-neutral-500">
+                  <span className="text-xs font-normal text-neutral-500 dark:text-neutral-500">
                     Shift #{shiftId}
                   </span>
                   <Button
@@ -240,16 +240,16 @@ export function ActiveShiftView({ shiftId, onEndShift }: ActiveShiftViewProps) {
                   (segment, index) => (
                     <div
                       key={index}
-                      className="flex space-x-3 p-3 bg-neutral-50 rounded-lg"
+                      className="flex space-x-3 p-3 bg-neutral-50 rounded-lg dark:bg-neutral-800"
                     >
-                      <div className="text-xs text-neutral-500 min-w-[60px]">
+                      <div className="text-xs text-neutral-500 min-w-[60px] dark:text-neutral-500">
                         {segment.timestamp}
                       </div>
                       <div className="flex-1">
-                        <div className="text-xs font-medium text-neutral-700 mb-1">
+                        <div className="text-xs font-medium text-neutral-700 mb-1 dark:text-neutral-400">
                           {segment.speaker}
                         </div>
-                        <div className="text-sm text-neutral-900">
+                        <div className="text-sm text-neutral-900 dark:text-neutral-50">
                           {segment.text}
                         </div>
                       </div>
@@ -264,7 +264,7 @@ export function ActiveShiftView({ shiftId, onEndShift }: ActiveShiftViewProps) {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center space-x-3">
-                <FileText className="h-5 w-5 text-primary-600" />
+                <FileText className="h-5 w-5 text-primary-600 dark:text-primary-400" />
                 <span>Clinical Notes</span>
               </CardTitle>
             </CardHeader>
@@ -273,7 +273,7 @@ export function ActiveShiftView({ shiftId, onEndShift }: ActiveShiftViewProps) {
                 value={clinicalNotes}
                 onChange={(e) => setClinicalNotes(e.target.value)}
                 placeholder="Document your clinical findings and observations..."
-                className="w-full h-32 p-3 border border-neutral-300 rounded-lg resize-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                className="w-full h-32 p-3 border border-neutral-300 rounded-lg resize-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:border-neutral-700 dark:bg-neutral-800"
               />
               <div className="flex justify-end space-x-2 mt-3">
                 <Button variant="outline" size="sm">
@@ -290,80 +290,80 @@ export function ActiveShiftView({ shiftId, onEndShift }: ActiveShiftViewProps) {
         </div>
 
         {/* Patient Vitals Sidebar */}
-        <div className="w-80 bg-white border-l border-neutral-200 flex flex-col">
-          <div className="p-4 border-b border-neutral-200">
-            <h2 className="font-semibold text-neutral-900">Patient Vitals</h2>
-            <p className="text-sm text-neutral-600">Real-time monitoring</p>
+        <div className="w-80 bg-white border-l border-neutral-200 flex flex-col dark:bg-neutral-900 dark:border-neutral-800">
+          <div className="p-4 border-b border-neutral-200 dark:border-neutral-800">
+            <h2 className="font-semibold text-neutral-900 dark:text-neutral-50">Patient Vitals</h2>
+            <p className="text-sm text-neutral-600 dark:text-neutral-400">Real-time monitoring</p>
           </div>
 
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
             {/* Temperature */}
-            <div className="p-3 bg-error-50 border border-error-200 rounded-lg">
+            <div className="p-3 bg-error-50 border border-error-200 rounded-lg dark:bg-error-950 dark:border-error-800">
               <div className="flex items-center space-x-2 mb-2">
-                <Thermometer className="h-4 w-4 text-error-600" />
-                <span className="text-sm font-medium text-error-800">
+                <Thermometer className="h-4 w-4 text-error-600 dark:text-error-400" />
+                <span className="text-sm font-medium text-error-800 dark:text-error-300">
                   Temperature
                 </span>
               </div>
-              <p className="text-2xl font-bold text-error-900">
+              <p className="text-2xl font-bold text-error-900 dark:text-error-300">
                 {mockActiveShiftData.vitals.temperature}°C
               </p>
-              <p className="text-xs text-error-600">Above normal</p>
+              <p className="text-xs text-error-600 dark:text-error-400">Above normal</p>
             </div>
 
             {/* Heart Rate */}
-            <div className="p-3 bg-neutral-50 rounded-lg">
+            <div className="p-3 bg-neutral-50 rounded-lg dark:bg-neutral-800">
               <div className="flex items-center space-x-2 mb-2">
-                <Heart className="h-4 w-4 text-error-500" />
+                <Heart className="h-4 w-4 text-error-500 dark:text-error-400" />
                 <span className="text-sm font-medium">Heart Rate</span>
               </div>
-              <p className="text-2xl font-bold text-neutral-900">
+              <p className="text-2xl font-bold text-neutral-900 dark:text-neutral-50">
                 {mockActiveShiftData.vitals.heartRate} bpm
               </p>
-              <p className="text-xs text-neutral-500">Normal range</p>
+              <p className="text-xs text-neutral-500 dark:text-neutral-500">Normal range</p>
             </div>
 
             {/* Blood Pressure */}
-            <div className="p-3 bg-neutral-50 rounded-lg">
+            <div className="p-3 bg-neutral-50 rounded-lg dark:bg-neutral-800">
               <div className="flex items-center space-x-2 mb-2">
-                <Activity className="h-4 w-4 text-primary-500" />
+                <Activity className="h-4 w-4 text-primary-500 dark:text-primary-400" />
                 <span className="text-sm font-medium">Blood Pressure</span>
               </div>
-              <p className="text-2xl font-bold text-neutral-900">
+              <p className="text-2xl font-bold text-neutral-900 dark:text-neutral-50">
                 {mockActiveShiftData.vitals.bloodPressure}
               </p>
-              <p className="text-xs text-neutral-500">mmHg</p>
+              <p className="text-xs text-neutral-500 dark:text-neutral-500">mmHg</p>
             </div>
 
             {/* Respiratory Rate */}
-            <div className="p-3 bg-warning-50 border border-warning-200 rounded-lg">
+            <div className="p-3 bg-warning-50 border border-warning-200 rounded-lg dark:bg-warning-950 dark:border-warning-800">
               <div className="flex items-center space-x-2 mb-2">
-                <Activity className="h-4 w-4 text-warning-600" />
-                <span className="text-sm font-medium text-warning-800">
+                <Activity className="h-4 w-4 text-warning-600 dark:text-warning-400" />
+                <span className="text-sm font-medium text-warning-800 dark:text-warning-300">
                   Respiratory Rate
                 </span>
               </div>
-              <p className="text-2xl font-bold text-warning-900">
+              <p className="text-2xl font-bold text-warning-900 dark:text-warning-300">
                 {mockActiveShiftData.vitals.respiratoryRate}/min
               </p>
-              <p className="text-xs text-warning-600">Slightly elevated</p>
+              <p className="text-xs text-warning-600 dark:text-warning-400">Slightly elevated</p>
             </div>
 
             {/* O2 Saturation */}
-            <div className="p-3 bg-neutral-50 rounded-lg">
+            <div className="p-3 bg-neutral-50 rounded-lg dark:bg-neutral-800">
               <div className="flex items-center space-x-2 mb-2">
-                <Activity className="h-4 w-4 text-primary-500" />
+                <Activity className="h-4 w-4 text-primary-500 dark:text-primary-400" />
                 <span className="text-sm font-medium">O2 Saturation</span>
               </div>
-              <p className="text-2xl font-bold text-neutral-900">
+              <p className="text-2xl font-bold text-neutral-900 dark:text-neutral-50">
                 {mockActiveShiftData.vitals.oxygenSaturation}%
               </p>
-              <p className="text-xs text-neutral-500">Normal</p>
+              <p className="text-xs text-neutral-500 dark:text-neutral-500">Normal</p>
             </div>
           </div>
 
           {/* Quick Actions */}
-          <div className="p-4 border-t border-neutral-200">
+          <div className="p-4 border-t border-neutral-200 dark:border-neutral-800">
             <div className="space-y-2">
               <Button className="w-full" size="sm">
                 Complete Patient

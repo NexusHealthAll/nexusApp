@@ -69,6 +69,26 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
   }, [formData]);
 
+  // This provider is only ever mounted while a route inside the onboarding
+  // flow is active (see hospitalOnboardingRoutes' layout route) — so its own
+  // unmount *usually* means "the user left the flow" (a Back-to-login link,
+  // browser back into the rest of the app, or any other in-app navigation).
+  // But unmount can also fire for reasons that have nothing to do with the
+  // user leaving — React 18 StrictMode's dev-only double-invoke, or a Vite
+  // HMR reload of this (or an ancestor) module while iterating on onboarding
+  // UI — and none of those change the actual URL. So re-check the real
+  // browser location at the moment of cleanup rather than trusting the
+  // unmount alone: only clear if it's genuinely no longer on an onboarding
+  // route. A hard refresh/tab close never runs this cleanup at all (the page
+  // just reloads), so the resume-after-refresh behavior above is unaffected.
+  useEffect(() => {
+    return () => {
+      if (!window.location.pathname.startsWith("/hospital/onboarding")) {
+        localStorage.removeItem(STORAGE_KEY);
+      }
+    };
+  }, []);
+
   function setField<K extends keyof OnboardingFormData>(key: K, value: OnboardingFormData[K]) {
     setFormData((prev) => ({ ...prev, [key]: value }));
   }

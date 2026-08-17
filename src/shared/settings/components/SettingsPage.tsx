@@ -10,6 +10,8 @@ import { cn } from "@/shared/utils/cn";
 import { authUtils } from "@/shared/auth/utils/authUtils";
 import { useAuthStore } from "@/shared/auth/store/authStore";
 import { useHospitalProfile } from "@/features/hospital/hooks/useHospitalProfile";
+import { useTheme, type ThemeMode } from "@/shared/theme/ThemeContext";
+import { Monitor, Moon, Sun } from "lucide-react";
 
 type SettingsSection =
   | "account"
@@ -67,7 +69,6 @@ interface StoredPrefs {
   twoFactor: boolean;
   notifications: Record<string, boolean>;
   language: string;
-  theme: "light" | "dark";
 }
 
 function loadPrefs(): StoredPrefs {
@@ -83,9 +84,14 @@ function loadPrefs(): StoredPrefs {
       NOTIFICATION_PREFS.map((p) => [p.id, p.default]),
     ),
     language: "en-US",
-    theme: "light",
   };
 }
+
+const THEME_OPTIONS: { mode: ThemeMode; label: string; icon: typeof Sun }[] = [
+  { mode: "light", label: "Light", icon: Sun },
+  { mode: "dark", label: "Dark", icon: Moon },
+  { mode: "system", label: "System", icon: Monitor },
+];
 
 function Toggle({
   checked,
@@ -105,12 +111,12 @@ function Toggle({
       onClick={() => onChange(!checked)}
       className={cn(
         "relative h-6 w-11 flex-shrink-0 rounded-full transition-colors",
-        checked ? "bg-brand-600" : "bg-neutral-200",
+        checked ? "bg-brand-600" : "bg-neutral-200 dark:bg-neutral-700",
       )}
     >
       <span
         className={cn(
-          "absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all",
+          "absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all dark:bg-neutral-100",
           checked ? "left-[22px]" : "left-0.5",
         )}
       />
@@ -123,6 +129,7 @@ export function SettingsPage() {
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
   const { profile } = useHospitalProfile();
+  const { theme, setTheme } = useTheme();
 
   const [section, setSection] = useState<SettingsSection>("account");
   const [prefs, setPrefsState] = useState<StoredPrefs>(loadPrefs);
@@ -165,7 +172,7 @@ export function SettingsPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-bold text-neutral-900 lg:text-3xl">
+      <h1 className="mb-6 text-2xl font-bold text-neutral-900 dark:text-neutral-50 lg:text-3xl">
         Settings
       </h1>
 
@@ -180,8 +187,8 @@ export function SettingsPage() {
                   className={cn(
                     "w-full rounded-lg px-4 py-2.5 text-left text-sm font-medium transition-colors",
                     section === item.id
-                      ? "bg-primary-50 font-semibold text-primary-700"
-                      : "text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900",
+                      ? "bg-primary-50 font-semibold text-primary-700 dark:bg-primary-950 dark:text-primary-300"
+                      : "text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100",
                   )}
                 >
                   {item.label}
@@ -189,10 +196,10 @@ export function SettingsPage() {
               </li>
             ))}
           </ul>
-          <div className="mt-4 border-t border-neutral-200 pt-4">
+          <div className="mt-4 border-t border-neutral-200 pt-4 dark:border-neutral-800">
             <button
               onClick={handleLogout}
-              className="w-full rounded-lg px-4 py-2.5 text-left text-sm font-semibold text-error-600 transition-colors hover:bg-error-50"
+              className="w-full rounded-lg px-4 py-2.5 text-left text-sm font-semibold text-error-600 transition-colors hover:bg-error-50 dark:hover:bg-error-950"
             >
               Log Out
             </button>
@@ -202,8 +209,8 @@ export function SettingsPage() {
         {/* Panels */}
         <div className="space-y-4">
           {section === "account" && (
-            <div className="rounded-2xl border border-neutral-100 bg-white p-6 sm:p-8">
-              <h2 className="text-lg font-bold text-neutral-900">
+            <div className="rounded-2xl border border-neutral-100 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900 sm:p-8">
+              <h2 className="text-lg font-bold text-neutral-900 dark:text-neutral-50">
                 Account Settings
               </h2>
               <div className="mt-6 flex items-center gap-4">
@@ -229,7 +236,7 @@ export function SettingsPage() {
                   containerClassName="sm:col-span-2"
                 />
               </div>
-              <p className="mt-4 text-xs text-neutral-400">
+              <p className="mt-4 text-xs text-neutral-400 dark:text-neutral-500">
                 Admin identity comes from your hospital registration — contact
                 support to change it.
               </p>
@@ -238,15 +245,15 @@ export function SettingsPage() {
 
           {section === "security" && (
             <>
-              <div className="rounded-2xl border border-neutral-100 bg-white p-6 sm:p-8">
-                <h2 className="text-lg font-bold text-neutral-900">Password</h2>
+              <div className="rounded-2xl border border-neutral-100 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900 sm:p-8">
+                <h2 className="text-lg font-bold text-neutral-900 dark:text-neutral-50">Password</h2>
                 <div className="mt-5 grid gap-5 sm:grid-cols-2">
                   <Input
                     label="Current Password"
                     type="password"
                     value="••••••••••"
                     readOnly
-                    className="bg-neutral-50"
+                    className="bg-neutral-50 dark:bg-neutral-800"
                   />
                   <Input
                     label="New Password"
@@ -264,17 +271,17 @@ export function SettingsPage() {
                 >
                   Update Password
                 </Button>
-                <p className="mt-3 text-xs text-neutral-400">
+                <p className="mt-3 text-xs text-neutral-400 dark:text-neutral-500">
                   For security, updating your password sends a confirmation
                   link to your email.
                 </p>
               </div>
-              <div className="flex items-center justify-between rounded-2xl border border-neutral-100 bg-white px-6 py-5 sm:px-8">
+              <div className="flex items-center justify-between rounded-2xl border border-neutral-100 bg-white px-6 py-5 dark:border-neutral-800 dark:bg-neutral-900 sm:px-8">
                 <div>
-                  <h3 className="text-sm font-bold text-neutral-900">
+                  <h3 className="text-sm font-bold text-neutral-900 dark:text-neutral-50">
                     Two-Factor Authentication
                   </h3>
-                  <p className="mt-0.5 text-xs text-neutral-500">
+                  <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
                     Add an extra layer of security to your account.
                   </p>
                 </div>
@@ -288,21 +295,21 @@ export function SettingsPage() {
           )}
 
           {section === "notifications" && (
-            <div className="rounded-2xl border border-neutral-100 bg-white p-6 sm:p-8">
-              <h2 className="text-lg font-bold text-neutral-900">
+            <div className="rounded-2xl border border-neutral-100 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900 sm:p-8">
+              <h2 className="text-lg font-bold text-neutral-900 dark:text-neutral-50">
                 Notification Preferences
               </h2>
-              <ul className="mt-4 divide-y divide-neutral-50">
+              <ul className="mt-4 divide-y divide-neutral-50 dark:divide-neutral-800">
                 {NOTIFICATION_PREFS.map((pref) => (
                   <li
                     key={pref.id}
                     className="flex items-center justify-between gap-4 py-4"
                   >
                     <div>
-                      <p className="text-sm font-bold text-neutral-900">
+                      <p className="text-sm font-bold text-neutral-900 dark:text-neutral-50">
                         {pref.title}
                       </p>
-                      <p className="mt-0.5 text-xs text-neutral-500">
+                      <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
                         {pref.description}
                       </p>
                     </div>
@@ -326,20 +333,20 @@ export function SettingsPage() {
           )}
 
           {section === "payment" && (
-            <div className="rounded-2xl border border-neutral-100 bg-white p-6 sm:p-8">
-              <h2 className="text-lg font-bold text-neutral-900">
+            <div className="rounded-2xl border border-neutral-100 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900 sm:p-8">
+              <h2 className="text-lg font-bold text-neutral-900 dark:text-neutral-50">
                 Payment Settings
               </h2>
-              <p className="mt-2 text-sm text-neutral-500">
+              <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
                 Shift payments are funded from your hospital's SafeHaven wallet
                 and released to workers when handover reports are approved.
               </p>
-              <div className="mt-5 flex items-center justify-between rounded-xl bg-neutral-50 px-5 py-4">
+              <div className="mt-5 flex items-center justify-between rounded-xl bg-neutral-50 px-5 py-4 dark:bg-neutral-800">
                 <div>
-                  <p className="text-sm font-bold text-neutral-900">
+                  <p className="text-sm font-bold text-neutral-900 dark:text-neutral-50">
                     Default Billing Method
                   </p>
-                  <p className="mt-0.5 text-xs text-neutral-500">
+                  <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
                     SafeHaven hospital wallet
                   </p>
                 </div>
@@ -355,8 +362,8 @@ export function SettingsPage() {
           )}
 
           {section === "appearance" && (
-            <div className="rounded-2xl border border-neutral-100 bg-white p-6 sm:p-8">
-              <h2 className="text-lg font-bold text-neutral-900">
+            <div className="rounded-2xl border border-neutral-100 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900 sm:p-8">
+              <h2 className="text-lg font-bold text-neutral-900 dark:text-neutral-50">
                 Language & Appearance
               </h2>
               <div className="mt-5 grid gap-5 sm:grid-cols-2">
@@ -371,34 +378,40 @@ export function SettingsPage() {
                   onChange={(language) => setPrefs({ ...prefs, language })}
                 />
                 <div>
-                  <p className="mb-2 block text-xs font-semibold uppercase tracking-wider text-neutral-500">
+                  <p className="mb-2 block text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
                     Theme
                   </p>
-                  <div className="grid grid-cols-2 overflow-hidden rounded-lg border border-neutral-200">
-                    {(["light", "dark"] as const).map((theme) => (
+                  <div className="grid grid-cols-3 overflow-hidden rounded-lg border border-neutral-200 dark:border-neutral-700">
+                    {THEME_OPTIONS.map(({ mode, label, icon: Icon }) => (
                       <button
-                        key={theme}
-                        onClick={() => setPrefs({ ...prefs, theme })}
+                        key={mode}
+                        onClick={() => setTheme(mode)}
                         className={cn(
-                          "py-2.5 text-sm font-medium capitalize transition-colors",
-                          prefs.theme === theme
-                            ? "bg-secondary-50 font-semibold text-secondary-700"
-                            : "bg-white text-neutral-500 hover:text-neutral-800",
+                          "flex items-center justify-center gap-1.5 py-2.5 text-sm font-medium transition-colors",
+                          theme === mode
+                            ? "bg-secondary-50 font-semibold text-secondary-700 dark:bg-secondary-950 dark:text-secondary-300"
+                            : "bg-white text-neutral-500 hover:text-neutral-800 dark:bg-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100",
                         )}
                       >
-                        {theme}
+                        <Icon className="h-3.5 w-3.5" />
+                        {label}
                       </button>
                     ))}
                   </div>
+                  <p className="mt-2 text-xs text-neutral-400">
+                    {theme === "system"
+                      ? "Following your device's theme."
+                      : `Always ${theme}, regardless of your device.`}
+                  </p>
                 </div>
               </div>
             </div>
           )}
 
           {section === "privacy" && (
-            <div className="rounded-2xl border border-neutral-100 bg-white p-6 sm:p-8">
-              <h2 className="text-lg font-bold text-neutral-900">Privacy</h2>
-              <p className="mt-3 max-w-xl text-sm leading-relaxed text-neutral-500">
+            <div className="rounded-2xl border border-neutral-100 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900 sm:p-8">
+              <h2 className="text-lg font-bold text-neutral-900 dark:text-neutral-50">Privacy</h2>
+              <p className="mt-3 max-w-xl text-sm leading-relaxed text-neutral-500 dark:text-neutral-400">
                 Control how your hospital's data is shared with verified
                 healthcare professionals and used to improve NexusCare's
                 matching algorithms.
@@ -406,7 +419,7 @@ export function SettingsPage() {
               <a
                 href="#"
                 onClick={(e) => e.preventDefault()}
-                className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-secondary-700 hover:text-secondary-800"
+                className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-secondary-700 hover:text-secondary-800 dark:text-secondary-400 dark:hover:text-secondary-300"
               >
                 View Privacy Policy →
               </a>

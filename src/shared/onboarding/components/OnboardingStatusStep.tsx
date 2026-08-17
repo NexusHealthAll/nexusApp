@@ -18,13 +18,13 @@ export function OnboardingStatusStep() {
   const basePath = useRoleBasePath();
 
   return (
-    <div className="min-h-screen bg-[#F3FAFF]">
+    <div className="min-h-screen bg-[#F3FAFF] dark:bg-neutral-950">
       <OnboardingNavbar />
 
       <div className="mx-auto max-w-5xl px-4 py-8">
         {/* Title row */}
         <div className="mb-4">
-          <h1 className="text-3xl font-bold text-neutral-900">
+          <h1 className="text-3xl font-bold text-neutral-900 dark:text-neutral-50">
             Onboarding Status
           </h1>
         </div>
@@ -34,32 +34,32 @@ export function OnboardingStatusStep() {
         {/* Main content grid */}
         <div className="grid gap-5 lg:grid-cols-3">
           {/* Left card */}
-          <div className="relative overflow-hidden rounded-2xl border border-neutral-200 bg-white p-7 lg:col-span-2">
+          <div className="relative overflow-hidden rounded-2xl border border-neutral-200 bg-white p-7 lg:col-span-2 dark:border-neutral-800 dark:bg-neutral-900">
             {/* Watermark */}
             <ShieldCheck
-              className="absolute right-6 top-6 h-28 w-28 text-neutral-100"
+              className="absolute right-6 top-6 h-28 w-28 text-neutral-100 dark:text-neutral-800"
               aria-hidden="true"
             />
 
-            <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-warning-100">
-              <Clock className="h-7 w-7 text-warning-600" />
+            <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-warning-100 dark:bg-warning-950">
+              <Clock className="h-7 w-7 text-warning-600 dark:text-warning-400" />
             </div>
 
-            <h2 className="mb-3 text-3xl font-bold text-neutral-900">
+            <h2 className="mb-3 text-3xl font-bold text-neutral-900 dark:text-neutral-50">
               Verification Pending
             </h2>
-            <p className="mb-5 max-w-md text-neutral-600">
+            <p className="mb-5 max-w-md text-neutral-600 dark:text-neutral-400">
               Excellent work. Your professional documents and institutional
               credentials have been successfully uploaded and are now under
               clinical review by our administrative team.
             </p>
 
-            <div className="mb-5 flex items-center gap-3 rounded-lg bg-secondary-50 px-4 py-3">
-              <Clock className="h-4 w-4 text-secondary-600" />
-              <span className="text-sm font-semibold text-secondary-800">
+            <div className="mb-5 flex items-center gap-3 rounded-lg bg-secondary-50 px-4 py-3 dark:bg-secondary-950">
+              <Clock className="h-4 w-4 text-secondary-600 dark:text-secondary-400" />
+              <span className="text-sm font-semibold text-secondary-800 dark:text-secondary-300">
                 24-48 Hours
               </span>
-              <span className="text-sm text-neutral-500">
+              <span className="text-sm text-neutral-500 dark:text-neutral-400">
                 Estimated time for final verification.
               </span>
             </div>
@@ -84,20 +84,20 @@ export function OnboardingStatusStep() {
 
           {/* Right column */}
           <div className="space-y-4">
-            <div className="rounded-2xl bg-onboarding-inputBackground p-5">
-              <h3 className="mb-2 text-base font-semibold text-onboarding-textPrimary">
+            <div className="rounded-2xl bg-onboarding-inputBackground p-5 dark:bg-neutral-900">
+              <h3 className="mb-2 text-base font-semibold text-onboarding-textPrimary dark:text-neutral-50">
                 Need Assistance?
               </h3>
-              <p className="mb-3 text-xs text-onboarding-textSecondary">
+              <p className="mb-3 text-xs text-onboarding-textSecondary dark:text-neutral-400">
                 If you have questions about the verification process or need to
                 update your submission, our concierge team is available.
               </p>
               <div className="space-y-2 text-xs">
-                <div className="flex items-center gap-2 text-secondary-700">
+                <div className="flex items-center gap-2 text-secondary-700 dark:text-secondary-300">
                   <Mail className="h-3.5 w-3.5 flex-shrink-0" />
                   <span>support@luthstaffing.gov</span>
                 </div>
-                <div className="flex items-center gap-2 text-secondary-700">
+                <div className="flex items-center gap-2 text-secondary-700 dark:text-secondary-300">
                   <Phone className="h-3.5 w-3.5 flex-shrink-0" />
                   <span>+234 (0) 1 234 5678</span>
                 </div>
@@ -138,18 +138,18 @@ export function OnboardingStatusStep() {
           ).map(({ icon: Icon, title, desc }) => (
             <div
               key={title}
-              className="border-b border-neutral-200 bg-white p-4"
+              className="border-b border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
             >
-              <Icon className="mb-2 h-5 w-5 text-secondary-600" />
-              <p className="mb-1 text-sm font-semibold text-onboarding-textPrimary">
+              <Icon className="mb-2 h-5 w-5 text-secondary-600 dark:text-secondary-400" />
+              <p className="mb-1 text-sm font-semibold text-onboarding-textPrimary dark:text-neutral-50">
                 {title}
               </p>
-              <p className="text-xs text-onboarding-textSecondary">{desc}</p>
+              <p className="text-xs text-onboarding-textSecondary dark:text-neutral-400">{desc}</p>
             </div>
           ))}
         </div>
 
-        <p className="mt-6 text-center text-xs text-neutral-400">
+        <p className="mt-6 text-center text-xs text-neutral-400 dark:text-neutral-500">
           © 2024 Lagos University Teaching Hospital • Staffing &amp; Onboarding
           Portal
         </p>

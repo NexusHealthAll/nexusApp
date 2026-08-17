@@ -17,7 +17,7 @@ export function AlreadyAppliedScreen({
           <Info className="h-7 w-7" />
         </div>
         <h1 className="mt-6 text-xl font-bold">Already Applied</h1>
-        <p className="mt-3 max-w-xs text-sm text-neutral-500">
+        <p className="mt-3 max-w-xs text-sm text-neutral-500 dark:text-neutral-500">
           You have already submitted interest for this shift. Check your applications list for
           status updates.
         </p>
@@ -31,7 +31,7 @@ export function AlreadyAppliedScreen({
         <button
           type="button"
           onClick={onBack}
-          className="mt-4 text-sm font-semibold text-neutral-500 hover:text-neutral-700"
+          className="mt-4 text-sm font-semibold text-neutral-500 hover:text-neutral-700 dark:text-neutral-500 dark:hover:text-neutral-300"
         >
           Back to Search
         </button>

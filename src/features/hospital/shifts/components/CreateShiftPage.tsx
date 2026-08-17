@@ -224,14 +224,14 @@ export function CreateShiftPage() {
   if (broadcastDone) {
     return (
       <div className="flex min-h-[70vh] items-center justify-center">
-        <div className="w-full max-w-xl rounded-2xl border border-neutral-100 bg-white px-8 py-12 text-center shadow-soft">
-          <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-success-100">
-            <CheckCircle2 className="h-8 w-8 text-success-600" />
+        <div className="w-full max-w-xl rounded-2xl border border-neutral-100 bg-white px-8 py-12 text-center shadow-soft dark:border-neutral-800 dark:bg-neutral-900">
+          <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-success-100 dark:bg-success-950">
+            <CheckCircle2 className="h-8 w-8 text-success-600 dark:text-success-400" />
           </span>
-          <h1 className="mt-6 text-2xl font-bold text-neutral-900">
+          <h1 className="mt-6 text-2xl font-bold text-neutral-900 dark:text-neutral-50">
             Shift Broadcast Successfully
           </h1>
-          <p className="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-neutral-500">
+          <p className="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-neutral-500 dark:text-neutral-400">
             {formData.roleNeeded} Shift has been sent to verified{" "}
             {formData.roleNeeded} professionals nearby. You'll be notified as
             workers apply.
@@ -258,11 +258,11 @@ export function CreateShiftPage() {
   return (
     <div>
       {/* Wizard header row */}
-      <div className="-mx-4 -mt-4 mb-8 flex items-center justify-between border-b border-neutral-200 bg-white px-4 py-3 lg:-mx-8 lg:-mt-8 lg:px-8">
-        <h2 className="text-base font-bold text-neutral-900">Create Shift</h2>
+      <div className="-mx-4 -mt-4 mb-8 flex items-center justify-between border-b border-neutral-200 bg-white px-4 py-3 lg:-mx-8 lg:-mt-8 lg:px-8 dark:border-neutral-800 dark:bg-neutral-900">
+        <h2 className="text-base font-bold text-neutral-900 dark:text-neutral-50">Create Shift</h2>
         <button
           onClick={handleSaveAndExit}
-          className="text-sm font-semibold text-neutral-600 transition-colors hover:text-neutral-900"
+          className="text-sm font-semibold text-neutral-600 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-50"
         >
           Save & Exit
         </button>
@@ -270,10 +270,10 @@ export function CreateShiftPage() {
 
       <div className="mx-auto max-w-3xl pb-10">
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-neutral-900">
+          <h1 className="text-3xl font-bold text-neutral-900 dark:text-neutral-50">
             Create a New Shift
           </h1>
-          <p className="mt-2 text-sm text-neutral-500">
+          <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
             Fill in the details below to broadcast this shift to verified
             healthcare professionals.
           </p>
@@ -282,7 +282,7 @@ export function CreateShiftPage() {
         <WizardSteps steps={STEPS} current={step} className="mt-8" />
 
         {(gateBlocked || walletBlocked) && (
-          <div className="mt-6 rounded-xl border border-warning-200 bg-warning-50 px-4 py-3 text-sm text-warning-800">
+          <div className="mt-6 rounded-xl border border-warning-200 bg-warning-50 px-4 py-3 text-sm text-warning-800 dark:border-warning-800 dark:bg-warning-950 dark:text-warning-300">
             {gateBlocked
               ? status === "rejected"
                 ? "Your hospital registration was not approved — contact support before creating shifts."
@@ -292,10 +292,10 @@ export function CreateShiftPage() {
         )}
 
         {/* Step card */}
-        <div className="mt-8 rounded-2xl border border-neutral-100 bg-white p-6 shadow-soft sm:p-8">
+        <div className="mt-8 rounded-2xl border border-neutral-100 bg-white p-6 shadow-soft sm:p-8 dark:border-neutral-800 dark:bg-neutral-900">
           {step === 0 && (
             <section>
-              <h2 className="mb-6 text-lg font-bold text-neutral-900">
+              <h2 className="mb-6 text-lg font-bold text-neutral-900 dark:text-neutral-50">
                 Basic Information
               </h2>
               <div className="grid gap-5 sm:grid-cols-2">
@@ -337,7 +337,7 @@ export function CreateShiftPage() {
                   required
                 />
                 <div>
-                  <p className="mb-2 block text-xs font-semibold uppercase tracking-wider text-neutral-500">
+                  <p className="mb-2 block text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
                     Time & Duration <span className="text-error-500">*</span>
                   </p>
                   <div className="grid grid-cols-2 gap-3">
@@ -355,16 +355,16 @@ export function CreateShiftPage() {
                     />
                   </div>
                   {duration > 0 && (
-                    <p className="mt-1.5 text-xs text-neutral-400">
+                    <p className="mt-1.5 text-xs text-neutral-400 dark:text-neutral-500">
                       {duration} hour shift
                     </p>
                   )}
                 </div>
                 <div>
-                  <p className="mb-2 block text-xs font-semibold uppercase tracking-wider text-neutral-500">
+                  <p className="mb-2 block text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
                     Urgency
                   </p>
-                  <div className="inline-flex rounded-xl border border-neutral-200 bg-neutral-50 p-1">
+                  <div className="inline-flex rounded-xl border border-neutral-200 bg-neutral-50 p-1 dark:border-neutral-700 dark:bg-neutral-800">
                     {URGENCY_OPTIONS.map((option) => (
                       <button
                         key={option.value}
@@ -373,8 +373,8 @@ export function CreateShiftPage() {
                         className={cn(
                           "rounded-lg px-4 py-1.5 text-sm font-medium transition-colors",
                           formData.urgencyLevel === option.value
-                            ? "border border-brand-200 bg-white font-semibold text-brand-600 shadow-sm"
-                            : "text-neutral-500 hover:text-neutral-800",
+                            ? "border border-brand-200 bg-white font-semibold text-brand-600 shadow-sm dark:border-brand-800 dark:bg-neutral-900 dark:text-brand-400"
+                            : "text-neutral-500 hover:text-neutral-800 dark:text-neutral-400 dark:hover:text-neutral-100",
                         )}
                       >
                         {option.label}
@@ -386,7 +386,7 @@ export function CreateShiftPage() {
                   label="Location"
                   value={profile?.name ?? ""}
                   readOnly
-                  className="bg-neutral-50 text-neutral-500"
+                  className="bg-neutral-50 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400"
                 />
               </div>
             </section>
@@ -394,7 +394,7 @@ export function CreateShiftPage() {
 
           {step === 1 && (
             <section>
-              <h2 className="mb-6 text-lg font-bold text-neutral-900">
+              <h2 className="mb-6 text-lg font-bold text-neutral-900 dark:text-neutral-50">
                 Compensation
               </h2>
               <div className="grid gap-5 sm:grid-cols-2">
@@ -470,40 +470,40 @@ export function CreateShiftPage() {
               </div>
 
               {/* Live cost preview */}
-              <div className="mt-6 rounded-xl bg-neutral-50 p-5">
-                <h3 className="text-sm font-bold text-neutral-900">
+              <div className="mt-6 rounded-xl bg-neutral-50 p-5 dark:bg-neutral-800">
+                <h3 className="text-sm font-bold text-neutral-900 dark:text-neutral-50">
                   Live Cost Preview
                 </h3>
                 <dl className="mt-3 space-y-2 text-sm">
                   <div className="flex items-center justify-between">
-                    <dt className="text-neutral-500">
+                    <dt className="text-neutral-500 dark:text-neutral-400">
                       Base pay
                       {formData.payType === "hourly" && duration > 0
                         ? ` (${duration} hrs × ₦${formData.hourlyRate.toLocaleString()})`
                         : ""}
                     </dt>
-                    <dd className="text-neutral-700">{naira(basePay)}</dd>
+                    <dd className="text-neutral-700 dark:text-neutral-300">{naira(basePay)}</dd>
                   </div>
                   {urgencyBonus > 0 && (
                     <div className="flex items-center justify-between">
-                      <dt className="text-neutral-500">Urgency bonus</dt>
-                      <dd className="text-neutral-700">{naira(urgencyBonus)}</dd>
+                      <dt className="text-neutral-500 dark:text-neutral-400">Urgency bonus</dt>
+                      <dd className="text-neutral-700 dark:text-neutral-300">{naira(urgencyBonus)}</dd>
                     </div>
                   )}
                   <div className="flex items-center justify-between">
-                    <dt className="text-neutral-500">Platform service fee</dt>
-                    <dd className="text-neutral-700">{naira(serviceFee)}</dd>
+                    <dt className="text-neutral-500 dark:text-neutral-400">Platform service fee</dt>
+                    <dd className="text-neutral-700 dark:text-neutral-300">{naira(serviceFee)}</dd>
                   </div>
                   <div className="flex items-center justify-between">
-                    <dt className="text-neutral-500">Estimated taxes</dt>
-                    <dd className="text-neutral-700">{naira(taxes)}</dd>
+                    <dt className="text-neutral-500 dark:text-neutral-400">Estimated taxes</dt>
+                    <dd className="text-neutral-700 dark:text-neutral-300">{naira(taxes)}</dd>
                   </div>
                 </dl>
-                <div className="mt-4 flex items-center justify-between border-t border-neutral-200 pt-4">
-                  <span className="text-sm font-bold text-neutral-900">
+                <div className="mt-4 flex items-center justify-between border-t border-neutral-200 pt-4 dark:border-neutral-700">
+                  <span className="text-sm font-bold text-neutral-900 dark:text-neutral-50">
                     Total Cost
                   </span>
-                  <span className="text-xl font-bold text-neutral-900">
+                  <span className="text-xl font-bold text-neutral-900 dark:text-neutral-50">
                     {naira(totalCost)}
                   </span>
                 </div>
@@ -513,7 +513,7 @@ export function CreateShiftPage() {
 
           {step === 2 && (
             <section>
-              <h2 className="mb-6 text-lg font-bold text-neutral-900">
+              <h2 className="mb-6 text-lg font-bold text-neutral-900 dark:text-neutral-50">
                 Job Description
               </h2>
               <div className="space-y-6">
@@ -569,14 +569,14 @@ export function CreateShiftPage() {
 
                 {/* Attachments — local only; the backend has no upload endpoint yet. */}
                 <div>
-                  <p className="mb-2 block text-xs font-semibold uppercase tracking-wider text-neutral-500">
+                  <p className="mb-2 block text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
                     Attachments
                   </p>
-                  <label className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-neutral-200 bg-neutral-50/60 px-6 py-10 text-center transition-colors hover:border-neutral-300">
-                    <Upload className="h-6 w-6 text-neutral-400" />
-                    <span className="mt-2 text-sm text-neutral-500">
+                  <label className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-neutral-200 bg-neutral-50/60 px-6 py-10 text-center transition-colors hover:border-neutral-300 dark:border-neutral-700 dark:bg-neutral-800/60 dark:hover:border-neutral-600">
+                    <Upload className="h-6 w-6 text-neutral-400 dark:text-neutral-500" />
+                    <span className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
                       Drag files here or{" "}
-                      <span className="font-semibold text-brand-600">
+                      <span className="font-semibold text-brand-600 dark:text-brand-400">
                         click to upload
                       </span>
                     </span>
@@ -597,7 +597,7 @@ export function CreateShiftPage() {
                       {attachments.map((file, i) => (
                         <li
                           key={`${file.name}-${i}`}
-                          className="flex items-center justify-between rounded-lg border border-neutral-200 px-3 py-2 text-sm text-neutral-700"
+                          className="flex items-center justify-between rounded-lg border border-neutral-200 px-3 py-2 text-sm text-neutral-700 dark:border-neutral-700 dark:text-neutral-300"
                         >
                           <span className="truncate">{file.name}</span>
                           <button
@@ -606,7 +606,7 @@ export function CreateShiftPage() {
                                 prev.filter((_, idx) => idx !== i),
                               )
                             }
-                            className="text-neutral-400 hover:text-error-600"
+                            className="text-neutral-400 hover:text-error-600 dark:text-neutral-500 dark:hover:text-error-400"
                           >
                             <X className="h-4 w-4" />
                           </button>
@@ -621,7 +621,7 @@ export function CreateShiftPage() {
 
           {step === 3 && (
             <section>
-              <h2 className="mb-6 text-lg font-bold text-neutral-900">
+              <h2 className="mb-6 text-lg font-bold text-neutral-900 dark:text-neutral-50">
                 Requirements
               </h2>
               <div className="grid gap-5 sm:grid-cols-2">
@@ -640,7 +640,7 @@ export function CreateShiftPage() {
               </div>
 
               <div className="mt-6">
-                <p className="mb-2 block text-xs font-semibold uppercase tracking-wider text-neutral-500">
+                <p className="mb-2 block text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
                   Required Certificates
                 </p>
                 <div className="flex flex-wrap items-center gap-2">
@@ -654,8 +654,8 @@ export function CreateShiftPage() {
                         className={cn(
                           "rounded-full border px-4 py-1.5 text-sm font-medium transition-colors",
                           isSelected
-                            ? "border-brand-300 bg-brand-50 font-semibold text-brand-700"
-                            : "border-neutral-200 text-neutral-500 hover:border-neutral-300 hover:text-neutral-700",
+                            ? "border-brand-300 bg-brand-50 font-semibold text-brand-700 dark:border-brand-800 dark:bg-brand-950 dark:text-brand-300"
+                            : "border-neutral-200 text-neutral-500 hover:border-neutral-300 hover:text-neutral-700 dark:border-neutral-700 dark:text-neutral-400 dark:hover:border-neutral-600 dark:hover:text-neutral-200",
                         )}
                       >
                         {cert}
@@ -666,7 +666,7 @@ export function CreateShiftPage() {
                     <button
                       type="button"
                       onClick={() => setCustomCertificate("")}
-                      className="rounded-full border border-dashed border-brand-300 px-4 py-1.5 text-sm font-semibold text-brand-600 transition-colors hover:bg-brand-50"
+                      className="rounded-full border border-dashed border-brand-300 px-4 py-1.5 text-sm font-semibold text-brand-600 transition-colors hover:bg-brand-50 dark:border-brand-800 dark:text-brand-400 dark:hover:bg-brand-950"
                     >
                       + Add More
                     </button>
@@ -690,7 +690,7 @@ export function CreateShiftPage() {
                         setCustomCertificate(null);
                       }}
                       placeholder="Certificate name"
-                      className="w-40 rounded-full border border-brand-300 px-4 py-1.5 text-sm focus:outline-none"
+                      className="w-40 rounded-full border border-brand-300 px-4 py-1.5 text-sm focus:outline-none dark:border-brand-700 dark:bg-neutral-800 dark:text-neutral-100"
                     />
                   )}
                 </div>
@@ -722,7 +722,7 @@ export function CreateShiftPage() {
             onClick={() =>
               step === 0 ? navigate(-1) : setStep((s) => Math.max(0, s - 1))
             }
-            className="flex items-center gap-1.5 text-sm font-semibold text-neutral-500 transition-colors hover:text-neutral-800"
+            className="flex items-center gap-1.5 text-sm font-semibold text-neutral-500 transition-colors hover:text-neutral-800 dark:text-neutral-400 dark:hover:text-neutral-100"
           >
             <ArrowLeft className="h-4 w-4" />
             Back
@@ -804,7 +804,7 @@ function ListEditor({
 }: ListEditorProps) {
   return (
     <div>
-      <p className="mb-2 block text-xs font-semibold uppercase tracking-wider text-neutral-500">
+      <p className="mb-2 block text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
         {label}
       </p>
       <div className="space-y-2.5">
@@ -818,12 +818,12 @@ function ListEditor({
                 next[index] = e.target.value;
                 onChange(next);
               }}
-              className="w-full rounded-lg border border-neutral-200 px-4 py-2.5 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-secondary-500 focus:outline-none focus:ring-1 focus:ring-secondary-500"
+              className="w-full rounded-lg border border-neutral-200 px-4 py-2.5 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-secondary-500 focus:outline-none focus:ring-1 focus:ring-secondary-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 dark:placeholder:text-neutral-500"
             />
             <button
               type="button"
               onClick={() => onChange(items.filter((_, i) => i !== index))}
-              className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg border border-neutral-200 text-neutral-400 transition-colors hover:text-error-600"
+              className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg border border-neutral-200 text-neutral-400 transition-colors hover:text-error-600 dark:border-neutral-700 dark:text-neutral-500 dark:hover:text-error-400"
               aria-label={`Remove ${label.toLowerCase()} row`}
             >
               <X className="h-4 w-4" />
@@ -833,7 +833,7 @@ function ListEditor({
         <button
           type="button"
           onClick={() => onChange([...items, ""])}
-          className="flex items-center gap-1 rounded-lg border border-dashed border-brand-300 px-3.5 py-2 text-sm font-semibold text-brand-600 transition-colors hover:bg-brand-50"
+          className="flex items-center gap-1 rounded-lg border border-dashed border-brand-300 px-3.5 py-2 text-sm font-semibold text-brand-600 transition-colors hover:bg-brand-50 dark:border-brand-800 dark:text-brand-400 dark:hover:bg-brand-950"
         >
           <Plus className="h-3.5 w-3.5" />
           {addLabel.replace(/^\+\s*/, "")}

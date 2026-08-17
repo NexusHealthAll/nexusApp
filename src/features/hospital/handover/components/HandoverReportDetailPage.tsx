@@ -86,12 +86,12 @@ export function HandoverReportDetailPage() {
   const display = report ? statusDisplay[report.status] : null;
 
   return (
-    <div className="fixed inset-0 z-40 flex flex-col overflow-y-auto bg-neutral-50">
+    <div className="fixed inset-0 z-40 flex flex-col overflow-y-auto bg-neutral-50 dark:bg-neutral-950">
       {/* Top bar */}
-      <div className="sticky top-0 z-10 flex h-14 flex-shrink-0 items-center justify-between border-b border-neutral-200 bg-white px-4 print:hidden lg:px-6">
+      <div className="sticky top-0 z-10 flex h-14 flex-shrink-0 items-center justify-between border-b border-neutral-200 bg-white px-4 print:hidden lg:px-6 dark:border-neutral-800 dark:bg-neutral-900">
         <button
           onClick={() => navigate(PATHS.hospital.handoverReports)}
-          className="flex items-center gap-2 text-sm font-semibold text-neutral-800 transition-colors hover:text-neutral-900"
+          className="flex items-center gap-2 text-sm font-semibold text-neutral-800 transition-colors hover:text-neutral-900 dark:text-neutral-200 dark:hover:text-neutral-50"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to Handover Reports
@@ -124,7 +124,7 @@ export function HandoverReportDetailPage() {
           />
         ) : (
           <>
-            <div className="overflow-hidden rounded-2xl border border-neutral-100 bg-white shadow-soft">
+            <div className="overflow-hidden rounded-2xl border border-neutral-100 bg-white shadow-soft dark:border-neutral-800 dark:bg-neutral-900">
               {/* Report header */}
               <div className="p-6 sm:p-8">
                 <div className="flex items-start justify-between gap-4">
@@ -133,19 +133,19 @@ export function HandoverReportDetailPage() {
                       <Plus className="h-5 w-5" />
                     </span>
                     <div>
-                      <p className="text-base font-bold text-neutral-900">
+                      <p className="text-base font-bold text-neutral-900 dark:text-neutral-50">
                         NexusCare
                       </p>
-                      <p className="text-xs text-neutral-400">
+                      <p className="text-xs text-neutral-400 dark:text-neutral-500">
                         {profile?.name ?? ""}
                       </p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
                       Shift Handover Report
                     </p>
-                    <p className="text-xs text-neutral-500">
+                    <p className="text-xs text-neutral-500 dark:text-neutral-400">
                       Report ID: {report.reportId}
                     </p>
                   </div>
@@ -157,18 +157,18 @@ export function HandoverReportDetailPage() {
                     className="h-14 w-14 bg-secondary-700 text-lg font-bold text-white"
                   />
                   <div>
-                    <h1 className="text-2xl font-bold text-neutral-900">
+                    <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-50">
                       {report.workerName}
                       {report.credential ? `, ${report.credential}` : ""}
                     </h1>
-                    <p className="text-sm text-neutral-500">
+                    <p className="text-sm text-neutral-500 dark:text-neutral-400">
                       {report.role} · {report.shiftLabel}
                     </p>
                   </div>
                 </div>
 
                 {/* Stats strip */}
-                <div className="mt-6 grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-neutral-100 bg-neutral-100 sm:grid-cols-4">
+                <div className="mt-6 grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-neutral-100 bg-neutral-100 sm:grid-cols-4 dark:border-neutral-800 dark:bg-neutral-800">
                   {[
                     { label: "Department", value: report.department },
                     { label: "Submitted", value: report.submittedLabel },
@@ -183,11 +183,11 @@ export function HandoverReportDetailPage() {
                         : "—",
                     },
                   ].map((stat) => (
-                    <div key={stat.label} className="bg-white px-4 py-3.5">
-                      <p className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">
+                    <div key={stat.label} className="bg-white px-4 py-3.5 dark:bg-neutral-900">
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
                         {stat.label}
                       </p>
-                      <p className="mt-1 text-sm font-bold text-neutral-900">
+                      <p className="mt-1 text-sm font-bold text-neutral-900 dark:text-neutral-50">
                         {stat.value}
                       </p>
                     </div>
@@ -195,15 +195,15 @@ export function HandoverReportDetailPage() {
                 </div>
               </div>
 
-              <div className="border-t border-neutral-100 p-6 sm:p-8">
+              <div className="border-t border-neutral-100 p-6 sm:p-8 dark:border-neutral-800">
                 {report.executiveSummary ? (
                   <>
                     {/* AI note */}
-                    <div className="flex items-start gap-3 rounded-xl bg-primary-50 px-4 py-3.5">
+                    <div className="flex items-start gap-3 rounded-xl bg-primary-50 px-4 py-3.5 dark:bg-primary-950">
                       <span className="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-primary-600 text-white">
                         <Sparkles className="h-3.5 w-3.5" />
                       </span>
-                      <p className="text-sm text-primary-800">
+                      <p className="text-sm text-primary-800 dark:text-primary-300">
                         This report was generated by NexusCare AI from the
                         worker's submitted clinical notes and shift activity
                         log.
@@ -227,10 +227,10 @@ export function HandoverReportDetailPage() {
                       .filter((section) => section.body)
                       .map((section) => (
                         <section key={section.title} className="mt-7">
-                          <h2 className="text-xs font-bold uppercase tracking-wider text-brand-600">
+                          <h2 className="text-xs font-bold uppercase tracking-wider text-brand-600 dark:text-brand-400">
                             {section.title}
                           </h2>
-                          <p className="mt-2.5 text-sm leading-relaxed text-neutral-700">
+                          <p className="mt-2.5 text-sm leading-relaxed text-neutral-700 dark:text-neutral-400">
                             {section.body}
                           </p>
                         </section>
@@ -245,20 +245,20 @@ export function HandoverReportDetailPage() {
                 )}
 
                 <section className="mt-7">
-                  <h2 className="text-xs font-bold uppercase tracking-wider text-brand-600">
+                  <h2 className="text-xs font-bold uppercase tracking-wider text-brand-600 dark:text-brand-400">
                     4. Compensation
                   </h2>
-                  <div className="mt-2.5 flex items-center justify-between rounded-xl bg-neutral-50 px-5 py-4">
+                  <div className="mt-2.5 flex items-center justify-between rounded-xl bg-neutral-50 px-5 py-4 dark:bg-neutral-800">
                     <div>
-                      <p className="text-sm font-bold text-neutral-900">
+                      <p className="text-sm font-bold text-neutral-900 dark:text-neutral-50">
                         Amount payable to {report.workerName}
                         {report.credential ? `, ${report.credential}` : ""}
                       </p>
-                      <p className="mt-0.5 text-xs text-neutral-400">
+                      <p className="mt-0.5 text-xs text-neutral-400 dark:text-neutral-500">
                         Released automatically upon approval below
                       </p>
                     </div>
-                    <p className="text-2xl font-bold text-neutral-900">
+                    <p className="text-2xl font-bold text-neutral-900 dark:text-neutral-50">
                       {formatKobo(report.amountKobo)}
                     </p>
                   </div>
@@ -268,14 +268,14 @@ export function HandoverReportDetailPage() {
 
             {/* Actions / result banner */}
             {report.status === "approved" ? (
-              <div className="mt-6 flex items-center justify-center gap-2 rounded-xl bg-success-50 px-6 py-4 text-sm font-semibold text-success-700 print:hidden">
+              <div className="mt-6 flex items-center justify-center gap-2 rounded-xl bg-success-50 px-6 py-4 text-sm font-semibold text-success-700 print:hidden dark:bg-success-950 dark:text-success-300">
                 <Check className="h-4 w-4" />
                 Report approved — payment of {formatKobo(report.amountKobo)}{" "}
                 released to {report.workerName}
                 {report.credential ? `, ${report.credential}` : ""}.
               </div>
             ) : report.status === "revision_requested" ? (
-              <div className="mt-6 rounded-xl bg-warning-50 px-6 py-4 text-center text-sm font-semibold text-warning-700 print:hidden">
+              <div className="mt-6 rounded-xl bg-warning-50 px-6 py-4 text-center text-sm font-semibold text-warning-700 print:hidden dark:bg-warning-950 dark:text-warning-300">
                 Revision requested — the worker has been asked to update this
                 report.
               </div>
@@ -283,7 +283,7 @@ export function HandoverReportDetailPage() {
               <div className="mt-6 grid gap-3 print:hidden sm:grid-cols-[1fr_2fr]">
                 <button
                   onClick={() => setRevisionOpen(true)}
-                  className="h-12 rounded-xl border border-neutral-200 bg-white text-sm font-bold text-neutral-900 transition-colors hover:bg-neutral-50"
+                  className="h-12 rounded-xl border border-neutral-200 bg-white text-sm font-bold text-neutral-900 transition-colors hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-50 dark:hover:bg-neutral-800"
                 >
                   Request Revision
                 </button>

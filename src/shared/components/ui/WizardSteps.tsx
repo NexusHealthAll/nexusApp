@@ -25,7 +25,9 @@ export function WizardSteps({ steps, current, className }: WizardStepsProps) {
               <div
                 className={cn(
                   "mx-3 mt-5 h-0.5 w-10 rounded-full sm:w-16",
-                  isDone || isActive ? "bg-brand-800" : "bg-neutral-200",
+                  isDone || isActive
+                    ? "bg-brand-800 dark:bg-brand-400"
+                    : "bg-neutral-200 dark:bg-neutral-700",
                 )}
               />
             )}
@@ -34,8 +36,8 @@ export function WizardSteps({ steps, current, className }: WizardStepsProps) {
                 className={cn(
                   "flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold transition-colors",
                   isDone || isActive
-                    ? "bg-brand-800 text-white"
-                    : "bg-neutral-100 text-neutral-400",
+                    ? "bg-brand-800 text-white dark:bg-brand-400 dark:text-neutral-950"
+                    : "bg-neutral-100 text-neutral-400 dark:bg-neutral-800 dark:text-neutral-500",
                 )}
               >
                 {isDone ? <Check className="h-4 w-4" /> : index + 1}
@@ -44,10 +46,10 @@ export function WizardSteps({ steps, current, className }: WizardStepsProps) {
                 className={cn(
                   "mt-2 text-center text-xs font-medium",
                   isActive
-                    ? "font-semibold text-brand-800"
+                    ? "font-semibold text-brand-800 dark:text-brand-400"
                     : isDone
-                      ? "text-neutral-500"
-                      : "text-neutral-400",
+                      ? "text-neutral-500 dark:text-neutral-400"
+                      : "text-neutral-400 dark:text-neutral-600",
                 )}
               >
                 {step}

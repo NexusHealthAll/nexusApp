@@ -34,9 +34,9 @@ type TimelineEventUi = {
 };
 
 const avatarPalette = [
-  "bg-secondary-100 text-secondary-700",
-  "bg-warning-100 text-warning-700",
-  "bg-primary-100 text-primary-700",
+  "bg-secondary-100 text-secondary-700 dark:bg-secondary-950 dark:text-secondary-300",
+  "bg-warning-100 text-warning-700 dark:bg-warning-950 dark:text-warning-300",
+  "bg-primary-100 text-primary-700 dark:bg-primary-950 dark:text-primary-300",
 ];
 
 const priorityBadge: Record<ApiShiftPriority, { variant: BadgeVariant; label: string }> = {
@@ -271,13 +271,13 @@ export function ShiftApprovalPage() {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="h-8 w-64 animate-pulse rounded-lg bg-neutral-100" />
+        <div className="h-8 w-64 animate-pulse rounded-lg bg-neutral-100 dark:bg-neutral-800" />
         <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
           <div className="space-y-6">
-            <div className="h-32 animate-pulse rounded-2xl border border-neutral-200 bg-white" />
-            <div className="h-40 animate-pulse rounded-2xl border border-neutral-200 bg-white" />
+            <div className="h-32 animate-pulse rounded-2xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900" />
+            <div className="h-40 animate-pulse rounded-2xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900" />
           </div>
-          <div className="h-64 animate-pulse rounded-2xl border border-neutral-200 bg-white" />
+          <div className="h-64 animate-pulse rounded-2xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900" />
         </div>
       </div>
     );
@@ -286,7 +286,7 @@ export function ShiftApprovalPage() {
   if (loadError || !shift) {
     return (
       <EmptyState
-        className="bg-white"
+        className="bg-white dark:bg-neutral-900"
         title="Shift not found"
         description={loadError ?? "This shift could not be loaded."}
       />
@@ -304,12 +304,12 @@ export function ShiftApprovalPage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold text-neutral-900">
+            <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-50">
               {shift.shift_label || shift.role_title}
             </h1>
             <Badge variant={status.variant}>{status.label}</Badge>
           </div>
-          <p className="mt-1 text-sm text-neutral-500">
+          <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
             {shift.hospital_name
               ? `Review and manage this shift for ${shift.hospital_name}.`
               : "Review and manage this shift."}
@@ -321,7 +321,7 @@ export function ShiftApprovalPage() {
               variant="outline"
               size="sm"
               onClick={openReschedule}
-              className="gap-1.5 border-none bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
+              className="gap-1.5 border-none bg-neutral-100 text-neutral-700 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700"
             >
               <CalendarClock className="h-3.5 w-3.5" />
               Reschedule
@@ -330,7 +330,7 @@ export function ShiftApprovalPage() {
               variant="outline"
               size="sm"
               onClick={() => setCancelOpen(true)}
-              className="gap-1.5 border-none bg-error-50 text-error-700 hover:bg-error-100"
+              className="gap-1.5 border-none bg-error-50 text-error-700 hover:bg-error-100 dark:bg-error-950 dark:text-error-300 dark:hover:bg-error-900"
             >
               <Ban className="h-3.5 w-3.5" />
               Cancel Shift
@@ -343,54 +343,54 @@ export function ShiftApprovalPage() {
         {/* Main column */}
         <div className="space-y-6">
           {/* Shift Information */}
-          <div className="rounded-2xl border border-neutral-200 border-l-4 border-l-secondary-600 bg-white p-6">
-            <p className="mb-4 text-xs font-bold uppercase tracking-widest text-neutral-500">
+          <div className="rounded-2xl border border-neutral-200 border-l-4 border-l-secondary-600 bg-white p-6 dark:border-neutral-800 dark:border-l-secondary-600 dark:bg-neutral-900">
+            <p className="mb-4 text-xs font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
               Shift Information
             </p>
             <div className="grid grid-cols-2 gap-6 sm:grid-cols-4">
               <div>
-                <p className="mb-1 text-xs text-neutral-500">Role</p>
-                <p className="text-sm font-bold text-neutral-900">
+                <p className="mb-1 text-xs text-neutral-500 dark:text-neutral-400">Role</p>
+                <p className="text-sm font-bold text-neutral-900 dark:text-neutral-50">
                   {shift.role_title}
                 </p>
               </div>
               <div>
-                <p className="mb-1 text-xs text-neutral-500">Timing</p>
-                <p className="text-sm font-bold text-neutral-900">{timeLabel}</p>
-                <p className="text-xs text-neutral-500">{dateLabel}</p>
+                <p className="mb-1 text-xs text-neutral-500 dark:text-neutral-400">Timing</p>
+                <p className="text-sm font-bold text-neutral-900 dark:text-neutral-50">{timeLabel}</p>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400">{dateLabel}</p>
               </div>
               <div>
-                <p className="mb-1 text-xs text-neutral-500">Department</p>
-                <p className="text-sm font-bold text-neutral-900">
+                <p className="mb-1 text-xs text-neutral-500 dark:text-neutral-400">Department</p>
+                <p className="text-sm font-bold text-neutral-900 dark:text-neutral-50">
                   {shift.department || shift.specialty || "—"}
                 </p>
               </div>
               <div>
-                <p className="mb-1 text-xs text-neutral-500">Rate</p>
-                <p className="text-sm font-bold text-secondary-700">
+                <p className="mb-1 text-xs text-neutral-500 dark:text-neutral-400">Rate</p>
+                <p className="text-sm font-bold text-secondary-700 dark:text-secondary-400">
                   {formatRate(shift)}
                 </p>
               </div>
               <div>
-                <p className="mb-1 text-xs text-neutral-500">Duration</p>
-                <p className="text-sm font-bold text-neutral-900">
+                <p className="mb-1 text-xs text-neutral-500 dark:text-neutral-400">Duration</p>
+                <p className="text-sm font-bold text-neutral-900 dark:text-neutral-50">
                   {shift.duration_hours} hrs
                 </p>
               </div>
               <div>
-                <p className="mb-1 text-xs text-neutral-500">Priority</p>
+                <p className="mb-1 text-xs text-neutral-500 dark:text-neutral-400">Priority</p>
                 <Badge variant={priority.variant}>{priority.label}</Badge>
               </div>
               <div>
-                <p className="mb-1 text-xs text-neutral-500">Shift Type</p>
-                <p className="text-sm font-bold text-neutral-900">
+                <p className="mb-1 text-xs text-neutral-500 dark:text-neutral-400">Shift Type</p>
+                <p className="text-sm font-bold text-neutral-900 dark:text-neutral-50">
                   {shift.shift_type === "in_person" ? "In-person" : "Virtual"}
                 </p>
               </div>
               {typeof shift.grand_total_kobo === "number" && (
                 <div>
-                  <p className="mb-1 text-xs text-neutral-500">Grand Total</p>
-                  <p className="text-sm font-bold text-neutral-900">
+                  <p className="mb-1 text-xs text-neutral-500 dark:text-neutral-400">Grand Total</p>
+                  <p className="text-sm font-bold text-neutral-900 dark:text-neutral-50">
                     ₦{Math.round(shift.grand_total_kobo / 100).toLocaleString()}
                   </p>
                 </div>
@@ -399,24 +399,24 @@ export function ShiftApprovalPage() {
           </div>
 
           {/* Description & Notes */}
-          <div className="rounded-2xl border border-neutral-200 bg-white p-6">
-            <p className="mb-4 text-xs font-bold uppercase tracking-widest text-neutral-500">
+          <div className="rounded-2xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
+            <p className="mb-4 text-xs font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
               Description &amp; Notes
             </p>
             <div className="grid gap-6 md:grid-cols-2">
               <div>
-                <p className="mb-1.5 text-sm font-semibold text-neutral-900">
+                <p className="mb-1.5 text-sm font-semibold text-neutral-900 dark:text-neutral-50">
                   Job Description
                 </p>
-                <p className="text-sm leading-relaxed text-neutral-600">
+                <p className="text-sm leading-relaxed text-neutral-600 dark:text-neutral-400">
                   {shift.job_description || "No description provided."}
                 </p>
               </div>
-              <div className="rounded-xl bg-neutral-50 p-4">
-                <p className="mb-1.5 text-sm font-semibold text-neutral-900">
+              <div className="rounded-xl bg-neutral-50 p-4 dark:bg-neutral-800">
+                <p className="mb-1.5 text-sm font-semibold text-neutral-900 dark:text-neutral-50">
                   Special Notes
                 </p>
-                <p className="text-sm leading-relaxed text-neutral-600">
+                <p className="text-sm leading-relaxed text-neutral-600 dark:text-neutral-400">
                   {shift.notes || "No special notes."}
                 </p>
               </div>
@@ -426,15 +426,15 @@ export function ShiftApprovalPage() {
           {/* Interested Workers */}
           <div>
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-lg font-bold text-neutral-900">
+              <h2 className="text-lg font-bold text-neutral-900 dark:text-neutral-50">
                 Interested Workers
               </h2>
-              <p className="text-xs text-neutral-500">Sorted by Match Score</p>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400">Sorted by Match Score</p>
             </div>
 
             {shift.assigned_clinician_id ? (
               <EmptyState
-                className="bg-white"
+                className="bg-white dark:bg-neutral-900"
                 icon={<CheckCircle2 className="h-10 w-10 text-secondary-400" />}
                 title="A clinician has already been assigned to this shift."
               />
@@ -445,7 +445,7 @@ export function ShiftApprovalPage() {
                 {workers.map((worker, i) => (
                   <div
                     key={worker.id}
-                    className="flex flex-col gap-3 rounded-2xl border border-neutral-100 bg-white p-4 sm:flex-row sm:items-center sm:justify-between"
+                    className="flex flex-col gap-3 rounded-2xl border border-neutral-100 bg-white p-4 sm:flex-row sm:items-center sm:justify-between dark:border-neutral-800 dark:bg-neutral-900"
                   >
                     <div className="flex items-center gap-3">
                       <div className="relative flex-shrink-0">
@@ -460,22 +460,22 @@ export function ShiftApprovalPage() {
                         <span
                           title={worker.quals_match ? "Meets all qualifications" : "Missing a required qualification"}
                           className={cn(
-                            "absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-white",
+                            "absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-white dark:border-neutral-900",
                             worker.quals_match ? "bg-success-500" : "bg-warning-400",
                           )}
                         />
                       </div>
                       <div>
                         <div className="flex items-center gap-1.5">
-                          <p className="text-sm font-semibold text-neutral-900">
+                          <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-50">
                             {worker.display_name}
                           </p>
-                          <span className="flex items-center gap-0.5 text-xs font-semibold text-neutral-700">
+                          <span className="flex items-center gap-0.5 text-xs font-semibold text-neutral-700 dark:text-neutral-300">
                             <Star className="h-3 w-3 fill-warning-400 text-warning-400" />
                             {worker.rating.toFixed(1)} ({worker.rating_count})
                           </span>
                         </div>
-                        <p className="text-xs text-neutral-500">
+                        <p className="text-xs text-neutral-500 dark:text-neutral-400">
                           {worker.completed_shifts} shifts completed
                           {typeof worker.distance_km === "number" &&
                             ` • ${worker.distance_km.toFixed(1)}km away`}
@@ -505,47 +505,47 @@ export function ShiftApprovalPage() {
         {/* Sidebar */}
         <div className="space-y-6">
           {/* Applicant Insights */}
-          <div className="rounded-2xl border border-neutral-200 bg-white p-6">
-            <p className="mb-4 text-xs font-bold uppercase tracking-widest text-neutral-500">
+          <div className="rounded-2xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
+            <p className="mb-4 text-xs font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
               Applicant Insights
             </p>
             <div className="mb-4">
               <div className="mb-1.5 flex items-center justify-between">
-                <span className="text-sm text-neutral-600">Avg. Rating</span>
-                <span className="text-sm font-bold text-neutral-900">
+                <span className="text-sm text-neutral-600 dark:text-neutral-400">Avg. Rating</span>
+                <span className="text-sm font-bold text-neutral-900 dark:text-neutral-50">
                   {workers.length > 0 ? `${avgRating.toFixed(1)} / 5.0` : "—"}
                 </span>
               </div>
-              <div className="h-1.5 overflow-hidden rounded-full bg-neutral-100">
+              <div className="h-1.5 overflow-hidden rounded-full bg-neutral-100 dark:bg-neutral-800">
                 <div
                   className="h-full rounded-full bg-secondary-600"
                   style={{ width: `${(avgRating / 5) * 100}%` }}
                 />
               </div>
             </div>
-            <div className="flex items-center justify-between border-t border-neutral-100 pt-3">
-              <span className="text-sm text-neutral-600">Avg. Distance</span>
-              <span className="text-sm font-bold text-neutral-900">
+            <div className="flex items-center justify-between border-t border-neutral-100 pt-3 dark:border-neutral-800">
+              <span className="text-sm text-neutral-600 dark:text-neutral-400">Avg. Distance</span>
+              <span className="text-sm font-bold text-neutral-900 dark:text-neutral-50">
                 {avgDistanceKm !== null ? `${avgDistanceKm.toFixed(1)}km` : "—"}
               </span>
             </div>
-            <div className="flex items-center justify-between border-t border-neutral-100 pt-3 mt-3">
-              <span className="text-sm text-neutral-600">Interested</span>
-              <span className="text-sm font-bold text-neutral-900">
+            <div className="flex items-center justify-between border-t border-neutral-100 pt-3 mt-3 dark:border-neutral-800">
+              <span className="text-sm text-neutral-600 dark:text-neutral-400">Interested</span>
+              <span className="text-sm font-bold text-neutral-900 dark:text-neutral-50">
                 {workers.length}
               </span>
             </div>
           </div>
 
           {/* Hospital */}
-          <div className="rounded-2xl border border-neutral-200 bg-white p-6">
-            <p className="mb-1 text-xs font-bold uppercase tracking-widest text-neutral-500">
+          <div className="rounded-2xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
+            <p className="mb-1 text-xs font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
               Hospital
             </p>
-            <p className="mb-3 text-sm font-bold text-neutral-900">
+            <p className="mb-3 text-sm font-bold text-neutral-900 dark:text-neutral-50">
               {shift.hospital_name || "—"}
             </p>
-            <div className="relative mb-3 h-32 overflow-hidden rounded-xl bg-secondary-50">
+            <div className="relative mb-3 h-32 overflow-hidden rounded-xl bg-secondary-50 dark:bg-secondary-950">
               <svg
                 viewBox="0 0 260 130"
                 className="h-full w-full"
@@ -564,7 +564,7 @@ export function ShiftApprovalPage() {
                 href={mapsUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="text-sm font-semibold text-secondary-700 hover:text-secondary-900"
+                className="text-sm font-semibold text-secondary-700 hover:text-secondary-900 dark:text-secondary-400 dark:hover:text-secondary-300"
               >
                 View in Maps
               </a>
@@ -572,8 +572,8 @@ export function ShiftApprovalPage() {
           </div>
 
           {/* Shift Timeline */}
-          <div className="rounded-2xl border border-neutral-200 bg-white p-6">
-            <p className="mb-4 text-xs font-bold uppercase tracking-widest text-neutral-500">
+          <div className="rounded-2xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
+            <p className="mb-4 text-xs font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
               Shift Timeline
             </p>
             <ul className="space-y-4">
@@ -585,23 +585,23 @@ export function ShiftApprovalPage() {
                         "h-2.5 w-2.5 flex-shrink-0 rounded-full",
                         event.done
                           ? "bg-secondary-600"
-                          : "border-2 border-neutral-300 bg-white",
+                          : "border-2 border-neutral-300 bg-white dark:border-neutral-700 dark:bg-neutral-900",
                       )}
                     />
                     {i < timeline.length - 1 && (
-                      <span className="mt-1 h-full w-px flex-1 bg-neutral-200" />
+                      <span className="mt-1 h-full w-px flex-1 bg-neutral-200 dark:bg-neutral-800" />
                     )}
                   </div>
                   <div className="pb-1">
                     <p
                       className={cn(
                         "text-sm font-semibold",
-                        event.done ? "text-neutral-900" : "text-neutral-400",
+                        event.done ? "text-neutral-900 dark:text-neutral-50" : "text-neutral-400 dark:text-neutral-500",
                       )}
                     >
                       {event.label}
                     </p>
-                    <p className="text-xs text-neutral-400">{event.detail}</p>
+                    <p className="text-xs text-neutral-400 dark:text-neutral-500">{event.detail}</p>
                   </div>
                 </li>
               ))}
@@ -618,12 +618,12 @@ export function ShiftApprovalPage() {
         size="sm"
       >
         <div className="space-y-4">
-          <p className="text-sm text-neutral-600">
+          <p className="text-sm text-neutral-600 dark:text-neutral-400">
             This will cancel the shift and notify any assigned or interested
             clinicians. Please provide a reason.
           </p>
           <div>
-            <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-neutral-500">
+            <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 dark:text-neutral-400">
               Reason <span className="text-error-500">*</span>
             </label>
             <textarea
@@ -631,7 +631,7 @@ export function ShiftApprovalPage() {
               value={cancelReason}
               onChange={(e) => setCancelReason(e.target.value)}
               placeholder="e.g. Staffing need resolved internally"
-              className="w-full resize-none rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-error-400"
+              className="w-full resize-none rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-error-400 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 dark:placeholder-neutral-500"
             />
           </div>
           <div className="flex justify-end gap-2">
@@ -664,33 +664,33 @@ export function ShiftApprovalPage() {
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-neutral-500">
+              <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
                 Date
               </label>
               <input
                 type="date"
                 value={rescheduleDate}
                 onChange={(e) => setRescheduleDate(e.target.value)}
-                className="w-full rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2.5 text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-secondary-500"
+                className="w-full rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2.5 text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-secondary-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100"
               />
             </div>
             <div>
-              <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-neutral-500">
+              <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
                 Time
               </label>
               <input
                 type="time"
                 value={rescheduleTime}
                 onChange={(e) => setRescheduleTime(e.target.value)}
-                className="w-full rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2.5 text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-secondary-500"
+                className="w-full rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2.5 text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-secondary-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100"
               />
             </div>
           </div>
           <div>
-            <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-neutral-500">
+            <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
               Duration (hours)
             </label>
-            <div className="flex items-center gap-2 rounded-lg border border-neutral-200 bg-neutral-50 px-4 py-2.5">
+            <div className="flex items-center gap-2 rounded-lg border border-neutral-200 bg-neutral-50 px-4 py-2.5 dark:border-neutral-700 dark:bg-neutral-800">
               <input
                 type="number"
                 min={1}
@@ -706,9 +706,9 @@ export function ShiftApprovalPage() {
                   if (Number.isNaN(val) || val <= 0) return;
                   setRescheduleDuration(val);
                 }}
-                className="w-full bg-transparent text-sm text-neutral-900 focus:outline-none"
+                className="w-full bg-transparent text-sm text-neutral-900 focus:outline-none dark:text-neutral-100"
               />
-              <span className="text-sm text-neutral-500">hrs</span>
+              <span className="text-sm text-neutral-500 dark:text-neutral-400">hrs</span>
             </div>
           </div>
           <div className="flex justify-end gap-2">

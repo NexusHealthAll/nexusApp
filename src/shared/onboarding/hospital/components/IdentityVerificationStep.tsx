@@ -16,9 +16,9 @@ import { ApiError } from "@/lib/apiError";
 // ─── Styles ──────────────────────────────────────────────────────────────────
 
 const inputCls =
-  "w-full rounded-lg bg-[#DAE8F3] border border-transparent px-3.5 py-2.5 text-sm text-neutral-800 outline-none " +
-  "focus:ring-2 focus:ring-[#349C93]/40 focus:border-[#349C93] focus:bg-[#D0E5F2] " +
-  "hover:bg-[#D0E5F2] transition-all duration-200 placeholder:text-neutral-400";
+  "w-full rounded-lg bg-[#DAE8F3] dark:bg-neutral-800 border border-transparent px-3.5 py-2.5 text-sm text-neutral-800 dark:text-neutral-100 outline-none " +
+  "focus:ring-2 focus:ring-[#349C93]/40 focus:border-[#349C93] focus:bg-[#D0E5F2] dark:focus:bg-neutral-700 " +
+  "hover:bg-[#D0E5F2] dark:hover:bg-neutral-700 transition-all duration-200 placeholder:text-neutral-400 dark:placeholder:text-neutral-500";
 
 const fieldError = "mt-1.5 text-[11px] text-red-500";
 
@@ -60,12 +60,16 @@ function IdentityDropdown({ value, onChange, disabled }: IdentityDropdownProps) 
         disabled={disabled}
         onClick={() => !disabled && setOpen((o) => !o)}
         className={[
-          "w-full flex items-center justify-between rounded-lg bg-[#DAE8F3] border px-3.5 py-2.5 text-sm outline-none transition-all duration-200",
-          open ? "ring-2 ring-[#349C93]/40 border-[#349C93] bg-[#D0E5F2]" : "border-transparent",
-          disabled ? "opacity-50 cursor-not-allowed" : "hover:bg-[#D0E5F2] cursor-pointer",
+          "w-full flex items-center justify-between rounded-lg bg-[#DAE8F3] dark:bg-neutral-800 border px-3.5 py-2.5 text-sm outline-none transition-all duration-200",
+          open
+            ? "ring-2 ring-[#349C93]/40 border-[#349C93] bg-[#D0E5F2] dark:bg-neutral-700"
+            : "border-transparent",
+          disabled
+            ? "opacity-50 cursor-not-allowed"
+            : "hover:bg-[#D0E5F2] dark:hover:bg-neutral-700 cursor-pointer",
         ].join(" ")}
       >
-        <span className={selected ? "text-neutral-800" : "text-neutral-400"}>
+        <span className={selected ? "text-neutral-800 dark:text-neutral-100" : "text-neutral-400"}>
           {selected ? selected.label : "Select identity type…"}
         </span>
         <ChevronDown
@@ -74,7 +78,7 @@ function IdentityDropdown({ value, onChange, disabled }: IdentityDropdownProps) 
       </button>
 
       {open && (
-        <div className="absolute z-50 mt-1.5 w-full rounded-xl bg-white border border-gray-200 shadow-xl overflow-hidden">
+        <div className="absolute z-50 mt-1.5 w-full rounded-xl bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 shadow-xl overflow-hidden">
           <ul className="py-1">
             {IDENTITY_OPTIONS.map((opt) => (
               <li key={opt.value}>
@@ -87,12 +91,12 @@ function IdentityDropdown({ value, onChange, disabled }: IdentityDropdownProps) 
                   className={[
                     "w-full text-left px-4 py-3 text-[13px] transition-colors duration-100",
                     opt.value === value
-                      ? "bg-[#E8F5F4] text-[#0F766E] font-semibold"
-                      : "text-neutral-700 hover:bg-[#F0F9F8]",
+                      ? "bg-[#E8F5F4] text-[#0F766E] dark:bg-teal-950 dark:text-teal-300 font-semibold"
+                      : "text-neutral-700 dark:text-neutral-200 hover:bg-[#F0F9F8] dark:hover:bg-neutral-700",
                   ].join(" ")}
                 >
                   <span className="font-bold mr-1">{opt.value}</span>
-                  <span className="text-neutral-500 text-[12px]">
+                  <span className="text-neutral-500 dark:text-neutral-400 text-[12px]">
                     — {opt.value === "BVN" ? "Bank Verification Number" : "National Identification Number"}
                   </span>
                 </button>
@@ -200,11 +204,11 @@ export function IdentityVerificationStep() {
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-3">
-          <div className="h-10 w-10 rounded-xl bg-[#EBF4FF] flex items-center justify-center shrink-0">
-            <ShieldCheck className="h-5 w-5 text-[#1A5888]" />
+          <div className="h-10 w-10 rounded-xl bg-[#EBF4FF] dark:bg-neutral-900 flex items-center justify-center shrink-0">
+            <ShieldCheck className="h-5 w-5 text-[#1A5888] dark:text-[#5AA6D6]" />
           </div>
           <div>
-            <h1 className="text-[24px] font-bold text-neutral-900 leading-tight">
+            <h1 className="text-[24px] font-bold text-neutral-900 dark:text-neutral-50 leading-tight">
               Identity Verification
             </h1>
             <p className="text-[13px] text-neutral-500 leading-relaxed">
@@ -221,8 +225,8 @@ export function IdentityVerificationStep() {
           className={[
             "rounded-xl border transition-all duration-300 overflow-hidden",
             card1Done
-              ? "border-[#349C93]/40 bg-[#F0FBF9]"
-              : "border-[#D6E8F5] bg-[#EBF4FF]",
+              ? "border-[#349C93]/40 bg-[#F0FBF9] dark:bg-teal-950"
+              : "border-[#D6E8F5] dark:border-neutral-800 bg-[#EBF4FF] dark:bg-neutral-900",
           ].join(" ")}
         >
           {/* Card 1 Header */}
@@ -239,10 +243,10 @@ export function IdentityVerificationStep() {
                 {card1Done ? <CheckCircle2 className="h-4 w-4" /> : "1"}
               </div>
               <div>
-                <p className="text-[13px] font-semibold text-neutral-800">
+                <p className="text-[13px] font-semibold text-neutral-800 dark:text-neutral-100">
                   Identity Details
                 </p>
-                <p className="text-[11px] text-neutral-500">
+                <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
                   {card1Done
                     ? `${identityType} verified successfully`
                     : "Select your identity type and enter your number"}
@@ -259,11 +263,11 @@ export function IdentityVerificationStep() {
 
           {/* Card 1 Body — collapsed on success */}
           {!card1Done && (
-            <div className="px-6 pb-6 border-t border-[#D6E8F5]">
+            <div className="px-6 pb-6 border-t border-[#D6E8F5] dark:border-neutral-800">
               <div className="pt-5 space-y-4">
                 {/* Identity type dropdown */}
                 <div>
-                  <label className="block text-[11px] font-semibold uppercase tracking-widest text-neutral-500 mb-1.5">
+                  <label className="block text-[11px] font-semibold uppercase tracking-widest text-neutral-500 dark:text-neutral-400 mb-1.5">
                     Identity Type <span className="text-red-500">*</span>
                   </label>
                   <IdentityDropdown
@@ -281,7 +285,7 @@ export function IdentityVerificationStep() {
 
                 {/* Identity number input */}
                 <div>
-                  <label className="block text-[11px] font-semibold uppercase tracking-widest text-neutral-500 mb-1.5">
+                  <label className="block text-[11px] font-semibold uppercase tracking-widest text-neutral-500 dark:text-neutral-400 mb-1.5">
                     {identityType ? `${identityType} Number` : "Identity Number"}{" "}
                     <span className="text-red-500">*</span>
                   </label>
@@ -314,9 +318,9 @@ export function IdentityVerificationStep() {
 
                 {/* Initiate error banner */}
                 {initiateStatus === "error" && initiateError && (
-                  <div className="flex items-start gap-3 bg-red-50 border border-red-200 rounded-lg px-4 py-3">
+                  <div className="flex items-start gap-3 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-lg px-4 py-3">
                     <AlertCircle className="h-4 w-4 text-red-500 shrink-0 mt-0.5" />
-                    <p className="text-[12px] text-red-700 font-medium leading-relaxed">
+                    <p className="text-[12px] text-red-700 dark:text-red-300 font-medium leading-relaxed">
                       {initiateError}
                     </p>
                   </div>
@@ -350,10 +354,10 @@ export function IdentityVerificationStep() {
           className={[
             "rounded-xl border transition-all duration-300 overflow-hidden",
             !card2Active
-              ? "border-gray-200 bg-white opacity-60"
+              ? "border-gray-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 opacity-60"
               : validateStatus === "success"
-                ? "border-[#349C93]/40 bg-[#F0FBF9]"
-                : "border-[#D6E8F5] bg-[#EBF4FF]",
+                ? "border-[#349C93]/40 bg-[#F0FBF9] dark:bg-teal-950"
+                : "border-[#D6E8F5] dark:border-neutral-800 bg-[#EBF4FF] dark:bg-neutral-900",
           ].join(" ")}
         >
           {/* Card 2 Header */}
@@ -363,7 +367,7 @@ export function IdentityVerificationStep() {
                 className={[
                   "h-8 w-8 rounded-full flex items-center justify-center shrink-0 text-[13px] font-bold",
                   !card2Active
-                    ? "bg-gray-200 text-gray-400"
+                    ? "bg-gray-200 text-gray-400 dark:bg-neutral-700 dark:text-neutral-500"
                     : validateStatus === "success"
                       ? "bg-[#349C93] text-white"
                       : "bg-[#1A5888] text-white",
@@ -379,12 +383,12 @@ export function IdentityVerificationStep() {
                 <p
                   className={[
                     "text-[13px] font-semibold",
-                    card2Active ? "text-neutral-800" : "text-neutral-400",
+                    card2Active ? "text-neutral-800 dark:text-neutral-100" : "text-neutral-400",
                   ].join(" ")}
                 >
                   OTP Verification
                 </p>
-                <p className="text-[11px] text-neutral-500">
+                <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
                   {!card2Active
                     ? "Complete step 1 first"
                     : validateStatus === "success"
@@ -406,12 +410,12 @@ export function IdentityVerificationStep() {
 
           {/* Card 2 Body — only shown when card 1 is done */}
           {card2Active && validateStatus !== "success" && (
-            <div className="px-6 pb-6 border-t border-[#D6E8F5]">
+            <div className="px-6 pb-6 border-t border-[#D6E8F5] dark:border-neutral-800">
               <div className="pt-5 space-y-4">
                 {/* Info note */}
-                <div className="flex items-start gap-2.5 bg-[#DAE8F3] rounded-lg px-4 py-3">
-                  <KeyRound className="h-4 w-4 text-[#1A5888] shrink-0 mt-0.5" />
-                  <p className="text-[12px] text-[#1A5888] font-medium leading-relaxed">
+                <div className="flex items-start gap-2.5 bg-[#DAE8F3] dark:bg-neutral-800 rounded-lg px-4 py-3">
+                  <KeyRound className="h-4 w-4 text-[#1A5888] dark:text-[#5AA6D6] shrink-0 mt-0.5" />
+                  <p className="text-[12px] text-[#1A5888] dark:text-[#5AA6D6] font-medium leading-relaxed">
                     An OTP has been sent to the phone number associated with your{" "}
                     <strong>{identityType}</strong>. Please enter it below to confirm.
                   </p>
@@ -419,7 +423,7 @@ export function IdentityVerificationStep() {
 
                 {/* OTP input */}
                 <div>
-                  <label className="block text-[11px] font-semibold uppercase tracking-widest text-neutral-500 mb-1.5">
+                  <label className="block text-[11px] font-semibold uppercase tracking-widest text-neutral-500 dark:text-neutral-400 mb-1.5">
                     One-Time Password (OTP) <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -448,9 +452,9 @@ export function IdentityVerificationStep() {
 
                 {/* Validate error banner */}
                 {validateStatus === "error" && validateError && (
-                  <div className="flex items-start gap-3 bg-red-50 border border-red-200 rounded-lg px-4 py-3">
+                  <div className="flex items-start gap-3 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-lg px-4 py-3">
                     <AlertCircle className="h-4 w-4 text-red-500 shrink-0 mt-0.5" />
-                    <p className="text-[12px] text-red-700 font-medium leading-relaxed">
+                    <p className="text-[12px] text-red-700 dark:text-red-300 font-medium leading-relaxed">
                       {validateError}
                     </p>
                   </div>

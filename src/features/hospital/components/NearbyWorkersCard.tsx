@@ -29,8 +29,8 @@ export function NearbyWorkersCard() {
   }, []);
 
   return (
-    <div className="flex h-full flex-col rounded-2xl border border-neutral-100 bg-white p-5">
-      <h3 className="text-base font-bold text-neutral-900">
+    <div className="flex h-full flex-col rounded-2xl border border-neutral-100 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
+      <h3 className="text-base font-bold text-neutral-900 dark:text-neutral-50">
         Nearby Available Workers
       </h3>
 
@@ -49,7 +49,7 @@ export function NearbyWorkersCard() {
             className="min-h-[160px] border-0"
           />
         ) : (
-          <ul className="divide-y divide-neutral-50">
+          <ul className="divide-y divide-neutral-50 dark:divide-neutral-800">
             {workers.map((worker) => {
               const availability = availabilityDisplay(worker.availability);
               return (
@@ -59,10 +59,10 @@ export function NearbyWorkersCard() {
                 >
                   <AvatarInitials name={worker.name} size="md" />
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold text-neutral-900">
+                    <p className="truncate text-sm font-semibold text-neutral-900 dark:text-neutral-50">
                       {worker.name}, {worker.credential}
                     </p>
-                    <p className="flex items-center gap-1 text-xs text-neutral-400">
+                    <p className="flex items-center gap-1 text-xs text-neutral-400 dark:text-neutral-500">
                       {worker.distanceMi.toFixed(1)} mi ·
                       <Star className="h-3 w-3 fill-warning-400 text-warning-400" />
                       {worker.rating} ·
@@ -73,7 +73,7 @@ export function NearbyWorkersCard() {
                   </div>
                   <Link
                     to={PATHS.hospital.workerDetail(worker.id)}
-                    className="rounded-lg border border-neutral-200 px-3 py-1.5 text-xs font-semibold text-neutral-700 transition-colors hover:bg-neutral-50"
+                    className="rounded-lg border border-neutral-200 px-3 py-1.5 text-xs font-semibold text-neutral-700 transition-colors hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
                   >
                     Invite
                   </Link>
@@ -86,7 +86,7 @@ export function NearbyWorkersCard() {
 
       <Link
         to={PATHS.hospital.workers}
-        className="mt-4 flex items-center justify-center gap-1 border-t border-neutral-100 pt-4 text-sm font-semibold text-neutral-700 transition-colors hover:text-neutral-900"
+        className="mt-4 flex items-center justify-center gap-1 border-t border-neutral-100 pt-4 text-sm font-semibold text-neutral-700 transition-colors hover:text-neutral-900 dark:border-neutral-800 dark:text-neutral-300 dark:hover:text-neutral-50"
       >
         Browse all workers
         <ChevronRight className="h-4 w-4" />

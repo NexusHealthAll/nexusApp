@@ -47,11 +47,8 @@ export const useLocationTracker = () => {
         if (err.code === err.PERMISSION_DENIED) {
           setPermissionState("denied");
         } else if (err.code === err.POSITION_UNAVAILABLE) {
-          // Site permission is fine, but the device/OS can't produce a fix —
-          // most commonly the device's Location Services toggle is off.
           setPermissionState("unavailable");
         }
-        // TIMEOUT (code 3): transient, leave the current state as-is.
       },
       {
         enableHighAccuracy: true,
@@ -60,9 +57,6 @@ export const useLocationTracker = () => {
       },
     );
   }, []);
-
-  // Keep the latest requestLocation in a ref so the permission-change
-  // listener (registered once) always calls the current version.
   const requestLocationRef = useRef(requestLocation);
   requestLocationRef.current = requestLocation;
 

@@ -47,26 +47,26 @@ export function PatientIntakeScreen({
     <>
       <Header title="Patient Intake" subtitle="Consultation phase 1" onBack={onBack} />
       <main className="space-y-5 px-5 py-4">
-        <p className="rounded-xl bg-brand-50 px-4 py-3 text-xs text-brand-800">
+        <p className="rounded-xl bg-brand-50 px-4 py-3 text-xs text-brand-800 dark:bg-brand-950 dark:text-brand-300">
           Recorded for this shift session only — not saved to a patient record system.
         </p>
 
         <section className="space-y-3">
-          <p className="text-xs font-bold uppercase text-neutral-500">Identification</p>
+          <p className="text-xs font-bold uppercase text-neutral-500 dark:text-neutral-500">Identification</p>
           <div>
-            <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-neutral-500">
+            <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-neutral-500 dark:text-neutral-500">
               Patient Name
             </label>
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Chinua Achebe"
-              className="w-full rounded-lg bg-neutral-100 px-3 py-2.5 text-sm outline-none"
+              className="w-full rounded-lg bg-neutral-100 px-3 py-2.5 text-sm outline-none dark:bg-neutral-800"
             />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-neutral-500">
+              <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-neutral-500 dark:text-neutral-500">
                 Age
               </label>
               <input
@@ -75,7 +75,7 @@ export function PatientIntakeScreen({
                 value={age}
                 onChange={(e) => setAge(e.target.value)}
                 placeholder="Years"
-                className="w-full rounded-lg bg-neutral-100 px-3 py-2.5 text-sm outline-none"
+                className="w-full rounded-lg bg-neutral-100 px-3 py-2.5 text-sm outline-none dark:bg-neutral-800"
               />
             </div>
             <Select
@@ -93,9 +93,9 @@ export function PatientIntakeScreen({
         </section>
 
         <section className="space-y-3">
-          <p className="text-xs font-bold uppercase text-neutral-500">Presentation</p>
+          <p className="text-xs font-bold uppercase text-neutral-500 dark:text-neutral-500">Presentation</p>
           <div>
-            <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-neutral-500">
+            <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-neutral-500 dark:text-neutral-500">
               Chief Complaint
             </label>
             <textarea
@@ -103,16 +103,16 @@ export function PatientIntakeScreen({
               value={chiefComplaint}
               onChange={(e) => setChiefComplaint(e.target.value)}
               placeholder="Describe the primary reason for the visit..."
-              className="w-full resize-none rounded-lg bg-neutral-100 px-3 py-2.5 text-sm outline-none"
+              className="w-full resize-none rounded-lg bg-neutral-100 px-3 py-2.5 text-sm outline-none dark:bg-neutral-800"
             />
           </div>
         </section>
 
         <section className="space-y-3">
-          <p className="text-xs font-bold uppercase text-neutral-500">Initial Vitals</p>
+          <p className="text-xs font-bold uppercase text-neutral-500 dark:text-neutral-500">Initial Vitals</p>
           <div className="grid grid-cols-2 gap-3">
-            <div className="rounded-xl bg-neutral-100 p-3">
-              <p className="text-[10px] font-semibold uppercase text-neutral-500">Blood Pressure</p>
+            <div className="rounded-xl bg-neutral-100 p-3 dark:bg-neutral-800">
+              <p className="text-[10px] font-semibold uppercase text-neutral-500 dark:text-neutral-500">Blood Pressure</p>
               <div className="mt-1 flex items-center gap-1">
                 <input
                   type="number"
@@ -129,11 +129,11 @@ export function PatientIntakeScreen({
                   placeholder="80"
                   className="w-full bg-transparent text-lg font-bold outline-none"
                 />
-                <span className="text-xs text-neutral-400">mmHg</span>
+                <span className="text-xs text-neutral-400 dark:text-neutral-500">mmHg</span>
               </div>
             </div>
-            <div className="rounded-xl bg-neutral-100 p-3">
-              <p className="text-[10px] font-semibold uppercase text-neutral-500">Temp</p>
+            <div className="rounded-xl bg-neutral-100 p-3 dark:bg-neutral-800">
+              <p className="text-[10px] font-semibold uppercase text-neutral-500 dark:text-neutral-500">Temp</p>
               <div className="mt-1 flex items-center gap-1">
                 <input
                   type="number"
@@ -143,11 +143,11 @@ export function PatientIntakeScreen({
                   placeholder="36.5"
                   className="w-full bg-transparent text-lg font-bold outline-none"
                 />
-                <span className="text-xs text-neutral-400">°C</span>
+                <span className="text-xs text-neutral-400 dark:text-neutral-500">°C</span>
               </div>
             </div>
-            <div className="rounded-xl bg-neutral-100 p-3">
-              <p className="text-[10px] font-semibold uppercase text-neutral-500">Heart Rate</p>
+            <div className="rounded-xl bg-neutral-100 p-3 dark:bg-neutral-800">
+              <p className="text-[10px] font-semibold uppercase text-neutral-500 dark:text-neutral-500">Heart Rate</p>
               <div className="mt-1 flex items-center gap-1">
                 <input
                   type="number"
@@ -156,13 +156,13 @@ export function PatientIntakeScreen({
                   placeholder="72"
                   className="w-full bg-transparent text-lg font-bold outline-none"
                 />
-                <span className="text-xs text-neutral-400">BPM</span>
+                <span className="text-xs text-neutral-400 dark:text-neutral-500">BPM</span>
               </div>
             </div>
           </div>
         </section>
 
-        {error && <p className="text-sm text-error-600">{error}</p>}
+        {error && <p className="text-sm text-error-600 dark:text-error-400">{error}</p>}
 
         <Button type="button" className="w-full bg-brand-700" onClick={handleContinue}>
           Continue

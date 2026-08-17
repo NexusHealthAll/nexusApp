@@ -37,14 +37,14 @@ export function MonthlyEarningsChart({ workerId }: { workerId: string }) {
   const trendPct = prev > 0 ? Math.round(((last - prev) / prev) * 100) : 0;
 
   return (
-    <div className="rounded-2xl border border-neutral-100 bg-white p-5">
+    <div className="rounded-2xl border border-neutral-100 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
       <div className="mb-4 flex items-start justify-between">
         <div>
-          <h3 className="text-base font-bold text-neutral-900">Monthly Earnings</h3>
-          <p className="text-xs text-neutral-400">Last 6 months</p>
+          <h3 className="text-base font-bold text-neutral-900 dark:text-neutral-50">Monthly Earnings</h3>
+          <p className="text-xs text-neutral-400 dark:text-neutral-500">Last 6 months</p>
         </div>
         {!isLoading && (
-          <span className="rounded-full bg-success-100 px-3 py-1 text-xs font-semibold text-success-700">
+          <span className="rounded-full bg-success-100 px-3 py-1 text-xs font-semibold text-success-700 dark:bg-success-950 dark:text-success-300">
             {trendPct >= 0 ? "+" : ""}
             {trendPct}% vs last month
           </span>

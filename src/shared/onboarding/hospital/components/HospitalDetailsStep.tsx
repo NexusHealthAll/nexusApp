@@ -6,12 +6,13 @@ import { useOnboarding } from "../context/OnboardingContext";
 import { authUtils } from "@/shared/auth/utils/authUtils";
 
 const inputCls =
-  "w-full rounded-lg bg-[#DAE8F3] border border-transparent px-3.5 py-2.5 text-sm text-neutral-800 outline-none " +
-  "focus:ring-2 focus:ring-[#349C93]/40 focus:border-[#349C93] focus:bg-[#D0E5F2] " +
-  "hover:bg-[#D0E5F2] " +
-  "transition-all duration-200 placeholder:text-neutral-400";
+  "w-full rounded-lg bg-[#DAE8F3] dark:bg-neutral-800 border border-transparent px-3.5 py-2.5 text-sm text-neutral-800 dark:text-neutral-100 outline-none " +
+  "focus:ring-2 focus:ring-[#349C93]/40 focus:border-[#349C93] focus:bg-[#D0E5F2] dark:focus:bg-neutral-700 " +
+  "hover:bg-[#D0E5F2] dark:hover:bg-neutral-700 " +
+  "transition-all duration-200 placeholder:text-neutral-400 dark:placeholder:text-neutral-500";
 
-const sectionCard = "bg-[#EBF4FF] rounded-xl p-6 border border-[#D6E8F5]";
+const sectionCard =
+  "bg-[#EBF4FF] dark:bg-neutral-900 rounded-xl p-6 border border-[#D6E8F5] dark:border-neutral-800";
 
 const fieldError = "mt-1 text-[11px] text-red-500";
 
@@ -60,10 +61,10 @@ export function HospitalDetailsStep() {
 
       {/* ── Page header ── */}
       <div className="flex flex-col items-center text-center mb-8">
-        <svg className="w-9 h-9 text-neutral-800 mb-3" viewBox="0 0 24 24" fill="currentColor">
+        <svg className="w-9 h-9 text-neutral-800 dark:text-neutral-100 mb-3" viewBox="0 0 24 24" fill="currentColor">
           <path d="M3 21V7l6-4 6 4v2h3v12H3zm2-2h4v-3H5v3zm0-5h4v-3H5v3zm0-5h4V7H5v2zm6 10h4v-3h-4v3zm0-5h4v-3h-4v3zm0-5h4V7h-4v2zm6 10h2v-8h-2v8z" />
         </svg>
-        <h1 className="text-[26px] font-bold text-neutral-900 leading-tight">Hospital Registration</h1>
+        <h1 className="text-[26px] font-bold text-neutral-900 dark:text-neutral-50 leading-tight">Hospital Registration</h1>
         <p className="mt-2 text-[13px] text-neutral-500 max-w-md leading-relaxed">
           Establish your facility's core identity on the NexusCare network. This information will be
           verified against the MDCN database.
@@ -82,7 +83,7 @@ export function HospitalDetailsStep() {
           {/* First Name + Last Name */}
           <div className="grid grid-cols-2 gap-3 mb-4">
             <div>
-              <label className="block text-[11px] font-medium text-neutral-600 mb-1.5">
+              <label className="block text-[11px] font-medium text-neutral-600 dark:text-neutral-300 mb-1.5">
                 First Name <span className="text-red-500">*</span>
               </label>
               <div className="relative">
@@ -99,7 +100,7 @@ export function HospitalDetailsStep() {
               {errors.adminFirstName && <p className={fieldError}>{errors.adminFirstName}</p>}
             </div>
             <div>
-              <label className="block text-[11px] font-medium text-neutral-600 mb-1.5">
+              <label className="block text-[11px] font-medium text-neutral-600 dark:text-neutral-300 mb-1.5">
                 Last Name <span className="text-red-500">*</span>
               </label>
               <div className="relative">
@@ -120,7 +121,7 @@ export function HospitalDetailsStep() {
           {/* Email + Phone */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-[11px] font-medium text-neutral-600 mb-1.5">
+              <label className="block text-[11px] font-medium text-neutral-600 dark:text-neutral-300 mb-1.5">
                 Contact Email <span className="text-red-500">*</span>
               </label>
               <div className="relative">
@@ -137,7 +138,7 @@ export function HospitalDetailsStep() {
               {errors.email && <p className={fieldError}>{errors.email}</p>}
             </div>
             <div>
-              <label className="block text-[11px] font-medium text-neutral-600 mb-1.5">Phone Number</label>
+              <label className="block text-[11px] font-medium text-neutral-600 dark:text-neutral-300 mb-1.5">Phone Number</label>
               <div className="relative">
                 <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-neutral-400 pointer-events-none" />
                 <input
@@ -164,7 +165,7 @@ export function HospitalDetailsStep() {
 
           {/* Hospital Name */}
           <div className="mb-4">
-            <label className="block text-[11px] font-medium text-neutral-600 mb-1.5">
+            <label className="block text-[11px] font-medium text-neutral-600 dark:text-neutral-300 mb-1.5">
               Official Hospital Name <span className="text-red-500">*</span>
             </label>
             <input
@@ -180,7 +181,7 @@ export function HospitalDetailsStep() {
 
           {/* MDCN Registration Number */}
           <div>
-            <label className="block text-[11px] font-medium text-neutral-600 mb-1.5">
+            <label className="block text-[11px] font-medium text-neutral-600 dark:text-neutral-300 mb-1.5">
               MDCN / Registration Number <span className="text-red-500">*</span>
             </label>
             <div className="relative">
@@ -202,10 +203,10 @@ export function HospitalDetailsStep() {
         </div>
 
         {/* Verification badge */}
-        <div className="flex items-start gap-3 bg-teal-50 border border-teal-200 rounded-xl px-5 py-4">
+        <div className="flex items-start gap-3 bg-teal-50 dark:bg-teal-950 border border-teal-200 dark:border-teal-800 rounded-xl px-5 py-4">
           <BadgeCheck className="h-5 w-5 text-[#349C93] shrink-0 mt-0.5" />
           <div>
-            <p className="text-[12px] font-semibold text-neutral-800">MDCN Verification</p>
+            <p className="text-[12px] font-semibold text-neutral-800 dark:text-neutral-100">MDCN Verification</p>
             <p className="text-[11px] text-neutral-500 leading-relaxed mt-0.5">
               Your registration details will be cross-checked against the MDCN national database
               within 48 hours of submission.

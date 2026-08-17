@@ -145,33 +145,33 @@ export function WorkersPage() {
           value={role}
           onChange={setRole}
           containerClassName="w-40"
-          className="bg-white py-2"
+          className="bg-white py-2 dark:bg-neutral-800"
         />
         <Select
           options={distanceOptions}
           value={distance}
           onChange={setDistance}
           containerClassName="w-40"
-          className="bg-white py-2"
+          className="bg-white py-2 dark:bg-neutral-800"
         />
         <Select
           options={availabilityOptions}
           value={availability}
           onChange={setAvailability}
           containerClassName="w-44"
-          className="bg-white py-2"
+          className="bg-white py-2 dark:bg-neutral-800"
         />
         <Select
           options={ratingOptions}
           value={rating}
           onChange={setRating}
           containerClassName="w-36"
-          className="bg-white py-2"
+          className="bg-white py-2 dark:bg-neutral-800"
         />
       </div>
 
       {/* Table */}
-      <div className="mt-5 overflow-hidden rounded-2xl border border-neutral-100 bg-white">
+      <div className="mt-5 overflow-hidden rounded-2xl border border-neutral-100 bg-white dark:border-neutral-800 dark:bg-neutral-900">
         {isLoading ? (
           <div className="space-y-2 p-5">
             {Array.from({ length: 5 }).map((_, i) => (
@@ -198,7 +198,7 @@ export function WorkersPage() {
           <div className="overflow-x-auto">
             <table className="w-full min-w-[820px] text-sm">
               <thead>
-                <tr className="border-b border-neutral-100 bg-neutral-50/60 text-left text-xs font-semibold uppercase tracking-wider text-neutral-400">
+                <tr className="border-b border-neutral-100 bg-neutral-50/60 text-left text-xs font-semibold uppercase tracking-wider text-neutral-400 dark:border-neutral-800 dark:bg-neutral-800/60 dark:text-neutral-500">
                   <th className="px-5 py-3 font-semibold">Worker</th>
                   <th className="py-3 pr-4 font-semibold">Role</th>
                   <th className="py-3 pr-4 font-semibold">Distance</th>
@@ -216,7 +216,7 @@ export function WorkersPage() {
                     <tr
                       key={worker.id}
                       onClick={() => openWorker(worker.id)}
-                      className="cursor-pointer border-b border-neutral-50 transition-colors last:border-b-0 hover:bg-neutral-50/60"
+                      className="cursor-pointer border-b border-neutral-50 transition-colors last:border-b-0 hover:bg-neutral-50/60 dark:border-neutral-800 dark:hover:bg-neutral-800/60"
                     >
                       <td className="px-5 py-4">
                         <div className="flex items-center gap-3">
@@ -226,28 +226,28 @@ export function WorkersPage() {
                             className="bg-primary-700 font-bold text-white"
                           />
                           <div>
-                            <p className="font-semibold text-neutral-900">
+                            <p className="font-semibold text-neutral-900 dark:text-neutral-50">
                               {worker.name}
                             </p>
-                            <p className="text-xs text-neutral-400">
+                            <p className="text-xs text-neutral-400 dark:text-neutral-500">
                               {worker.yearsExperience} yrs experience
                             </p>
                           </div>
                         </div>
                       </td>
-                      <td className="py-4 pr-4 text-neutral-600">
+                      <td className="py-4 pr-4 text-neutral-600 dark:text-neutral-400">
                         {worker.role}
                       </td>
-                      <td className="py-4 pr-4 text-neutral-600">
+                      <td className="py-4 pr-4 text-neutral-600 dark:text-neutral-400">
                         {worker.distanceMi.toFixed(1)} mi
                       </td>
                       <td className="py-4 pr-4">
-                        <span className="flex items-center gap-1 font-semibold text-neutral-900">
-                          <Star className="h-3.5 w-3.5 fill-neutral-900 text-neutral-900" />
+                        <span className="flex items-center gap-1 font-semibold text-neutral-900 dark:text-neutral-50">
+                          <Star className="h-3.5 w-3.5 fill-neutral-900 text-neutral-900 dark:fill-neutral-50 dark:text-neutral-50" />
                           {worker.rating}
                         </span>
                       </td>
-                      <td className="py-4 pr-4 text-neutral-600">
+                      <td className="py-4 pr-4 text-neutral-600 dark:text-neutral-400">
                         {worker.shiftsDone}
                       </td>
                       <td className="py-4 pr-4">
@@ -278,7 +278,7 @@ export function WorkersPage() {
                               e.stopPropagation();
                               navigate(PATHS.hospital.messages);
                             }}
-                            className="flex h-8 w-8 items-center justify-center rounded-lg border border-neutral-200 text-neutral-400 transition-colors hover:text-neutral-600"
+                            className="flex h-8 w-8 items-center justify-center rounded-lg border border-neutral-200 text-neutral-400 transition-colors hover:text-neutral-600 dark:border-neutral-700 dark:text-neutral-500 dark:hover:text-neutral-300"
                             aria-label={`Message ${worker.name}`}
                           >
                             <MessageSquare className="h-3.5 w-3.5" />
@@ -288,7 +288,7 @@ export function WorkersPage() {
                               e.stopPropagation();
                               openWorker(worker.id);
                             }}
-                            className="flex h-8 w-8 items-center justify-center rounded-lg border border-neutral-200 text-neutral-400 transition-colors hover:text-neutral-600"
+                            className="flex h-8 w-8 items-center justify-center rounded-lg border border-neutral-200 text-neutral-400 transition-colors hover:text-neutral-600 dark:border-neutral-700 dark:text-neutral-500 dark:hover:text-neutral-300"
                             aria-label={`View ${worker.name}`}
                           >
                             <Eye className="h-3.5 w-3.5" />
@@ -304,7 +304,7 @@ export function WorkersPage() {
         )}
 
         {!isLoading && filtered.length > 0 && (
-          <div className="border-t border-neutral-100 px-5 py-4">
+          <div className="border-t border-neutral-100 px-5 py-4 dark:border-neutral-800">
             <Pagination
               page={page}
               pageCount={pageCount}
@@ -327,14 +327,14 @@ export function WorkersPage() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={closeWorker}
-              className="fixed inset-0 z-40 bg-neutral-900/40"
+              className="fixed inset-0 z-40 bg-neutral-900/40 dark:bg-black/60"
             />
             <motion.aside
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "tween", duration: 0.25, ease: "easeOut" }}
-              className="fixed inset-y-0 right-0 z-50 flex w-full max-w-md flex-col bg-white shadow-strong"
+              className="fixed inset-y-0 right-0 z-50 flex w-full max-w-md flex-col bg-white shadow-strong dark:bg-neutral-900"
             >
               <WorkerDrawer worker={selectedWorker} onClose={closeWorker} />
             </motion.aside>
@@ -357,16 +357,16 @@ function WorkerDrawer({
   return (
     <>
       {/* Header */}
-      <div className="flex items-start gap-4 border-b border-neutral-100 p-6">
+      <div className="flex items-start gap-4 border-b border-neutral-100 p-6 dark:border-neutral-800">
         <AvatarInitials
           name={worker.name}
           className="h-14 w-14 bg-primary-800 text-lg font-bold text-white"
         />
         <div className="min-w-0 flex-1">
-          <h2 className="text-xl font-bold text-neutral-900">
+          <h2 className="text-xl font-bold text-neutral-900 dark:text-neutral-50">
             {worker.name}, {worker.credential}
           </h2>
-          <p className="mt-0.5 text-sm text-neutral-500">
+          <p className="mt-0.5 text-sm text-neutral-500 dark:text-neutral-400">
             {worker.role} • {worker.yearsExperience} yrs experience
           </p>
           <p className="mt-1.5 flex items-center gap-2 text-sm">
@@ -375,15 +375,15 @@ function WorkerDrawer({
             >
               {worker.license === "verified" ? "Verified" : "Pending"}
             </Badge>
-            <span className="flex items-center gap-1 font-semibold text-neutral-900">
-              <Star className="h-3.5 w-3.5 fill-neutral-900 text-neutral-900" />
+            <span className="flex items-center gap-1 font-semibold text-neutral-900 dark:text-neutral-50">
+              <Star className="h-3.5 w-3.5 fill-neutral-900 text-neutral-900 dark:fill-neutral-50 dark:text-neutral-50" />
               {worker.rating} ({worker.shiftsDone} shifts)
             </span>
           </p>
         </div>
         <button
           onClick={onClose}
-          className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full border border-neutral-200 text-neutral-400 transition-colors hover:text-neutral-600"
+          className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full border border-neutral-200 text-neutral-400 transition-colors hover:text-neutral-600 dark:border-neutral-700 dark:text-neutral-500 dark:hover:text-neutral-300"
           aria-label="Close worker profile"
         >
           <X className="h-4 w-4" />
@@ -393,10 +393,10 @@ function WorkerDrawer({
       {/* Body */}
       <div className="flex-1 space-y-6 overflow-y-auto p-6">
         <section>
-          <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-400">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
             Biography
           </h3>
-          <p className="mt-2 text-sm leading-relaxed text-neutral-600">
+          <p className="mt-2 text-sm leading-relaxed text-neutral-600 dark:text-neutral-400">
             {worker.bio}
           </p>
         </section>
@@ -415,10 +415,10 @@ function WorkerDrawer({
           ].map((stat) => (
             <div
               key={stat.label}
-              className="rounded-xl bg-neutral-50 px-3 py-4 text-center"
+              className="rounded-xl bg-neutral-50 px-3 py-4 text-center dark:bg-neutral-800"
             >
-              <p className="text-lg font-bold text-neutral-900">{stat.value}</p>
-              <p className="mt-1 text-[10px] font-semibold uppercase tracking-wider text-neutral-400">
+              <p className="text-lg font-bold text-neutral-900 dark:text-neutral-50">{stat.value}</p>
+              <p className="mt-1 text-[10px] font-semibold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
                 {stat.label}
               </p>
             </div>
@@ -426,14 +426,14 @@ function WorkerDrawer({
         </div>
 
         <section>
-          <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-400">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
             Certificates & Licenses
           </h3>
           <div className="mt-2 flex flex-wrap gap-2">
             {worker.certificates.map((cert) => (
               <span
                 key={cert}
-                className="rounded-full bg-primary-50 px-3 py-1 text-xs font-semibold text-primary-700"
+                className="rounded-full bg-primary-50 px-3 py-1 text-xs font-semibold text-primary-700 dark:bg-primary-950 dark:text-primary-300"
               >
                 {cert}
               </span>
@@ -442,31 +442,31 @@ function WorkerDrawer({
         </section>
 
         <section>
-          <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-400">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
             Languages
           </h3>
-          <p className="mt-2 text-sm text-neutral-600">
+          <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-400">
             {worker.languages.join(", ")}
           </p>
         </section>
 
         <section>
-          <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-400">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
             Hospital History
           </h3>
           {worker.history.length === 0 ? (
-            <p className="mt-2 text-sm text-neutral-400">
+            <p className="mt-2 text-sm text-neutral-400 dark:text-neutral-500">
               No previous shifts with your hospital yet.
             </p>
           ) : (
-            <ul className="mt-1 divide-y divide-neutral-100">
+            <ul className="mt-1 divide-y divide-neutral-100 dark:divide-neutral-800">
               {worker.history.map((item) => (
                 <li
                   key={`${item.shift}-${item.date}`}
                   className="flex items-center justify-between py-2.5 text-sm"
                 >
-                  <span className="text-neutral-800">{item.shift}</span>
-                  <span className="text-neutral-400">{item.date}</span>
+                  <span className="text-neutral-800 dark:text-neutral-200">{item.shift}</span>
+                  <span className="text-neutral-400 dark:text-neutral-500">{item.date}</span>
                 </li>
               ))}
             </ul>
@@ -475,10 +475,10 @@ function WorkerDrawer({
       </div>
 
       {/* Footer actions */}
-      <div className="grid grid-cols-2 gap-3 border-t border-neutral-100 p-5">
+      <div className="grid grid-cols-2 gap-3 border-t border-neutral-100 p-5 dark:border-neutral-800">
         <button
           onClick={() => navigate(PATHS.hospital.messages)}
-          className="h-11 rounded-xl border border-neutral-200 bg-white text-sm font-bold text-neutral-900 transition-colors hover:bg-neutral-50"
+          className="h-11 rounded-xl border border-neutral-200 bg-white text-sm font-bold text-neutral-900 transition-colors hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-50 dark:hover:bg-neutral-800"
         >
           Message
         </button>

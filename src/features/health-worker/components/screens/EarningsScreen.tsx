@@ -22,11 +22,11 @@ export function EarningsScreen({
   return (
     <>
       <main className="space-y-5 py-4">
-        <h1 className="text-base font-extrabold text-ink-900">Earnings</h1>
+        <h1 className="text-base font-extrabold text-ink-900 dark:text-neutral-50">Earnings</h1>
         {loadError && (
-          <p className="rounded-xl bg-error-50 px-4 py-3 text-sm text-error-700">{loadError}</p>
+          <p className="rounded-xl bg-error-50 px-4 py-3 text-sm text-error-700 dark:bg-error-950 dark:text-error-300">{loadError}</p>
         )}
-        {isLoading && <p className="text-sm text-ink-500">Loading...</p>}
+        {isLoading && <p className="text-sm text-ink-500 dark:text-neutral-500">Loading...</p>}
 
         {earnings && (
           <>
@@ -44,14 +44,14 @@ export function EarningsScreen({
             </div>
             <section>
               <div className="mb-3 flex items-center justify-between">
-                <h2 className="font-bold text-ink-900">Recent Earnings</h2>
-                <span className="text-xs text-ink-500">
+                <h2 className="font-bold text-ink-900 dark:text-neutral-50">Recent Earnings</h2>
+                <span className="text-xs text-ink-500 dark:text-neutral-500">
                   {earnings.total_transactions} total
                 </span>
               </div>
               {earnings.transactions.length === 0 ? (
                 <EmptyState
-                  className="bg-white"
+                  className="bg-white dark:bg-neutral-900"
                   icon={<WalletCards className="h-10 w-10 text-brand-300" />}
                   title="No payouts yet"
                 />
@@ -61,8 +61,8 @@ export function EarningsScreen({
                     <Card key={tx.id}>
                       <CardContent className="flex items-center justify-between p-4">
                         <div>
-                          <p className="font-bold text-ink-900">{tx.hospital_name ?? "Hospital"}</p>
-                          <p className="text-xs text-ink-500">
+                          <p className="font-bold text-ink-900 dark:text-neutral-50">{tx.hospital_name ?? "Hospital"}</p>
+                          <p className="text-xs text-ink-500 dark:text-neutral-500">
                             {tx.role_title ?? ""}
                             {tx.completed_at
                               ? ` • ${new Date(tx.completed_at).toLocaleDateString("en-NG", {
@@ -73,7 +73,7 @@ export function EarningsScreen({
                           </p>
                         </div>
                         <div className="text-right">
-                          <p className="font-bold text-success-700">
+                          <p className="font-bold text-success-700 dark:text-success-400">
                             {formatKobo(tx.amount_kobo)}
                           </p>
                           <StatusBadge tone={statusTone[tx.status] ?? "blue"}>

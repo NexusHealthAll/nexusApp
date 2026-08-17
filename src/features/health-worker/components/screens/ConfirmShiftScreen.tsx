@@ -44,10 +44,10 @@ export function ConfirmShiftScreen({
         <Card>
           <CardContent className="space-y-2 p-4">
             <h2 className="font-bold">{shift.role_title}</h2>
-            <p className="text-sm text-neutral-500">{shift.hospital_name ?? "Hospital"}</p>
+            <p className="text-sm text-neutral-500 dark:text-neutral-500">{shift.hospital_name ?? "Hospital"}</p>
             <div className="grid grid-cols-2 gap-3 pt-2 text-sm">
               <div>
-                <p className="text-xs text-neutral-500">Date</p>
+                <p className="text-xs text-neutral-500 dark:text-neutral-500">Date</p>
                 <p className="font-bold">
                   {new Date(shift.scheduled_start).toLocaleDateString("en-NG", {
                     month: "short",
@@ -56,7 +56,7 @@ export function ConfirmShiftScreen({
                 </p>
               </div>
               <div>
-                <p className="text-xs text-neutral-500">Rate</p>
+                <p className="text-xs text-neutral-500 dark:text-neutral-500">Rate</p>
                 <p className="font-bold">
                   {shift.pay_type === "fixed_rate"
                     ? formatKobo(shift.fixed_rate_kobo ?? 0)
@@ -69,7 +69,7 @@ export function ConfirmShiftScreen({
 
         <Card>
           <CardContent className="space-y-4 p-4">
-            <h3 className="text-sm font-bold uppercase text-neutral-500">
+            <h3 className="text-sm font-bold uppercase text-neutral-500 dark:text-neutral-500">
               Compliance Acknowledgement
             </h3>
             {CONSENT_ITEMS.map((item) => (
@@ -89,7 +89,7 @@ export function ConfirmShiftScreen({
         </Card>
 
         {submitError && (
-          <p className="rounded-xl bg-error-50 px-4 py-3 text-sm text-error-700">{submitError}</p>
+          <p className="rounded-xl bg-error-50 px-4 py-3 text-sm text-error-700 dark:bg-error-950 dark:text-error-300">{submitError}</p>
         )}
 
         <Button

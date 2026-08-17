@@ -9,7 +9,7 @@ export function VerificationPendingStep() {
   const basePath = useRoleBasePath();
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#e6f2f8]">
+    <div className="relative min-h-screen overflow-hidden bg-[#e6f2f8] dark:bg-neutral-950">
       {/* Top accent bar */}
       <div className="h-1 bg-gradient-to-r from-secondary-600 via-primary-500 to-secondary-400" />
 
@@ -17,24 +17,24 @@ export function VerificationPendingStep() {
 
       <div className="mx-auto max-w-lg px-4 pb-20 pt-6">
         {/* Main card */}
-        <div className="rounded-2xl bg-white p-8 text-center shadow-md">
+        <div className="rounded-2xl bg-white p-8 text-center shadow-md dark:bg-neutral-900">
           {/* Hourglass icon with status badge */}
           <div className="relative mx-auto mb-6 inline-flex">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-secondary-100 bg-secondary-50">
-              <Timer className="h-9 w-9 text-secondary-700" />
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-secondary-100 bg-secondary-50 dark:border-secondary-900 dark:bg-secondary-950">
+              <Timer className="h-9 w-9 text-secondary-700 dark:text-secondary-300" />
             </div>
             <span className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-warning-400 text-[10px] font-bold text-white">
               ···
             </span>
           </div>
 
-          <h1 className="mb-2 text-4xl font-bold text-neutral-900">
+          <h1 className="mb-2 text-4xl font-bold text-neutral-900 dark:text-neutral-50">
             Verification Pending
           </h1>
-          <p className="mb-4 text-base font-semibold text-secondary-700">
+          <p className="mb-4 text-base font-semibold text-secondary-700 dark:text-secondary-300">
             Your hospital is under review
           </p>
-          <p className="mb-7 text-sm leading-relaxed text-neutral-500">
+          <p className="mb-7 text-sm leading-relaxed text-neutral-500 dark:text-neutral-400">
             We'll verify your credentials within 24-48 hours. We'll notify you
             via email and push notification once your institutional profile is
             activated.
@@ -50,7 +50,7 @@ export function VerificationPendingStep() {
           </Button>
           <button
             onClick={() => navigate(`${basePath}/onboarding/onboarding-status`)}
-            className="mt-4 w-full text-center text-sm font-semibold text-secondary-700 underline underline-offset-2 hover:text-secondary-900"
+            className="mt-4 w-full text-center text-sm font-semibold text-secondary-700 underline underline-offset-2 hover:text-secondary-900 dark:text-secondary-300 dark:hover:text-secondary-100"
           >
             View Verification Status Details
           </button>
@@ -58,22 +58,22 @@ export function VerificationPendingStep() {
 
         {/* Info cards */}
         <div className="mt-5 grid grid-cols-2 gap-4">
-          <div className="rounded-xl border border-secondary-100 bg-secondary-50/80 p-4">
-            <Eye className="mb-2 h-5 w-5 text-secondary-700" />
-            <p className="mb-1 text-sm font-semibold text-neutral-800">
+          <div className="rounded-xl border border-secondary-100 bg-secondary-50/80 p-4 dark:border-secondary-900 dark:bg-secondary-950/80">
+            <Eye className="mb-2 h-5 w-5 text-secondary-700 dark:text-secondary-300" />
+            <p className="mb-1 text-sm font-semibold text-neutral-800 dark:text-neutral-100">
               Read-Only Mode
             </p>
-            <p className="text-xs text-neutral-500">
+            <p className="text-xs text-neutral-500 dark:text-neutral-400">
               You can browse the app, view available doctor profiles, and
               explore system tools.
             </p>
           </div>
-          <div className="rounded-xl border border-secondary-100 bg-secondary-50/80 p-4">
-            <Ban className="mb-2 h-5 w-5 text-secondary-700" />
-            <p className="mb-1 text-sm font-semibold text-neutral-800">
+          <div className="rounded-xl border border-secondary-100 bg-secondary-50/80 p-4 dark:border-secondary-900 dark:bg-secondary-950/80">
+            <Ban className="mb-2 h-5 w-5 text-secondary-700 dark:text-secondary-300" />
+            <p className="mb-1 text-sm font-semibold text-neutral-800 dark:text-neutral-100">
               Action Restricted
             </p>
-            <p className="text-xs text-neutral-500">
+            <p className="text-xs text-neutral-500 dark:text-neutral-400">
               Creation of new shifts and contract approvals are disabled until
               verified.
             </p>
@@ -101,7 +101,7 @@ export function VerificationPendingStep() {
       </div>
 
       <footer className="absolute bottom-4 left-0 right-0 text-center">
-        <p className="text-xs text-neutral-400">
+        <p className="text-xs text-neutral-400 dark:text-neutral-500">
           Lagos University Teaching Hospital Institutional Security © 2024
         </p>
       </footer>

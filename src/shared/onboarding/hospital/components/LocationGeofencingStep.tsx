@@ -17,13 +17,13 @@ const ADDRESS_DEBOUNCE_MS = 500;
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const inputCls =
-  "w-full rounded-lg bg-[#DAE8F3] border border-transparent px-3.5 py-2.5 text-sm text-neutral-800 outline-none " +
-  "focus:ring-2 focus:ring-[#349C93]/40 focus:border-[#349C93] focus:bg-[#D0E5F2] " +
-  "hover:bg-[#D0E5F2] transition-all duration-200 placeholder:text-neutral-400";
+  "w-full rounded-lg bg-[#DAE8F3] dark:bg-neutral-800 border border-transparent px-3.5 py-2.5 text-sm text-neutral-800 dark:text-neutral-100 outline-none " +
+  "focus:ring-2 focus:ring-[#349C93]/40 focus:border-[#349C93] focus:bg-[#D0E5F2] dark:focus:bg-neutral-700 " +
+  "hover:bg-[#D0E5F2] dark:hover:bg-neutral-700 transition-all duration-200 placeholder:text-neutral-400 dark:placeholder:text-neutral-500";
 
 const selectCls =
-  "w-full rounded-lg bg-[#DAE8F3] border border-transparent px-3.5 py-2.5 text-sm text-neutral-700 outline-none " +
-  "focus:ring-2 focus:ring-[#349C93]/40 focus:border-[#349C93] hover:bg-[#D0E5F2] transition-all duration-200";
+  "w-full rounded-lg bg-[#DAE8F3] dark:bg-neutral-800 border border-transparent px-3.5 py-2.5 text-sm text-neutral-700 dark:text-neutral-100 outline-none " +
+  "focus:ring-2 focus:ring-[#349C93]/40 focus:border-[#349C93] hover:bg-[#D0E5F2] dark:hover:bg-neutral-700 transition-all duration-200";
 
 const fieldError = "mt-1 text-[11px] text-red-500";
 
@@ -69,8 +69,6 @@ const NIGERIA_STATES = [
   "Zamfara",
 ];
 
-// ─── Reverse-geocode types ────────────────────────────────────────────────────
-
 interface GeoItem {
   title: string;
   address: {
@@ -82,8 +80,6 @@ interface GeoItem {
   };
   position: { lat: number; lng: number };
 }
-
-// ─── LandmarkDropdown ─────────────────────────────────────────────────────────
 
 interface LandmarkDropdownProps {
   items: GeoItem[];
@@ -103,7 +99,6 @@ function LandmarkDropdown({
   const [customText, setCustomText] = useState("");
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (
@@ -126,7 +121,6 @@ function LandmarkDropdown({
         ? value
         : "Select a nearby landmark…";
 
-  // ── custom text input mode ──
   if (customMode) {
     return (
       <div className="relative">
@@ -148,7 +142,7 @@ function LandmarkDropdown({
           type="button"
           title="Back to list"
           onClick={() => setCustomMode(false)}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-neutral-400 hover:text-neutral-600 transition-colors leading-none"
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 transition-colors leading-none"
         >
           ✕
         </button>
@@ -156,7 +150,6 @@ function LandmarkDropdown({
     );
   }
 
-  // ── dropdown mode ──
   return (
     <div className="relative" ref={containerRef}>
       {/* Trigger button */}
@@ -164,9 +157,9 @@ function LandmarkDropdown({
         type="button"
         onClick={() => setOpen((o) => !o)}
         className={[
-          "w-full flex items-center justify-between rounded-lg bg-[#DAE8F3] border px-3.5 py-2.5 text-sm outline-none transition-all duration-200 hover:bg-[#D0E5F2]",
+          "w-full flex items-center justify-between rounded-lg bg-[#DAE8F3] dark:bg-neutral-800 border px-3.5 py-2.5 text-sm outline-none transition-all duration-200 hover:bg-[#D0E5F2] dark:hover:bg-neutral-700",
           open
-            ? "ring-2 ring-[#349C93]/40 border-[#349C93] bg-[#D0E5F2]"
+            ? "ring-2 ring-[#349C93]/40 border-[#349C93] bg-[#D0E5F2] dark:bg-neutral-700"
             : "border-transparent",
         ].join(" ")}
       >
@@ -176,7 +169,13 @@ function LandmarkDropdown({
             <span className="text-sm">Detecting nearby places…</span>
           </span>
         ) : (
-          <span className={value ? "text-neutral-800" : "text-neutral-400"}>
+          <span
+            className={
+              value
+                ? "text-neutral-800 dark:text-neutral-100"
+                : "text-neutral-400"
+            }
+          >
             {triggerLabel}
           </span>
         )}
@@ -185,9 +184,8 @@ function LandmarkDropdown({
         />
       </button>
 
-      {/* Dropdown panel */}
       {open && (
-        <div className="absolute z-50 mt-1.5 w-full rounded-xl bg-white border border-gray-200 shadow-xl overflow-hidden">
+        <div className="absolute z-50 mt-1.5 w-full rounded-xl bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 shadow-xl overflow-hidden">
           <ul className="max-h-52 overflow-y-auto py-1">
             {items.length === 0 && (
               <li className="px-4 py-3 text-[12px] text-neutral-400 italic">
@@ -205,8 +203,8 @@ function LandmarkDropdown({
                   className={[
                     "w-full text-left px-4 py-2.5 text-[13px] transition-colors duration-100",
                     item.title === value
-                      ? "bg-[#E8F5F4] text-[#0F766E] font-semibold"
-                      : "text-neutral-700 hover:bg-[#F0F9F8]",
+                      ? "bg-[#E8F5F4] text-[#0F766E] dark:bg-teal-950 dark:text-teal-300 font-semibold"
+                      : "text-neutral-700 dark:text-neutral-200 hover:bg-[#F0F9F8] dark:hover:bg-neutral-700",
                   ].join(" ")}
                 >
                   <span className="block truncate">{item.title}</span>
@@ -215,8 +213,7 @@ function LandmarkDropdown({
             ))}
           </ul>
 
-          {/* ── Custom Landmark option ── */}
-          <div className="border-t border-gray-100">
+          <div className="border-t border-gray-100 dark:border-neutral-700">
             <button
               type="button"
               onClick={() => {
@@ -224,7 +221,7 @@ function LandmarkDropdown({
                 setCustomText(value && !isKnownItem ? value : "");
                 setCustomMode(true);
               }}
-              className="w-full flex items-center gap-2.5 px-4 py-2.5 text-[13px] font-semibold text-[#0F766E] hover:bg-[#F0F9F8] transition-colors duration-100"
+              className="w-full flex items-center gap-2.5 px-4 py-2.5 text-[13px] font-semibold text-[#0F766E] dark:text-teal-300 hover:bg-[#F0F9F8] dark:hover:bg-neutral-700 transition-colors duration-100"
             >
               <span className="flex items-center justify-center h-5 w-5 rounded-full bg-[#0F766E] text-white text-sm font-bold leading-none">
                 +
@@ -237,8 +234,6 @@ function LandmarkDropdown({
     </div>
   );
 }
-
-// ─── Main component ───────────────────────────────────────────────────────────
 
 export function LocationGeofencingStep() {
   const {
@@ -266,13 +261,14 @@ export function LocationGeofencingStep() {
   const [submitting, setSubmitting] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
 
-  // Reverse geocode state
   const [geoItems, setGeoItems] = useState<GeoItem[]>([]);
   const [geoLoading, setGeoLoading] = useState(false);
+  const [geocodedPosition, setGeocodedPosition] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
   const geocodeFetched = useRef(false);
 
-  // ── Nearby-places lookup — anchored to the device's current GPS position ────
-  // (the HERE reverse-geocode endpoint only accepts coordinates, not free text)
   const fetchNearbyPlaces = useCallback(() => {
     if (latitude == null || longitude == null) return;
 
@@ -289,7 +285,6 @@ export function LocationGeofencingStep() {
           const first = items[0];
           setLocal((prev) => ({
             ...prev,
-            // Only auto-fill if the field is still empty
             city: prev.city || first.address.city || "",
             state:
               prev.state ||
@@ -309,7 +304,40 @@ export function LocationGeofencingStep() {
       });
   }, [latitude, longitude]);
 
-  // ── Fetch once, as soon as we have coordinates ───────────────────────────────
+  const fetchGeocodedAddress = useCallback((address: string) => {
+    setGeoLoading(true);
+
+    apiClient
+      .get<{ items: GeoItem[] }>(`/api/v1/here/geocode`, {
+        params: { q: address, limit: 5 },
+      })
+      .then(({ data: { items = [] } }) => {
+        setGeoItems(items);
+
+        if (items.length > 0) {
+          const first = items[0];
+          setGeocodedPosition(first.position);
+          setLocal((prev) => ({
+            ...prev,
+            city: prev.city || first.address.city || "",
+            state:
+              prev.state ||
+              NIGERIA_STATES.find(
+                (s) =>
+                  s.toLowerCase() === (first.address.state ?? "").toLowerCase(),
+              ) ||
+              "",
+          }));
+        }
+      })
+      .catch((err) => {
+        console.warn("[LocationGeofencing] geocode failed:", err);
+      })
+      .finally(() => {
+        setGeoLoading(false);
+      });
+  }, []);
+
   useEffect(() => {
     if (latitude == null || longitude == null) return;
     if (geocodeFetched.current) return;
@@ -317,23 +345,18 @@ export function LocationGeofencingStep() {
     fetchNearbyPlaces();
   }, [latitude, longitude, fetchNearbyPlaces]);
 
-  // ── Re-fetch on a debounce as the user types the street address ─────────────
-  // Suggestions stay anchored to the device's live GPS position (not the typed
-  // text — reverse-geocode has no way to search by address string) but typing
-  // re-triggers the lookup so it stays current with the user's activity.
   useEffect(() => {
-    if (!geocodeFetched.current) return; // wait for the initial mount fetch
+    if (!geocodeFetched.current) return;
     if (!local.streetAddress.trim()) return;
 
     const timer = setTimeout(() => {
-      fetchNearbyPlaces();
+      fetchGeocodedAddress(local.streetAddress);
     }, ADDRESS_DEBOUNCE_MS);
 
     return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- only re-run on address keystrokes, not every fetchNearbyPlaces identity change
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only re-run on address keystrokes, not every fetchGeocodedAddress identity change
   }, [local.streetAddress]);
 
-  // ── Field helpers ────────────────────────────────────────────────────────────
   function handle(field: keyof typeof local, value: string) {
     setLocal((p) => ({ ...p, [field]: value }));
     if (errors[field]) setErrors((e) => ({ ...e, [field]: undefined }));
@@ -388,10 +411,8 @@ export function LocationGeofencingStep() {
     }
   }
 
-  // Default center (Lagos) while GPS is still resolving; swapped for the
-  // live position as soon as it's available so the pin actually moves.
-  const mapLat = latitude ?? 6.5244;
-  const mapLng = longitude ?? 3.3792;
+  const mapLat = geocodedPosition?.lat ?? latitude ?? 6.5244;
+  const mapLng = geocodedPosition?.lng ?? longitude ?? 3.3792;
   const bboxDelta = 0.01;
   const mapSrc =
     `https://www.openstreetmap.org/export/embed.html?bbox=` +
@@ -421,7 +442,7 @@ export function LocationGeofencingStep() {
     <HospitalOnboardingLayout activeStep={1}>
       {/* Header */}
       <div className="mb-7">
-        <h1 className="text-[26px] font-bold text-neutral-900 leading-tight">
+        <h1 className="text-[26px] font-bold text-neutral-900 dark:text-neutral-50 leading-tight">
           Location &amp; Geofencing
         </h1>
         <p className="mt-1.5 text-[13px] text-neutral-500 max-w-md leading-relaxed">
@@ -434,10 +455,10 @@ export function LocationGeofencingStep() {
         {/* LEFT panel */}
         <div className="space-y-4">
           {/* Info box */}
-          <div className="bg-[#EBF4FF] rounded-xl border border-[#C8DFEF] p-4 flex gap-3">
-            <Info className="h-4 w-4 text-[#1A5888] shrink-0 mt-0.5" />
+          <div className="bg-[#EBF4FF] dark:bg-neutral-900 rounded-xl border border-[#C8DFEF] dark:border-neutral-800 p-4 flex gap-3">
+            <Info className="h-4 w-4 text-[#1A5888] dark:text-[#5AA6D6] shrink-0 mt-0.5" />
             <div>
-              <p className="text-[12px] font-bold text-neutral-800 mb-1">
+              <p className="text-[12px] font-bold text-neutral-800 dark:text-neutral-100 mb-1">
                 Why Geofencing Matters
               </p>
               <p className="text-[11px] text-neutral-500 leading-relaxed">
@@ -450,7 +471,7 @@ export function LocationGeofencingStep() {
 
           {/* Facility Coordinates */}
           <div>
-            <h2 className="text-[14px] font-bold text-neutral-800 mb-3">
+            <h2 className="text-[14px] font-bold text-neutral-800 dark:text-neutral-100 mb-3">
               Facility Coordinates
             </h2>
 
@@ -514,6 +535,8 @@ export function LocationGeofencingStep() {
                   error={errors.state}
                   className={selectCls}
                   options={NIGERIA_STATES.map((s) => ({ value: s, label: s }))}
+                  searchable
+                  searchPlaceholder="Search states…"
                 />
               </div>
             </div>
@@ -535,7 +558,7 @@ export function LocationGeofencingStep() {
         </div>
 
         {/* RIGHT — full-height OSM map */}
-        <div className="relative rounded-xl overflow-hidden border border-gray-200 min-h-[460px] lg:min-h-0">
+        <div className="relative rounded-xl overflow-hidden border border-gray-200 dark:border-neutral-800 min-h-[460px] lg:min-h-0">
           <iframe
             title="Facility location map"
             src={mapSrc}
@@ -544,15 +567,16 @@ export function LocationGeofencingStep() {
             loading="lazy"
             referrerPolicy="no-referrer"
           />
-          <div className="absolute bottom-0 left-0 right-0 flex items-center justify-between bg-white/95 backdrop-blur px-4 py-3 border-t border-gray-200">
+          <div className="absolute bottom-0 left-0 right-0 flex items-center justify-between bg-white/95 dark:bg-neutral-900/95 backdrop-blur px-4 py-3 border-t border-gray-200 dark:border-neutral-800">
             <div className="flex items-center gap-6 text-[11px]">
               <div>
                 <p className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold">
                   Current Center
                 </p>
-                <p className="text-neutral-700 font-medium">
-                  {latitude != null && longitude != null
-                    ? `${latitude.toFixed(4)}° N, ${longitude.toFixed(4)}° E`
+                <p className="text-neutral-700 dark:text-neutral-200 font-medium">
+                  {geocodedPosition != null ||
+                  (latitude != null && longitude != null)
+                    ? `${mapLat.toFixed(4)}° N, ${mapLng.toFixed(4)}° E`
                     : "6.4541° N, 3.3947° E"}
                 </p>
               </div>
@@ -560,7 +584,12 @@ export function LocationGeofencingStep() {
                 <p className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold">
                   Accuracy
                 </p>
-                {geoError ? (
+                {geocodedPosition != null ? (
+                  <p className="flex items-center gap-1 text-teal-600 font-semibold">
+                    <span className="h-1.5 w-1.5 rounded-full bg-teal-500 inline-block" />
+                    Address Located
+                  </p>
+                ) : geoError ? (
                   <p className="flex items-center gap-1 text-amber-500 font-semibold">
                     <span className="h-1.5 w-1.5 rounded-full bg-amber-400 inline-block" />
                     GPS Unavailable
@@ -584,9 +613,9 @@ export function LocationGeofencingStep() {
 
       {/* API error banner */}
       {apiError && (
-        <div className="max-w-5xl mx-auto mt-5 flex items-start gap-3 bg-red-50 border border-red-200 rounded-xl px-5 py-4">
+        <div className="max-w-5xl mx-auto mt-5 flex items-start gap-3 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-xl px-5 py-4">
           <AlertCircle className="h-4 w-4 text-red-500 shrink-0 mt-0.5" />
-          <p className="text-[12px] text-red-700 font-medium leading-relaxed">
+          <p className="text-[12px] text-red-700 dark:text-red-300 font-medium leading-relaxed">
             {apiError}
           </p>
         </div>

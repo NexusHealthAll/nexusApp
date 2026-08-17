@@ -13,16 +13,16 @@ export function WaitlistSuccessStep() {
   };
 
   return (
-    <section className="bg-[#f4f6fa] px-4 py-20 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-3xl rounded-[2rem] border border-neutral-200 bg-white p-8 text-center shadow-strong sm:p-10">
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-success-100 text-success-700">
+    <section className="bg-[#f4f6fa] px-4 py-20 sm:px-6 lg:px-8 dark:bg-neutral-950">
+      <div className="mx-auto max-w-3xl rounded-[2rem] border border-neutral-200 bg-white p-8 text-center shadow-strong sm:p-10 dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-success-100 text-success-700 dark:bg-success-950 dark:text-success-300">
           <CheckCircle2 className="h-8 w-8" />
         </div>
 
-        <h1 className="mt-6 text-4xl font-semibold text-neutral-950">
+        <h1 className="mt-6 text-4xl font-semibold text-neutral-950 dark:text-neutral-50">
           You are on the Waitlist
         </h1>
-        <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-neutral-600 sm:text-base">
+        <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-neutral-600 sm:text-base dark:text-neutral-400">
           Thanks for joining NexusCare. Our team will review your submission and
           contact you with next steps.
         </p>

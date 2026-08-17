@@ -81,8 +81,8 @@ function SidebarNavLink({
         cn(
           "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
           isActive
-            ? "bg-secondary-50 font-semibold text-secondary-700"
-            : "text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900",
+            ? "bg-secondary-50 font-semibold text-secondary-700 dark:bg-secondary-950 dark:text-secondary-300"
+            : "text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-50",
         )
       }
     >
@@ -108,7 +108,7 @@ export function HospitalSidebar({ isOpen, onClose }: HospitalSidebarProps) {
   return (
     <aside
       className={cn(
-        "fixed inset-y-0 left-0 z-50 flex w-64 transform flex-col border-r border-neutral-200 bg-white transition-transform duration-300 ease-in-out lg:static lg:inset-0 lg:translate-x-0",
+        "fixed inset-y-0 left-0 z-50 flex w-64 transform flex-col border-r border-neutral-200 bg-white transition-transform duration-300 ease-in-out dark:border-neutral-800 dark:bg-neutral-900 lg:static lg:inset-0 lg:translate-x-0",
         isOpen ? "translate-x-0" : "-translate-x-full",
       )}
     >
@@ -116,7 +116,7 @@ export function HospitalSidebar({ isOpen, onClose }: HospitalSidebarProps) {
         <NexusCareLogo size="md" />
         <button
           onClick={onClose}
-          className="absolute right-4 top-5 rounded-md p-1.5 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600 lg:hidden"
+          className="absolute right-4 top-5 rounded-md p-1.5 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600 dark:text-neutral-500 dark:hover:bg-neutral-800 dark:hover:text-neutral-300 lg:hidden"
         >
           <X className="h-5 w-5" />
         </button>
@@ -131,7 +131,7 @@ export function HospitalSidebar({ isOpen, onClose }: HospitalSidebarProps) {
           ))}
         </ul>
 
-        <div className="my-4 border-t border-neutral-200" />
+        <div className="my-4 border-t border-neutral-200 dark:border-neutral-800" />
 
         <ul className="space-y-1">
           {secondaryNavItems.map((item) => (
@@ -142,16 +142,16 @@ export function HospitalSidebar({ isOpen, onClose }: HospitalSidebarProps) {
         </ul>
       </nav>
 
-      <div className="border-t border-neutral-100 p-4">
+      <div className="border-t border-neutral-100 p-4 dark:border-neutral-800">
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-neutral-900 text-xs font-bold text-white">
+          <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-neutral-900 text-xs font-bold text-white dark:bg-neutral-100 dark:text-neutral-900">
             {profile?.abbreviation?.slice(0, 2) ?? "—"}
           </div>
           <div className="min-w-0">
-            <p className="truncate text-sm font-semibold text-neutral-900">
+            <p className="truncate text-sm font-semibold text-neutral-900 dark:text-neutral-50">
               {profile?.name ?? "—"}
             </p>
-            <p className="truncate text-xs text-neutral-400">
+            <p className="truncate text-xs text-neutral-400 dark:text-neutral-500">
               {profile?.adminRole ?? "Administrator"}
             </p>
           </div>

@@ -34,44 +34,44 @@ export function ClockInVerification({ shiftData, onConfirmClockIn, onCancel }: C
   };
 
   return (
-    <div className="min-h-screen bg-neutral-50 flex flex-col">
+    <div className="min-h-screen bg-neutral-50 flex flex-col dark:bg-neutral-950">
       {/* Header - Mobile Optimized */}
-      <div className="bg-white border-b border-neutral-200 px-4 py-3 sm:px-6 sm:py-4">
+      <div className="bg-white border-b border-neutral-200 px-4 py-3 sm:px-6 sm:py-4 dark:bg-neutral-900 dark:border-neutral-800">
         <div className="flex items-center space-x-3">
           <Button variant="ghost" size="sm" onClick={onCancel} className="p-2">
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <h1 className="text-base sm:text-xl font-semibold text-neutral-900">Clock-In Verification</h1>
+          <h1 className="text-base sm:text-xl font-semibold text-neutral-900 dark:text-neutral-50">Clock-In Verification</h1>
         </div>
       </div>
 
       <div className="flex-1 p-4 sm:p-6 space-y-4 overflow-y-auto">
         <div className="max-w-2xl mx-auto space-y-4">
           {/* Shift Details Card - Mobile First */}
-          <Card className="border-primary-200 bg-primary-50">
+          <Card className="border-primary-200 bg-primary-50 dark:border-primary-800 dark:bg-primary-950">
             <CardHeader className="pb-3">
-              <CardTitle className="flex items-center space-x-2 text-primary-900 text-sm sm:text-lg">
+              <CardTitle className="flex items-center space-x-2 text-primary-900 text-sm sm:text-lg dark:text-primary-300">
                 <Building2 className="h-4 w-4 sm:h-5 sm:w-5" />
                 <span>Shift Details</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="space-y-3 sm:grid sm:grid-cols-2 sm:gap-4 sm:space-y-0">
-                <div className="bg-white/50 rounded-lg p-3">
-                  <p className="text-xs font-medium text-primary-700 mb-1">Hospital</p>
-                  <p className="text-sm font-semibold text-primary-900">{shiftData.hospital}</p>
+                <div className="bg-white/50 rounded-lg p-3 dark:bg-black/20">
+                  <p className="text-xs font-medium text-primary-700 mb-1 dark:text-primary-400">Hospital</p>
+                  <p className="text-sm font-semibold text-primary-900 dark:text-primary-300">{shiftData.hospital}</p>
                 </div>
-                <div className="bg-white/50 rounded-lg p-3">
-                  <p className="text-xs font-medium text-primary-700 mb-1">Department</p>
-                  <p className="text-sm text-primary-900">{shiftData.department}</p>
+                <div className="bg-white/50 rounded-lg p-3 dark:bg-black/20">
+                  <p className="text-xs font-medium text-primary-700 mb-1 dark:text-primary-400">Department</p>
+                  <p className="text-sm text-primary-900 dark:text-primary-300">{shiftData.department}</p>
                 </div>
-                <div className="bg-white/50 rounded-lg p-3">
-                  <p className="text-xs font-medium text-primary-700 mb-1">Schedule</p>
-                  <p className="text-sm text-primary-900">{shiftData.time}</p>
+                <div className="bg-white/50 rounded-lg p-3 dark:bg-black/20">
+                  <p className="text-xs font-medium text-primary-700 mb-1 dark:text-primary-400">Schedule</p>
+                  <p className="text-sm text-primary-900 dark:text-primary-300">{shiftData.time}</p>
                 </div>
-                <div className="bg-white/50 rounded-lg p-3">
-                  <p className="text-xs font-medium text-primary-700 mb-1">Rate</p>
-                  <p className="text-sm font-semibold text-primary-900">₦{shiftData.hourlyRate.toLocaleString()}/hr</p>
+                <div className="bg-white/50 rounded-lg p-3 dark:bg-black/20">
+                  <p className="text-xs font-medium text-primary-700 mb-1 dark:text-primary-400">Rate</p>
+                  <p className="text-sm font-semibold text-primary-900 dark:text-primary-300">₦{shiftData.hourlyRate.toLocaleString()}/hr</p>
                 </div>
               </div>
             </CardContent>
@@ -81,34 +81,34 @@ export function ClockInVerification({ shiftData, onConfirmClockIn, onCancel }: C
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center space-x-2 text-sm sm:text-lg">
-                <MapPin className="h-4 w-4 sm:h-5 sm:w-5 text-secondary-600" />
+                <MapPin className="h-4 w-4 sm:h-5 sm:w-5 text-secondary-600 dark:text-secondary-400" />
                 <span>Location Verification</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               {/* Map Placeholder - Premium Glassmorphism */}
-              <div className="bg-white/70 backdrop-blur-md border border-white/30 rounded-xl p-4 sm:p-8 text-center shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
-                <Navigation className="h-10 w-10 sm:h-12 sm:w-12 mx-auto mb-3 text-emerald-500" />
-                <h3 className="text-sm sm:text-base font-semibold text-slate-900 mb-2">Location Confirmed</h3>
-                <p className="text-xs sm:text-sm text-slate-600 mb-3">
+              <div className="bg-white/70 backdrop-blur-md border border-white/30 rounded-xl p-4 sm:p-8 text-center shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:bg-neutral-800/70 dark:border-neutral-700/30">
+                <Navigation className="h-10 w-10 sm:h-12 sm:w-12 mx-auto mb-3 text-emerald-500 dark:text-emerald-400" />
+                <h3 className="text-sm sm:text-base font-semibold text-slate-900 mb-2 dark:text-neutral-50">Location Confirmed</h3>
+                <p className="text-xs sm:text-sm text-slate-600 mb-3 dark:text-neutral-400">
                   You are within proximity of {shiftData.location}
                 </p>
-                <div className="flex items-center justify-center space-x-2 text-emerald-600">
+                <div className="flex items-center justify-center space-x-2 text-emerald-600 dark:text-emerald-400">
                   <CheckCircle className="h-4 w-4 animate-pulse" />
                   <span className="text-sm font-medium">GPS Verified</span>
                 </div>
               </div>
 
               {/* Location Details - Mobile Card */}
-              <div className="bg-neutral-50 rounded-lg p-3">
+              <div className="bg-neutral-50 rounded-lg p-3 dark:bg-neutral-900">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-neutral-900">{shiftData.hospital}</p>
-                    <p className="text-xs text-neutral-600">{shiftData.location}</p>
+                    <p className="text-sm font-medium text-neutral-900 dark:text-neutral-50">{shiftData.hospital}</p>
+                    <p className="text-xs text-neutral-600 dark:text-neutral-400">{shiftData.location}</p>
                   </div>
                   <div className="text-right ml-3">
-                    <p className="text-xs text-neutral-600">Distance</p>
-                    <p className="text-sm font-semibold text-success-600">0.2 km</p>
+                    <p className="text-xs text-neutral-600 dark:text-neutral-400">Distance</p>
+                    <p className="text-sm font-semibold text-success-600 dark:text-success-400">0.2 km</p>
                   </div>
                 </div>
               </div>
@@ -116,14 +116,14 @@ export function ClockInVerification({ shiftData, onConfirmClockIn, onCancel }: C
           </Card>
 
           {/* Clock-In Confirmation - Mobile Perfect */}
-          <Card className="border-success-200 bg-success-50">
+          <Card className="border-success-200 bg-success-50 dark:border-success-800 dark:bg-success-950">
             <CardContent className="p-4">
               <div className="text-center space-y-3">
-                <div className="flex items-center justify-center space-x-2 text-success-700">
+                <div className="flex items-center justify-center space-x-2 text-success-700 dark:text-success-300">
                   <Clock className="h-5 w-5" />
                   <span className="text-base font-semibold">Ready to Clock In</span>
                 </div>
-                <p className="text-sm text-success-800 px-2">
+                <p className="text-sm text-success-800 px-2 dark:text-success-300">
                   Confirm your location and start your shift
                 </p>
                 

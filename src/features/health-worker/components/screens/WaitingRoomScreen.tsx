@@ -22,13 +22,13 @@ export function WaitingRoomScreen({
     <>
       <Header title="Waiting Room" subtitle="This shift's queue" onBack={onBack} />
       <main className="space-y-5 px-5 py-4">
-        <p className="text-sm text-neutral-600">
+        <p className="text-sm text-neutral-600 dark:text-neutral-400">
           Patients recorded via intake for this shift, in the order they were added.
         </p>
 
         {waiting.length === 0 ? (
           <EmptyState
-            className="bg-white"
+            className="bg-white dark:bg-neutral-900"
             icon={<UsersRound className="h-10 w-10 text-brand-300" />}
             title="No one waiting"
             description="Record a patient intake to add them to the queue."
@@ -43,17 +43,17 @@ export function WaitingRoomScreen({
             <Card key={patient.id}>
               <CardContent className="space-y-4 p-4">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-success-100 text-success-700">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-success-100 text-success-700 dark:bg-success-950 dark:text-success-300">
                     <User className="h-6 w-6" />
                   </div>
                   <div className="flex-1">
                     <h2 className="font-bold">{patient.name}</h2>
-                    <p className="text-xs text-neutral-500">
+                    <p className="text-xs text-neutral-500 dark:text-neutral-500">
                       {patient.age}y • {patient.gender}
                     </p>
                   </div>
                 </div>
-                <p className="text-sm text-neutral-600">{patient.chiefComplaint}</p>
+                <p className="text-sm text-neutral-600 dark:text-neutral-400">{patient.chiefComplaint}</p>
                 <Button
                   type="button"
                   className="w-full bg-brand-700"

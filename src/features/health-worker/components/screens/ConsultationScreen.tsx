@@ -58,10 +58,10 @@ export function ConsultationScreen({
             href={shift.virtual_link}
             target="_blank"
             rel="noreferrer"
-            className="flex items-center justify-between rounded-2xl bg-white p-4 text-sm font-bold shadow-sm"
+            className="flex items-center justify-between rounded-2xl bg-white p-4 text-sm font-bold shadow-sm dark:bg-neutral-900"
           >
             <span>Open shift meeting link</span>
-            <ExternalLink className="h-4 w-4 text-brand-700" />
+            <ExternalLink className="h-4 w-4 text-brand-700 dark:text-brand-300" />
           </a>
         )}
 
@@ -69,9 +69,9 @@ export function ConsultationScreen({
           <button
             type="button"
             onClick={onViewPatient}
-            className="rounded-2xl bg-white p-4 text-sm font-bold shadow-sm"
+            className="rounded-2xl bg-white p-4 text-sm font-bold shadow-sm dark:bg-neutral-900"
           >
-            <FileText className="mx-auto mb-2 h-5 w-5 text-brand-700" />
+            <FileText className="mx-auto mb-2 h-5 w-5 text-brand-700 dark:text-brand-300" />
             View Patient Detail
           </button>
           {[
@@ -83,7 +83,7 @@ export function ConsultationScreen({
               key={action.label}
               disabled
               title="Not connected to a backend yet"
-              className="cursor-not-allowed rounded-2xl bg-white p-4 text-sm font-bold text-neutral-400 shadow-sm"
+              className="cursor-not-allowed rounded-2xl bg-white p-4 text-sm font-bold text-neutral-400 shadow-sm dark:bg-neutral-900 dark:text-neutral-500"
             >
               <action.icon className="mx-auto mb-2 h-5 w-5" />
               {action.label}
@@ -101,7 +101,7 @@ export function ConsultationScreen({
               `Temp ${patient.vitals.temperatureC}°C`,
               `Blood Pressure ${patient.vitals.bloodPressureSystolic}/${patient.vitals.bloodPressureDiastolic}`,
             ].map((item) => (
-              <div key={item} className="rounded-xl bg-neutral-50 px-3 py-2 text-sm">
+              <div key={item} className="rounded-xl bg-neutral-50 px-3 py-2 text-sm dark:bg-neutral-900">
                 {item}
               </div>
             ))}

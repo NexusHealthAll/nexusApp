@@ -2,7 +2,10 @@ import type { ReactNode } from "react";
 import { MapPinOff, RefreshCw } from "lucide-react";
 import type { GeoPermissionState } from "@/shared/location/useLocationTracker";
 
-type BlockingState = Extract<GeoPermissionState, "denied" | "unavailable" | "unsupported">;
+type BlockingState = Extract<
+  GeoPermissionState,
+  "denied" | "unavailable" | "unsupported"
+>;
 
 interface LocationPermissionModalProps {
   state: BlockingState;
@@ -22,9 +25,9 @@ const COPY: Record<
     title: "Location Access Required",
     body: (
       <>
-        Hospital registration requires your device's location to set up geofencing. You've
-        blocked location access for this site — please enable it in your browser's site
-        settings, then try again.
+        Hospital registration requires your device's location to set up
+        geofencing. You've blocked location access for this site — please enable
+        it in your browser's site settings, then try again.
       </>
     ),
     instructions: {
@@ -42,9 +45,10 @@ const COPY: Record<
     title: "Turn On Device Location",
     body: (
       <>
-        This site has permission to use your location, but your device's Location Services
-        appear to be turned off, so we can't get a fix. We'll keep checking automatically —
-        turn it back on to continue, or retry manually below.
+        This site has permission to use your location, but your device's
+        Location Services appear to be turned off, so we can't get a fix. We'll
+        keep checking automatically — turn it back on to continue, or retry
+        manually below.
       </>
     ),
     instructions: {
@@ -62,20 +66,19 @@ const COPY: Record<
     title: "Location Not Supported",
     body: (
       <>
-        Your browser doesn't support geolocation, which this step requires. Please switch to
-        a modern browser (Chrome, Firefox, Safari, Edge) and reload the page.
+        Your browser doesn't support geolocation, which this step requires.
+        Please switch to a modern browser (Chrome, Firefox, Safari, Edge) and
+        reload the page.
       </>
     ),
     showRetry: false,
   },
 };
 
-/**
- * Hard-blocking overlay — no backdrop click, no Escape, no close button.
- * Location access is mandatory for this step, so the only way out is
- * actually restoring it (or a real browser upgrade for "unsupported").
- */
-export function LocationPermissionModal({ state, onRetry }: LocationPermissionModalProps) {
+export function LocationPermissionModal({
+  state,
+  onRetry,
+}: LocationPermissionModalProps) {
   const copy = COPY[state];
 
   return (
@@ -85,21 +88,25 @@ export function LocationPermissionModal({ state, onRetry }: LocationPermissionMo
       aria-label="Location access required"
       className="fixed inset-0 z-[100] flex items-center justify-center bg-[#071726]/70 backdrop-blur-sm px-4"
     >
-      <div className="w-full max-w-md rounded-2xl bg-white p-7 shadow-strong text-center">
-        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-50">
+      <div className="w-full max-w-md rounded-2xl bg-white dark:bg-neutral-900 p-7 shadow-strong text-center">
+        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-50 dark:bg-red-950">
           <MapPinOff className="h-6 w-6 text-red-500" />
         </div>
 
-        <h2 className="text-lg font-bold text-neutral-900 mb-2">{copy.title}</h2>
+        <h2 className="text-lg font-bold text-neutral-900 dark:text-neutral-50 mb-2">
+          {copy.title}
+        </h2>
 
-        <p className="text-[13px] text-neutral-500 leading-relaxed mb-5">{copy.body}</p>
+        <p className="text-[13px] text-neutral-500 leading-relaxed mb-5">
+          {copy.body}
+        </p>
 
         {copy.instructions && (
-          <div className="text-left bg-[#EBF4FF] border border-[#C8DFEF] rounded-xl px-4 py-3 mb-5">
-            <p className="text-[11px] font-semibold text-[#1A5888] mb-1.5">
+          <div className="text-left bg-[#EBF4FF] dark:bg-neutral-800 border border-[#C8DFEF] dark:border-neutral-700 rounded-xl px-4 py-3 mb-5">
+            <p className="text-[11px] font-semibold text-[#1A5888] dark:text-[#5AA6D6] mb-1.5">
               {copy.instructions.heading}
             </p>
-            <ol className="text-[11px] text-neutral-600 leading-relaxed list-decimal list-inside space-y-0.5">
+            <ol className="text-[11px] text-neutral-600 dark:text-neutral-300 leading-relaxed list-decimal list-inside space-y-0.5">
               {copy.instructions.steps.map((step) => (
                 <li key={step}>{step}</li>
               ))}

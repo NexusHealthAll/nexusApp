@@ -60,12 +60,12 @@ export function MessagesPage() {
   return (
     // Escape MainLayout's padded container so the chat panes fill the viewport.
     <div className="-m-4 flex h-[calc(100vh-4rem)] flex-col lg:-m-8">
-      <div className="border-b border-neutral-200 bg-white px-6 py-4">
-        <h1 className="text-base font-bold text-neutral-900">Messages</h1>
+      <div className="border-b border-neutral-200 bg-white px-6 py-4 dark:border-neutral-800 dark:bg-neutral-900">
+        <h1 className="text-base font-bold text-neutral-900 dark:text-neutral-50">Messages</h1>
       </div>
 
       {conversations.length === 0 ? (
-        <div className="flex flex-1 items-center justify-center bg-white p-6">
+        <div className="flex flex-1 items-center justify-center bg-white p-6 dark:bg-neutral-950">
           <EmptyState
             icon={<EmptyStateIcon icon={MessageSquare} tone="primary" />}
             title="No conversations yet"
@@ -73,7 +73,7 @@ export function MessagesPage() {
             action={
               <Link
                 to={PATHS.hospital.workers}
-                className="mt-2 rounded-lg bg-neutral-900 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-neutral-800"
+                className="mt-2 rounded-lg bg-neutral-900 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-neutral-800 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-200"
               >
                 Browse Workers
               </Link>
@@ -84,7 +84,7 @@ export function MessagesPage() {
       ) : (
       <div className="flex min-h-0 flex-1">
         {/* Conversation list */}
-        <div className="flex w-72 flex-shrink-0 flex-col border-r border-neutral-200 bg-white">
+        <div className="flex w-72 flex-shrink-0 flex-col border-r border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
           <div className="p-4">
             <SearchInput
               placeholder="Search messages..."
@@ -102,8 +102,10 @@ export function MessagesPage() {
                   key={conversation.id}
                   onClick={() => setActive(conversation.id)}
                   className={cn(
-                    "flex w-full items-start gap-3 border-b border-neutral-50 px-4 py-3.5 text-left transition-colors",
-                    isActive ? "bg-primary-50/60" : "hover:bg-neutral-50",
+                    "flex w-full items-start gap-3 border-b border-neutral-50 px-4 py-3.5 text-left transition-colors dark:border-neutral-800",
+                    isActive
+                      ? "bg-primary-50/60 dark:bg-primary-950/60"
+                      : "hover:bg-neutral-50 dark:hover:bg-neutral-800",
                   )}
                 >
                   <AvatarInitials
@@ -116,15 +118,15 @@ export function MessagesPage() {
                   />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-baseline justify-between gap-2">
-                      <p className="truncate text-sm font-bold text-neutral-900">
+                      <p className="truncate text-sm font-bold text-neutral-900 dark:text-neutral-50">
                         {conversation.name}
                       </p>
-                      <span className="flex-shrink-0 text-[11px] text-neutral-400">
+                      <span className="flex-shrink-0 text-[11px] text-neutral-400 dark:text-neutral-500">
                         {conversation.lastTime}
                       </span>
                     </div>
                     <div className="mt-0.5 flex items-center justify-between gap-2">
-                      <p className="truncate text-xs text-neutral-500">
+                      <p className="truncate text-xs text-neutral-500 dark:text-neutral-400">
                         {lastMessage?.text}
                       </p>
                       {conversation.unread && (
@@ -140,22 +142,22 @@ export function MessagesPage() {
 
         {/* Thread */}
         {active && (
-          <div className="flex min-w-0 flex-1 flex-col bg-white">
-            <div className="flex items-center gap-3 border-b border-neutral-200 px-5 py-3.5">
+          <div className="flex min-w-0 flex-1 flex-col bg-white dark:bg-neutral-900">
+            <div className="flex items-center gap-3 border-b border-neutral-200 px-5 py-3.5 dark:border-neutral-800">
               <AvatarInitials
                 name={active.name}
                 size="md"
                 className={cn("font-bold text-white", paletteFor(active.id))}
               />
               <div className="min-w-0">
-                <p className="truncate text-sm font-bold text-neutral-900">
+                <p className="truncate text-sm font-bold text-neutral-900 dark:text-neutral-50">
                   {active.name}
                 </p>
-                <p className="text-xs text-success-600">{active.presence}</p>
+                <p className="text-xs text-success-600 dark:text-success-400">{active.presence}</p>
               </div>
             </div>
 
-            <div className="min-h-0 flex-1 space-y-4 overflow-y-auto bg-neutral-50/40 p-5">
+            <div className="min-h-0 flex-1 space-y-4 overflow-y-auto bg-neutral-50/40 p-5 dark:bg-neutral-950/40">
               {active.messages.map((message) => (
                 <div
                   key={message.id}
@@ -169,7 +171,7 @@ export function MessagesPage() {
                       "max-w-[70%] rounded-2xl px-4 py-3 text-sm leading-relaxed",
                       message.fromMe
                         ? "rounded-br-md bg-primary-800 text-white"
-                        : "rounded-bl-md border border-neutral-100 bg-white text-neutral-800",
+                        : "rounded-bl-md border border-neutral-100 bg-white text-neutral-800 dark:border-neutral-800 dark:bg-neutral-800 dark:text-neutral-200",
                     )}
                   >
                     {message.text}
@@ -181,17 +183,17 @@ export function MessagesPage() {
 
             <form
               onSubmit={handleSend}
-              className="flex items-center gap-2 border-t border-neutral-200 p-4"
+              className="flex items-center gap-2 border-t border-neutral-200 p-4 dark:border-neutral-800"
             >
-              <div className="flex flex-1 items-center gap-2 rounded-xl border border-neutral-200 bg-neutral-50 px-3">
-                <Paperclip className="h-4 w-4 flex-shrink-0 text-neutral-400" />
+              <div className="flex flex-1 items-center gap-2 rounded-xl border border-neutral-200 bg-neutral-50 px-3 dark:border-neutral-700 dark:bg-neutral-800">
+                <Paperclip className="h-4 w-4 flex-shrink-0 text-neutral-400 dark:text-neutral-500" />
                 <input
                   value={draft}
                   onChange={(e) => setDraft(e.target.value)}
                   placeholder="Type a message..."
-                  className="w-full bg-transparent py-2.5 text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none"
+                  className="w-full bg-transparent py-2.5 text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none dark:text-neutral-100 dark:placeholder:text-neutral-500"
                 />
-                <Mic className="h-4 w-4 flex-shrink-0 text-neutral-400" />
+                <Mic className="h-4 w-4 flex-shrink-0 text-neutral-400 dark:text-neutral-500" />
               </div>
               <button
                 type="submit"
@@ -207,7 +209,7 @@ export function MessagesPage() {
 
         {/* Contact panel */}
         {active && (
-          <div className="hidden w-72 flex-shrink-0 flex-col border-l border-neutral-200 bg-white p-6 xl:flex">
+          <div className="hidden w-72 flex-shrink-0 flex-col border-l border-neutral-200 bg-white p-6 xl:flex dark:border-neutral-800 dark:bg-neutral-900">
             <div className="flex flex-col items-center text-center">
               <AvatarInitials
                 name={active.name}
@@ -216,25 +218,25 @@ export function MessagesPage() {
                   paletteFor(active.id),
                 )}
               />
-              <p className="mt-4 text-base font-bold text-neutral-900">
+              <p className="mt-4 text-base font-bold text-neutral-900 dark:text-neutral-50">
                 {active.name}
               </p>
-              <p className="mt-0.5 text-sm text-neutral-500">{active.role}</p>
+              <p className="mt-0.5 text-sm text-neutral-500 dark:text-neutral-400">{active.role}</p>
             </div>
 
             <dl className="mt-6 space-y-3 text-sm">
               {active.currentShift && (
                 <div className="flex items-start justify-between gap-3">
-                  <dt className="text-neutral-500">Current Shift</dt>
-                  <dd className="text-right font-bold text-neutral-900">
+                  <dt className="text-neutral-500 dark:text-neutral-400">Current Shift</dt>
+                  <dd className="text-right font-bold text-neutral-900 dark:text-neutral-50">
                     {active.currentShift}
                   </dd>
                 </div>
               )}
               {active.rating !== undefined && (
                 <div className="flex items-center justify-between">
-                  <dt className="text-neutral-500">Rating</dt>
-                  <dd className="flex items-center gap-1 font-bold text-neutral-900">
+                  <dt className="text-neutral-500 dark:text-neutral-400">Rating</dt>
+                  <dd className="flex items-center gap-1 font-bold text-neutral-900 dark:text-neutral-50">
                     <Star className="h-3.5 w-3.5 fill-warning-400 text-warning-400" />
                     {active.rating}
                   </dd>
@@ -242,8 +244,8 @@ export function MessagesPage() {
               )}
               {active.completedShifts !== undefined && (
                 <div className="flex items-center justify-between">
-                  <dt className="text-neutral-500">Completed Shifts</dt>
-                  <dd className="font-bold text-neutral-900">
+                  <dt className="text-neutral-500 dark:text-neutral-400">Completed Shifts</dt>
+                  <dd className="font-bold text-neutral-900 dark:text-neutral-50">
                     {active.completedShifts}
                   </dd>
                 </div>
@@ -252,10 +254,10 @@ export function MessagesPage() {
 
             {active.pinned && (
               <div className="mt-6">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
                   Pinned Messages
                 </p>
-                <p className="mt-2 rounded-xl bg-neutral-50 px-4 py-3 text-xs italic leading-relaxed text-neutral-600">
+                <p className="mt-2 rounded-xl bg-neutral-50 px-4 py-3 text-xs italic leading-relaxed text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400">
                   {active.pinned}
                 </p>
               </div>
@@ -268,7 +270,7 @@ export function MessagesPage() {
                     ? navigate(PATHS.hospital.workerDetail(active.workerId))
                     : navigate(PATHS.hospital.workers)
                 }
-                className="w-full rounded-xl border border-neutral-200 py-2.5 text-sm font-bold text-neutral-900 transition-colors hover:bg-neutral-50"
+                className="w-full rounded-xl border border-neutral-200 py-2.5 text-sm font-bold text-neutral-900 transition-colors hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-50 dark:hover:bg-neutral-800"
               >
                 View Full Profile
               </button>

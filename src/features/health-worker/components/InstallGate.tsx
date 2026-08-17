@@ -54,7 +54,7 @@ function InstallRequiredScreen() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-[#f5faff] px-6 py-10 text-neutral-950">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-[#f5faff] px-6 py-10 text-neutral-950 dark:bg-neutral-950 dark:text-neutral-50">
       <div className="w-full max-w-md">
         <p
           className={cn(
@@ -65,8 +65,8 @@ function InstallRequiredScreen() {
           NEXUSCARE
         </p>
 
-        <div className="mt-6 rounded-[32px] bg-white p-8 shadow-xl">
-          <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-700/10 text-brand-700">
+        <div className="mt-6 rounded-[32px] bg-white p-8 shadow-xl dark:bg-neutral-900">
+          <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-700/10 text-brand-700 dark:bg-brand-950 dark:text-brand-300">
             {isInstalled ? (
               <Smartphone className="h-8 w-8" />
             ) : isIos ? (
@@ -79,7 +79,7 @@ function InstallRequiredScreen() {
           {isInstalled ? (
             <>
               <h1 className="mt-6 text-center text-xl font-bold">Open the NexusCare app</h1>
-              <p className="mt-3 text-center text-sm text-neutral-600">
+              <p className="mt-3 text-center text-sm text-neutral-600 dark:text-neutral-400">
                 NexusCare is installed on this device. For security and offline support during
                 shifts, the health-worker workspace only runs in the app — open NexusCare from
                 your home screen or app list to continue.
@@ -88,7 +88,7 @@ function InstallRequiredScreen() {
           ) : (
             <>
               <h1 className="mt-6 text-center text-xl font-bold">Install NexusCare to continue</h1>
-              <p className="mt-3 text-center text-sm text-neutral-600">
+              <p className="mt-3 text-center text-sm text-neutral-600 dark:text-neutral-400">
                 The health-worker workspace runs as an installed app, not in the browser — so
                 your shifts stay one tap away and keep working offline.
               </p>
@@ -104,28 +104,28 @@ function InstallRequiredScreen() {
               )}
 
               {isIos && (
-                <ol className="mt-6 space-y-3 rounded-2xl bg-[#f5faff] p-4 text-sm text-neutral-700">
+                <ol className="mt-6 space-y-3 rounded-2xl bg-[#f5faff] p-4 text-sm text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300">
                   <li className="flex items-start gap-2">
-                    <span className="font-bold text-brand-700">1.</span>
+                    <span className="font-bold text-brand-700 dark:text-brand-300">1.</span>
                     <span>
                       Tap the <Share className="mx-0.5 -mt-0.5 inline h-4 w-4" aria-hidden />
                       {" "}Share button in Safari
                     </span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="font-bold text-brand-700">2.</span>
+                    <span className="font-bold text-brand-700 dark:text-brand-300">2.</span>
                     <span>Choose "Add to Home Screen"</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="font-bold text-brand-700">3.</span>
+                    <span className="font-bold text-brand-700 dark:text-brand-300">3.</span>
                     <span>Open NexusCare from your home screen</span>
                   </li>
                 </ol>
               )}
 
               {!canInstall && !isIos && (
-                <div className="mt-6 flex items-start gap-3 rounded-2xl bg-[#f5faff] p-4 text-sm text-neutral-700">
-                  <MonitorDown className="mt-0.5 h-5 w-5 shrink-0 text-brand-700" />
+                <div className="mt-6 flex items-start gap-3 rounded-2xl bg-[#f5faff] p-4 text-sm text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300">
+                  <MonitorDown className="mt-0.5 h-5 w-5 shrink-0 text-brand-700 dark:text-brand-300" />
                   <p>
                     Open your browser menu and choose <strong>"Install app"</strong> (or{" "}
                     <strong>"Add to Home Screen"</strong>). If you don't see that option, open
@@ -140,7 +140,7 @@ function InstallRequiredScreen() {
         <button
           type="button"
           onClick={handleLogout}
-          className="mx-auto mt-6 flex items-center gap-2 text-sm font-semibold text-neutral-500 hover:text-error-700"
+          className="mx-auto mt-6 flex items-center gap-2 text-sm font-semibold text-neutral-500 hover:text-error-700 dark:text-neutral-500 dark:hover:text-error-400"
         >
           <LogOut className="h-4 w-4" />
           Log out

@@ -14,6 +14,25 @@
     <meta name="description" content="Mobile clinical shift marketplace and care workflow for healthcare professionals" />
   </head>
   <body>
+    <!--
+      Applies the "dark" class before React mounts/paints, so the hospital
+      side doesn't flash light-then-dark on load. Mirrors ThemeContext's own
+      resolution rules (src/shared/theme/ThemeContext.tsx) — keep in sync.
+    -->
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem("nexus:hospital-theme");
+          var isDark =
+            stored === "dark" ||
+            (stored !== "light" &&
+              window.matchMedia("(prefers-color-scheme: dark)").matches);
+          if (isDark) document.documentElement.classList.add("dark");
+        } catch (e) {
+          // localStorage/matchMedia unavailable — default to light, ThemeProvider will settle it
+        }
+      })();
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

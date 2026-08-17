@@ -12,10 +12,10 @@ import type { NotificationTone } from "../types";
 type NotificationTab = "all" | "unread" | "read";
 
 const toneDot: Record<NotificationTone, { dot: string; bg: string }> = {
-  success: { dot: "bg-success-500", bg: "bg-success-50" },
-  info: { dot: "bg-primary-400", bg: "bg-primary-50" },
-  warning: { dot: "bg-warning-400", bg: "bg-warning-50" },
-  error: { dot: "bg-error-500", bg: "bg-error-50" },
+  success: { dot: "bg-success-500", bg: "bg-success-50 dark:bg-success-950" },
+  info: { dot: "bg-primary-400", bg: "bg-primary-50 dark:bg-primary-950" },
+  warning: { dot: "bg-warning-400", bg: "bg-warning-50 dark:bg-warning-950" },
+  error: { dot: "bg-error-500", bg: "bg-error-50 dark:bg-error-950" },
 };
 
 /** Notification Center page per the Figma "Preliminaries" frames. */
@@ -46,13 +46,13 @@ export function NotificationsPage() {
   return (
     <div className="mx-auto max-w-3xl">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-neutral-900 lg:text-3xl">
+        <h1 className="text-2xl font-bold text-neutral-900 lg:text-3xl dark:text-neutral-50">
           Notification Center
         </h1>
         {unreadCount > 0 && (
           <button
             onClick={markAllRead}
-            className="text-sm font-semibold text-brand-600 transition-colors hover:text-brand-700"
+            className="text-sm font-semibold text-brand-600 transition-colors hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300"
           >
             Mark all as read
           </button>
@@ -90,14 +90,14 @@ export function NotificationsPage() {
           />
         </div>
       ) : (
-        <ul className="divide-y divide-neutral-100">
+        <ul className="divide-y divide-neutral-100 dark:divide-neutral-800">
           {visible.map((notification) => {
             const tone = toneDot[notification.tone];
             return (
               <li key={notification.id}>
                 <button
                   onClick={() => markRead(notification.id)}
-                  className="flex w-full items-center gap-4 px-1 py-5 text-left transition-colors hover:bg-neutral-50/60"
+                  className="flex w-full items-center gap-4 px-1 py-5 text-left transition-colors hover:bg-neutral-50/60 dark:hover:bg-neutral-800/60"
                 >
                   <span
                     className={cn(
@@ -114,13 +114,13 @@ export function NotificationsPage() {
                       className={cn(
                         "text-sm leading-snug",
                         notification.read
-                          ? "text-neutral-500"
-                          : "font-semibold text-neutral-900",
+                          ? "text-neutral-500 dark:text-neutral-500"
+                          : "font-semibold text-neutral-900 dark:text-neutral-50",
                       )}
                     >
                       {notification.message}
                     </p>
-                    <p className="mt-1 text-xs text-neutral-400">
+                    <p className="mt-1 text-xs text-neutral-400 dark:text-neutral-500">
                       {notification.time}
                     </p>
                   </span>

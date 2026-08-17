@@ -38,9 +38,9 @@ export function NexusCareLogo({
       <img src="/logo.png" alt="NexusCare" className={icon} />
 
       {/* Original Hospital Onboarding Text - Exact same as OnboardingNavbar */}
-      <p className={`${text} font-bold tracking-wide text-[#1A5888]`}>
+      <p className={`${text} font-bold tracking-wide text-[#1A5888] dark:text-[#5AA6D6]`}>
         NEXUS
-        <span className="text-secondary-800">CARE</span>
+        <span className="text-secondary-800 dark:text-secondary-300">CARE</span>
       </p>
     </div>
   );

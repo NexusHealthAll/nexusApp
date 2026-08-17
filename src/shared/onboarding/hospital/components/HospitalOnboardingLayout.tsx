@@ -40,23 +40,23 @@ export function HospitalOnboardingLayout({
   const progressPercent = (activeStep / (STEPS.length - 1)) * 100;
 
   return (
-    <div className="min-h-screen bg-[#F4FAFF] flex flex-col font-sans">
+    <div className="min-h-screen bg-[#F4FAFF] dark:bg-neutral-950 flex flex-col font-sans">
       <HospitalOnboardingNavbar />
 
       <div className="flex flex-1">
         {/* ── Sidebar ── */}
-        <aside className="hidden lg:flex flex-col w-[230px] bg-white border-r border-gray-200 shrink-0">
+        <aside className="hidden lg:flex flex-col w-[230px] bg-white dark:bg-neutral-900 border-r border-gray-200 dark:border-neutral-800 shrink-0">
           <div className="px-5 pt-6 pb-4 flex-1">
             {/* Label */}
             <p className="text-[10px] font-semibold uppercase tracking-widest text-neutral-400 mb-0.5">
               Registration
             </p>
-            <p className="text-sm font-bold text-[#1A5888] mb-4">
+            <p className="text-sm font-bold text-[#1A5888] dark:text-[#5AA6D6] mb-4">
               Hospital Onboarding
             </p>
 
             {/* Progress bar */}
-            <div className="w-full bg-gray-200 rounded-full h-1 mb-1 overflow-hidden">
+            <div className="w-full bg-gray-200 dark:bg-neutral-800 rounded-full h-1 mb-1 overflow-hidden">
               <div
                 className="h-full rounded-full bg-[#349C93] transition-all duration-700 ease-out"
                 style={{ width: `${progressPercent}%` }}
@@ -89,7 +89,7 @@ export function HospitalOnboardingLayout({
                         : locked
                           ? "text-neutral-400 cursor-not-allowed opacity-70"
                           : completed
-                            ? "text-neutral-600 hover:bg-gray-50 cursor-pointer"
+                            ? "text-neutral-600 dark:text-neutral-300 hover:bg-gray-50 dark:hover:bg-neutral-800 cursor-pointer"
                             : "text-neutral-400 cursor-default",
                     ].join(" ")}
                   >
@@ -115,12 +115,12 @@ export function HospitalOnboardingLayout({
           </div>
 
           {/* Bottom support links */}
-          <div className="px-5 py-4 border-t border-gray-100 space-y-0.5">
-            <button className="flex items-center gap-2.5 text-[13px] text-neutral-500 hover:text-neutral-700 transition-colors w-full px-3 py-2 rounded-lg hover:bg-gray-50">
+          <div className="px-5 py-4 border-t border-gray-100 dark:border-neutral-800 space-y-0.5">
+            <button className="flex items-center gap-2.5 text-[13px] text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 transition-colors w-full px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-neutral-800">
               <HelpCircle className="h-[15px] w-[15px]" />
               Support
             </button>
-            <button className="flex items-center gap-2.5 text-[13px] text-neutral-500 hover:text-neutral-700 transition-colors w-full px-3 py-2 rounded-lg hover:bg-gray-50">
+            <button className="flex items-center gap-2.5 text-[13px] text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 transition-colors w-full px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-neutral-800">
               <Settings className="h-[15px] w-[15px]" />
               Settings
             </button>

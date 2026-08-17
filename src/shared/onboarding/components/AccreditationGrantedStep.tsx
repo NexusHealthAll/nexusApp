@@ -39,7 +39,7 @@ export function AccreditationGrantedStep() {
   const basePath = useRoleBasePath();
 
   return (
-    <div className="min-h-screen bg-[#F3FAFF]">
+    <div className="min-h-screen bg-[#F3FAFF] dark:bg-neutral-950">
       <OnboardingNavbar />
 
       <div className="mx-auto max-w-2xl px-4 pt-8 mt-8 mb-6">
@@ -47,25 +47,25 @@ export function AccreditationGrantedStep() {
       </div>
 
       <div className="mx-auto max-w-2xl px-4 pb-12">
-        <div className="relative overflow-hidden rounded-2xl bg-white p-10 text-center shadow-md">
+        <div className="relative overflow-hidden rounded-2xl bg-white p-10 text-center shadow-md dark:bg-neutral-900">
           {/* Watermark badge */}
           <BadgeCheck
-            className="absolute right-6 top-6 h-28 w-28 text-neutral-100"
+            className="absolute right-6 top-6 h-28 w-28 text-neutral-100 dark:text-neutral-800"
             aria-hidden="true"
           />
 
           {/* Top icon */}
-          <div className="mx-auto mb-6 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-secondary-100">
-            <ShieldCheck className="h-9 w-9 text-secondary-700" />
+          <div className="mx-auto mb-6 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-secondary-100 dark:bg-secondary-950">
+            <ShieldCheck className="h-9 w-9 text-secondary-700 dark:text-secondary-300" />
           </div>
 
           {/* Title */}
-          <h1 className="mb-4 text-4xl font-bold text-onboarding-textPrimary">
+          <h1 className="mb-4 text-4xl font-bold text-onboarding-textPrimary dark:text-neutral-50">
             Accreditation Granted
           </h1>
 
           {/* Subtitle */}
-          <p className="mb-8 text-sm leading-relaxed text-onboarding-textSecondary">
+          <p className="mb-8 text-sm leading-relaxed text-onboarding-textSecondary dark:text-neutral-400">
             Lagos University Teaching Hospital is now a verified institution on
             the NexusCare platform. Your clinical standards have been
             successfully validated.
@@ -76,13 +76,13 @@ export function AccreditationGrantedStep() {
             {features.map(({ icon: Icon, title, desc }) => (
               <div
                 key={title}
-                className="rounded-xl bg-onboarding-inputBackground p-4"
+                className="rounded-xl bg-onboarding-inputBackground p-4 dark:bg-neutral-800"
               >
-                <Icon className="mb-2 h-5 w-5 text-secondary-600" />
-                <p className="mb-1 text-sm font-semibold text-onboarding-textPrimary">
+                <Icon className="mb-2 h-5 w-5 text-secondary-600 dark:text-secondary-400" />
+                <p className="mb-1 text-sm font-semibold text-onboarding-textPrimary dark:text-neutral-50">
                   {title}
                 </p>
-                <p className="text-xs text-onboarding-textSecondary">{desc}</p>
+                <p className="text-xs text-onboarding-textSecondary dark:text-neutral-400">{desc}</p>
               </div>
             ))}
           </div>
@@ -94,18 +94,18 @@ export function AccreditationGrantedStep() {
                 Go to Dashboard
               </Button>
             </Link>
-            <button className="text-sm font-semibold text-secondary-700 hover:text-secondary-900">
+            <button className="text-sm font-semibold text-secondary-700 hover:text-secondary-900 dark:text-secondary-300 dark:hover:text-secondary-100">
               View Credentials Profile
             </button>
           </div>
         </div>
 
         {/* Footer trust bar */}
-        <div className="mt-6 flex flex-col items-center justify-between gap-4 rounded-2xl bg-white px-6 py-4 shadow-sm sm:flex-row">
+        <div className="mt-6 flex flex-col items-center justify-between gap-4 rounded-2xl bg-white px-6 py-4 shadow-sm sm:flex-row dark:bg-neutral-900">
           {/* Encryption */}
           <div className="flex items-center gap-3">
-            <ShieldCheck className="h-5 w-5 flex-shrink-0 text-secondary-700" />
-            <span className="text-sm text-neutral-600">
+            <ShieldCheck className="h-5 w-5 flex-shrink-0 text-secondary-700 dark:text-secondary-400" />
+            <span className="text-sm text-neutral-600 dark:text-neutral-400">
               256-bit Institutional Encryption Active
             </span>
           </div>
@@ -123,14 +123,14 @@ export function AccreditationGrantedStep() {
                   key={i}
                   src={src}
                   alt=""
-                  className="h-8 w-8 rounded-full border-2 border-white object-cover"
+                  className="h-8 w-8 rounded-full border-2 border-white object-cover dark:border-neutral-900"
                 />
               ))}
-              <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-secondary-600 text-[10px] font-bold text-white">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-secondary-600 text-[10px] font-bold text-white dark:border-neutral-900">
                 +12k
               </div>
             </div>
-            <span className="text-sm text-neutral-600">
+            <span className="text-sm text-neutral-600 dark:text-neutral-400">
               Trusted by 12,000+ Nigerian Healthcare Professionals
             </span>
           </div>

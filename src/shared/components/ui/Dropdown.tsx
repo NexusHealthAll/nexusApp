@@ -94,7 +94,7 @@ export function Dropdown({
             exit={{ opacity: 0, scale: 0.96, y: -4 }}
             transition={{ duration: 0.14, ease: "easeOut" }}
             className={cn(
-              "absolute z-20 mt-2 min-w-full origin-top rounded-xl border border-neutral-200 bg-white p-1.5 shadow-strong",
+              "absolute z-20 mt-2 min-w-full origin-top rounded-xl border border-neutral-200 bg-white p-1.5 shadow-strong dark:border-neutral-700 dark:bg-neutral-800",
               align === "right" ? "right-0" : "left-0",
               panelClassName,
             )}
@@ -125,9 +125,10 @@ export function DropdownItem({
       className={cn(
         "flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors duration-100",
         destructive
-          ? "text-error-600 hover:bg-error-50"
-          : "text-neutral-700 hover:bg-neutral-50",
-        active && "bg-neutral-50 font-medium text-neutral-900",
+          ? "text-error-600 hover:bg-error-50 dark:hover:bg-error-950"
+          : "text-neutral-700 hover:bg-neutral-50 dark:text-neutral-200 dark:hover:bg-neutral-700",
+        active &&
+          "bg-neutral-50 font-medium text-neutral-900 dark:bg-neutral-700 dark:text-neutral-50",
         className,
       )}
       {...props}

@@ -299,12 +299,12 @@ export function OtpVerify() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F3FAFF] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[#F3FAFF] dark:bg-neutral-950 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Back Button */}
         <button
           onClick={() => navigate("/auth/login")}
-          className="flex items-center space-x-2 text-onboarding-textSecondary hover:text-onboarding-textPrimary mb-6 transition-colors"
+          className="flex items-center space-x-2 text-onboarding-textSecondary dark:text-neutral-400 hover:text-onboarding-textPrimary dark:hover:text-neutral-100 mb-6 transition-colors"
         >
           <ArrowLeft className="h-5 w-5" />
           <span className="font-medium">Back</span>
@@ -315,19 +315,19 @@ export function OtpVerify() {
           <div className="flex items-center justify-center mb-4">
             <NexusCareLogo size="lg" />
           </div>
-          <h1 className="text-2xl font-bold text-onboarding-textPrimary mb-2">
+          <h1 className="text-2xl font-bold text-onboarding-textPrimary dark:text-neutral-50 mb-2">
             Verify Identity
           </h1>
-          <p className="text-onboarding-textSecondary">
+          <p className="text-onboarding-textSecondary dark:text-neutral-400">
             We've sent a 6-digit code to{" "}
-            <span className="font-semibold text-onboarding-textPrimary">
+            <span className="font-semibold text-onboarding-textPrimary dark:text-neutral-100">
               {phoneNumber}
             </span>
           </p>
         </div>
 
         {/* OTP Verification Card */}
-        <Card className="bg-white border-slate-100 shadow-md rounded-2xl">
+        <Card className="bg-white border-slate-100 shadow-md rounded-2xl dark:bg-neutral-900 dark:border-neutral-800 dark:shadow-none">
           <CardContent className="p-8">
             <form
               onSubmit={(e) => {
@@ -338,7 +338,7 @@ export function OtpVerify() {
             >
               {/* OTP Input Fields */}
               <div className="space-y-4">
-                <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-neutral-500 text-center">
+                <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-neutral-500 dark:text-neutral-400 text-center">
                   Enter Verification Code
                 </label>
 
@@ -353,12 +353,12 @@ export function OtpVerify() {
                       onChange={(e) => handleOtpChange(index, e.target.value)}
                       onKeyDown={(e) => handleKeyDown(index, e)}
                       onPaste={index === 0 ? handlePaste : undefined}
-                      className={`w-12 h-14 text-center text-xl font-bold border-2 rounded-xl focus:ring-2 focus:ring-secondary-500 focus:border-secondary-500 transition-all ${
+                      className={`w-12 h-14 text-center text-xl font-bold border-2 rounded-xl bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-50 focus:ring-2 focus:ring-secondary-500 focus:border-secondary-500 transition-all ${
                         error
-                          ? "border-red-300 focus:ring-red-500 focus:border-red-500"
+                          ? "border-red-300 dark:border-red-700 focus:ring-red-500 focus:border-red-500"
                           : digit
-                            ? "border-secondary-500 bg-secondary-50"
-                            : "border-slate-200"
+                            ? "border-secondary-500 bg-secondary-50 dark:bg-secondary-950"
+                            : "border-slate-200 dark:border-neutral-700"
                       }`}
                       maxLength={1}
                     />
@@ -366,7 +366,7 @@ export function OtpVerify() {
                 </div>
 
                 {error && (
-                  <p className="text-sm text-red-600 text-center flex items-center justify-center space-x-1">
+                  <p className="text-sm text-red-600 dark:text-red-400 text-center flex items-center justify-center space-x-1">
                     <span>⚠️</span>
                     <span>{error}</span>
                   </p>
@@ -389,14 +389,14 @@ export function OtpVerify() {
               {canResend ? (
                 <button
                   onClick={handleResendOtp}
-                  className="text-blue-600 hover:text-blue-700 font-medium transition-colors"
+                  className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium transition-colors"
                 >
                   Resend Code
                 </button>
               ) : (
-                <p className="text-sm text-slate-500">
+                <p className="text-sm text-slate-500 dark:text-neutral-400">
                   Resend code in{" "}
-                  <span className="font-semibold text-slate-700">
+                  <span className="font-semibold text-slate-700 dark:text-neutral-200">
                     {Math.floor(resendTimer / 60)}:
                     {(resendTimer % 60).toString().padStart(2, "0")}
                   </span>
@@ -406,9 +406,9 @@ export function OtpVerify() {
 
             {/* Help Text */}
             <div className="mt-6 text-center">
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-slate-500 dark:text-neutral-500">
                 Didn't receive the code?{" "}
-                <button className="text-blue-600 hover:text-blue-700 font-medium transition-colors">
+                <button className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium transition-colors">
                   Contact Support
                 </button>
               </p>

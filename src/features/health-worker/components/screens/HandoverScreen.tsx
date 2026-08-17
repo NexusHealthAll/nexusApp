@@ -62,9 +62,9 @@ export function HandoverScreen({
                 value={instructions}
                 onChange={(e) => setInstructions(e.target.value)}
                 placeholder="Summarize patient status and anything the next clinician needs to know..."
-                className="w-full resize-none rounded-lg bg-neutral-50 px-3 py-2 text-sm outline-none"
+                className="w-full resize-none rounded-lg bg-neutral-50 px-3 py-2 text-sm outline-none dark:bg-neutral-800"
               />
-              {submitError && <p className="text-sm text-error-600">{submitError}</p>}
+              {submitError && <p className="text-sm text-error-600 dark:text-error-400">{submitError}</p>}
               <Button
                 type="button"
                 className="w-full bg-brand-700"
@@ -82,9 +82,9 @@ export function HandoverScreen({
               <CardHeader className="p-4 pb-2">
                 <CardTitle className="text-base">Handover Submitted</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2 p-4 pt-0 text-sm text-neutral-600">
+              <CardContent className="space-y-2 p-4 pt-0 text-sm text-neutral-600 dark:text-neutral-400">
                 <p>{handover.instructions}</p>
-                <p className="text-xs text-neutral-400">
+                <p className="text-xs text-neutral-400 dark:text-neutral-500">
                   Editable until{" "}
                   {new Date(handover.editable_until).toLocaleTimeString("en-NG", {
                     hour: "numeric",
@@ -95,7 +95,7 @@ export function HandoverScreen({
               </CardContent>
             </Card>
             {submitError && (
-              <p className="rounded-xl bg-error-50 px-4 py-3 text-sm text-error-700">
+              <p className="rounded-xl bg-error-50 px-4 py-3 text-sm text-error-700 dark:bg-error-950 dark:text-error-300">
                 {submitError}
               </p>
             )}

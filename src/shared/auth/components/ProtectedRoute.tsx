@@ -104,10 +104,10 @@ export function ProtectedRoute({
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-neutral-950 dark:via-neutral-950 dark:to-neutral-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-900 mx-auto"></div>
-          <p className="mt-2 text-slate-600">Verifying access...</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-900 dark:border-neutral-100 mx-auto"></div>
+          <p className="mt-2 text-slate-600 dark:text-neutral-400">Verifying access...</p>
         </div>
       </div>
     );
