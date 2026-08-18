@@ -106,7 +106,7 @@ export function EmailSignup() {
                 <Mail className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-onboarding-textSecondary dark:text-neutral-500" />
               </div>
               {error && (
-                <p className="mt-2 text-sm text-red-600">{error}</p>
+                <p className="mt-2 text-sm text-red-600 dark:text-red-400">{error}</p>
               )}
             </div>
 

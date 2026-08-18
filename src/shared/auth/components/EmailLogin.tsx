@@ -146,13 +146,13 @@ export function EmailLogin() {
 
           <CardContent className="px-6 py-8 flex-1 flex flex-col justify-center">
             {justRegistered && (
-              <div className="mb-8 flex items-start gap-3 rounded-xl border border-green-200 bg-green-50 px-4 py-3">
-                <CheckCircle2 className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-600" />
+              <div className="mb-8 flex items-start gap-3 rounded-xl border border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-950 px-4 py-3">
+                <CheckCircle2 className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-600 dark:text-green-400" />
                 <div>
-                  <p className="text-sm font-semibold text-green-800">
+                  <p className="text-sm font-semibold text-green-800 dark:text-green-300">
                     Account created
                   </p>
-                  <p className="text-sm text-green-700">
+                  <p className="text-sm text-green-700 dark:text-green-400">
                     Log in with the email you just verified to finish setting
                     up your profile.
                   </p>
@@ -167,10 +167,10 @@ export function EmailLogin() {
                   : "translate-y-4 opacity-0"
               }`}
             >
-              <h1 className="text-4xl sm:text-3xl font-bold bg-gradient-to-r from-onboarding-textPrimary to-gray-700 bg-clip-text text-transparent mb-4">
+              <h1 className="text-4xl sm:text-3xl font-bold bg-gradient-to-r from-onboarding-textPrimary to-gray-700 dark:from-neutral-50 dark:to-neutral-300 bg-clip-text text-transparent mb-4">
                 Start your professional journey.
               </h1>
-              <p className="text-lg sm:text-base text-onboarding-textSecondary leading-relaxed">
+              <p className="text-lg sm:text-base text-onboarding-textSecondary dark:text-neutral-400 leading-relaxed">
                 Enter your work email to begin.
               </p>
             </div>
@@ -185,7 +185,7 @@ export function EmailLogin() {
             >
               {/* Enhanced Email Input Section */}
               <div className="space-y-4">
-                <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-neutral-500 transition-colors duration-200">
+                <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-neutral-500 dark:text-neutral-400 transition-colors duration-200">
                   Work Email
                 </label>
 
@@ -193,24 +193,24 @@ export function EmailLogin() {
                 <div
                   className={`relative flex items-center gap-3 rounded-xl px-4 py-4 transition-all duration-300 ease-out ${
                     email
-                      ? "bg-onboarding-inputBackground shadow-inner"
-                      : "bg-onboarding-inputBackground"
+                      ? "bg-onboarding-inputBackground dark:bg-neutral-800 shadow-inner"
+                      : "bg-onboarding-inputBackground dark:bg-neutral-800"
                   } ${
                     error
-                      ? "ring-2 ring-red-200 bg-red-50/50"
+                      ? "ring-2 ring-red-200 dark:ring-red-800 bg-red-50/50 dark:bg-red-950/50"
                       : isValidEmail && email
-                        ? "ring-2 ring-green-200 bg-green-50/50"
-                        : "focus-within:ring-2 focus-within:ring-blue-200 focus-within:bg-blue-50/30"
+                        ? "ring-2 ring-green-200 dark:ring-green-800 bg-green-50/50 dark:bg-green-950/50"
+                        : "focus-within:ring-2 focus-within:ring-blue-200 dark:focus-within:ring-blue-800 focus-within:bg-blue-50/30 dark:focus-within:bg-blue-950/30"
                   }`}
                 >
                   {/* Email Icon with animation */}
                   <Mail
                     className={`h-5 w-5 flex-shrink-0 transition-all duration-300 ${
                       error
-                        ? "text-red-500"
+                        ? "text-red-500 dark:text-red-400"
                         : isValidEmail && email
-                          ? "text-green-500"
-                          : "text-secondary-600"
+                          ? "text-green-500 dark:text-green-400"
+                          : "text-secondary-600 dark:text-secondary-400"
                     }`}
                   />
 
@@ -220,7 +220,7 @@ export function EmailLogin() {
                     value={email}
                     onChange={(e) => handleEmailChange(e.target.value)}
                     onKeyPress={handleKeyPress}
-                    className="flex-1 bg-transparent text-base text-neutral-800 placeholder:text-neutral-400 outline-none transition-all duration-200"
+                    className="flex-1 bg-transparent text-base text-neutral-800 dark:text-neutral-100 placeholder:text-neutral-400 dark:placeholder:text-neutral-500 outline-none transition-all duration-200"
                     placeholder="name@medicalcenter.com"
                   />
 
@@ -228,9 +228,9 @@ export function EmailLogin() {
                   {email && (
                     <div className="transition-all duration-300 ease-out">
                       {isValidEmail ? (
-                        <Check className="h-5 w-5 text-green-500 animate-in fade-in duration-200" />
+                        <Check className="h-5 w-5 text-green-500 dark:text-green-400 animate-in fade-in duration-200" />
                       ) : (
-                        <AlertCircle className="h-5 w-5 text-red-500 animate-in fade-in duration-200" />
+                        <AlertCircle className="h-5 w-5 text-red-500 dark:text-red-400 animate-in fade-in duration-200" />
                       )}
                     </div>
                   )}
@@ -239,7 +239,7 @@ export function EmailLogin() {
                 {/* Enhanced Error Display */}
                 {error && (
                   <div className="animate-in slide-in-from-left-2 duration-300">
-                    <p className="text-sm text-red-600 flex items-center gap-2">
+                    <p className="text-sm text-red-600 dark:text-red-400 flex items-center gap-2">
                       <AlertCircle className="h-4 w-4" />
                       {error}
                     </p>
@@ -248,7 +248,7 @@ export function EmailLogin() {
 
                 {healthWorkerFallback && !error && (
                   <div className="animate-in slide-in-from-left-2 duration-300">
-                    <p className="text-sm text-neutral-800 mb-3">
+                    <p className="text-sm text-neutral-800 dark:text-neutral-200 mb-3">
                       Click continue to register worker with otp.
                     </p>
                   </div>
@@ -261,7 +261,7 @@ export function EmailLogin() {
                 disabled={isLoading || !email.trim() || !isValidEmail}
                 className={`w-full rounded-xl py-5 text-base font-semibold uppercase tracking-widest text-white transition-all duration-300 ease-out transform ${
                   isLoading || !email.trim() || !isValidEmail
-                    ? "bg-gray-300 cursor-not-allowed scale-100"
+                    ? "bg-gray-300 dark:bg-neutral-700 cursor-not-allowed scale-100"
                     : "bg-gradient-to-r from-onboarding-primaryGreen to-onboarding-primaryBlue shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
                 }`}
               >
@@ -281,7 +281,7 @@ export function EmailLogin() {
               </Button>
 
               {/* Enhanced Security Notice */}
-              <div className="flex items-center justify-center space-x-2 text-sm text-onboarding-textSecondary transition-opacity duration-300 hover:opacity-80">
+              <div className="flex items-center justify-center space-x-2 text-sm text-onboarding-textSecondary dark:text-neutral-400 transition-opacity duration-300 hover:opacity-80">
                 <svg
                   className="w-4 h-4 transition-transform duration-200 hover:scale-110"
                   fill="currentColor"
@@ -302,13 +302,13 @@ export function EmailLogin() {
 
             {/* Enhanced Footer Text */}
             <div
-              className={`mt-8 pt-6 border-t border-gray-100/50 flex-shrink-0 transition-all duration-700 delay-700 ease-out ${
+              className={`mt-8 pt-6 border-t border-gray-100/50 dark:border-neutral-800 flex-shrink-0 transition-all duration-700 delay-700 ease-out ${
                 isVisible
                   ? "translate-y-0 opacity-100"
                   : "translate-y-4 opacity-0"
               }`}
             >
-              <p className="text-xs text-neutral-400 uppercase tracking-wider font-medium text-center">
+              <p className="text-xs text-neutral-400 dark:text-neutral-500 uppercase tracking-wider font-medium text-center">
                 Trusted by Healthcare Professionals Across Nigeria
               </p>
             </div>

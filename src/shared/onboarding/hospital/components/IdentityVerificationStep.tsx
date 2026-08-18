@@ -172,8 +172,9 @@ export function IdentityVerificationStep() {
   }
 
   // ── OTP validate handler ─────────────────────────────────────────────────
-  async function handleValidate() {
-    if (!otp.trim()) {
+  async function handleValidate(otpOverride?: string) {
+    const codeToValidate = (otpOverride ?? otp).trim();
+    if (!codeToValidate) {
       setOtpError("Please enter the OTP sent to you");
       return;
     }
@@ -183,7 +184,7 @@ export function IdentityVerificationStep() {
 
     try {
       await apiClient.post(`/api/v1/hospitals/${hospitalId}/identity/validate`, {
-        otp: otp.trim(),
+        otp: codeToValidate,
         type: identityType,
       });
       setValidateStatus("success");
@@ -433,10 +434,15 @@ export function IdentityVerificationStep() {
                     maxLength={6}
                     value={otp}
                     onChange={(e) => {
-                      const val = e.target.value.replace(/\D/g, "");
+                      const val = e.target.value.replace(/\D/g, "").slice(0, 6);
                       setOtp(val);
                       setOtpError(null);
                       if (validateStatus === "error") setValidateStatus("idle");
+
+                      // Auto-submit once the code is fully entered.
+                      if (val.length === 6 && validateStatus !== "loading") {
+                        handleValidate(val);
+                      }
                     }}
                     placeholder="Enter 6-digit OTP"
                     disabled={validateStatus === "loading"}
@@ -464,7 +470,7 @@ export function IdentityVerificationStep() {
                 <div className="flex justify-end pt-1">
                   <button
                     type="button"
-                    onClick={handleValidate}
+                    onClick={() => handleValidate()}
                     disabled={validateStatus === "loading"}
                     className="flex items-center gap-2 px-6 py-2.5 rounded-lg bg-[#0F766E] hover:bg-[#0D9488] disabled:opacity-60 disabled:cursor-not-allowed text-white text-[13px] font-semibold transition-colors duration-150 shadow-sm"
                   >
