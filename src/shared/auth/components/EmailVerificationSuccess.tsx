@@ -93,7 +93,7 @@ export function EmailVerificationSuccess() {
                   : "translate-y-8 opacity-0 scale-75"
               }`}
             >
-              <div className="w-28 h-28 bg-gradient-to-br from-green-100 via-green-50 to-emerald-100 rounded-2xl flex items-center justify-center mx-auto animate-pulse shadow-lg">
+              <div className="w-28 h-28 bg-gradient-to-br from-green-100 via-green-50 to-emerald-100 dark:from-green-900 dark:via-green-950 dark:to-emerald-900 rounded-2xl flex items-center justify-center mx-auto animate-pulse shadow-lg">
                 <div className="w-20 h-20 bg-gradient-to-br from-green-600 via-green-500 to-emerald-600 rounded-xl flex items-center justify-center animate-bounce shadow-inner">
                   <Check
                     className="w-10 h-10 text-white animate-pulse"

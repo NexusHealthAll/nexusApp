@@ -141,11 +141,13 @@ export function IdentityVerification() {
     }
   };
 
-  const handleValidate = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleValidate = async (e?: React.FormEvent, otpOverride?: string) => {
+    e?.preventDefault();
     setError("");
 
-    if (otp.trim().length === 0) {
+    const codeToValidate = (otpOverride ?? otp).trim();
+
+    if (codeToValidate.length === 0) {
       setError("Enter the code sent to your registered phone number.");
       return;
     }
@@ -154,7 +156,7 @@ export function IdentityVerification() {
     try {
       const { data: body } = await apiClient.post<Record<string, unknown>>(
         `/api/v1/clinicians/${encodeURIComponent(clinicianId)}/identity/validate`,
-        { type: idType, otp: otp.trim() },
+        { type: idType, otp: codeToValidate },
       );
 
       const userInStore = useAuthStore.getState().user;
@@ -436,10 +438,17 @@ export function IdentityVerification() {
                     <input
                       type="text"
                       inputMode="numeric"
+                      maxLength={6}
                       value={otp}
                       onChange={(e) => {
-                        setOtp(e.target.value.replace(/\D/g, ""));
+                        const next = e.target.value.replace(/\D/g, "").slice(0, 6);
+                        setOtp(next);
                         if (error) setError("");
+
+                        // Auto-submit once the code is fully entered.
+                        if (next.length === 6 && !isLoading) {
+                          handleValidate(undefined, next);
+                        }
                       }}
                       className="flex-1 bg-transparent text-sm text-neutral-800 outline-none placeholder:text-neutral-400 font-mono tracking-widest dark:text-neutral-100"
                       placeholder="123456"
