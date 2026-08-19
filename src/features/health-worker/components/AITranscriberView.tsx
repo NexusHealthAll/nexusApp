@@ -155,7 +155,7 @@ export function AITranscriberView({ patientId, onSaveNotes, onCompleteConsultati
             </CardHeader>
             <CardContent>
               {/* Waveform Visualizer */}
-              <div className="bg-neutral-900 rounded-lg p-6 mb-4">
+              <div className="bg-neutral-100 border border-neutral-200 dark:bg-neutral-900 dark:border-neutral-800 rounded-lg p-6 mb-4">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center space-x-2">
                     {isRecording && (

@@ -204,9 +204,9 @@ export function ActiveShiftView({ shiftId, onEndShift }: ActiveShiftViewProps) {
             </CardHeader>
             <CardContent>
               {/* Live Transcription Display */}
-              <div className="bg-neutral-900 rounded-lg p-4 mb-4">
+              <div className="bg-neutral-100 border border-neutral-200 dark:bg-neutral-900 dark:border-neutral-800 rounded-lg p-4 mb-4">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs text-neutral-400">
+                  <span className="text-xs text-neutral-500 dark:text-neutral-400">
                     LIVE TRANSCRIPTION
                   </span>
                   <div className="flex items-center space-x-2">
@@ -220,7 +220,7 @@ export function ActiveShiftView({ shiftId, onEndShift }: ActiveShiftViewProps) {
                     )}
                   </div>
                 </div>
-                <div className="text-white text-sm leading-relaxed">
+                <div className="text-neutral-900 dark:text-white text-sm leading-relaxed">
                   {isRecording ? (
                     <span className="text-primary-400">
                       Patient reports chest pain radiating to left arm, started

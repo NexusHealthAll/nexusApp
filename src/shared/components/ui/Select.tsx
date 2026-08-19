@@ -131,7 +131,7 @@ export function Select({
         trigger={
           <span
             className={cn(
-              "flex w-full items-center justify-between rounded-lg border bg-neutral-50 px-4 py-2.5 text-left text-sm transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 dark:bg-neutral-800",
+              "flex w-full items-center justify-between rounded-lg border bg-neutral-50 px-4 py-2.5 text-left text-sm transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 dark:bg-neutral-900 dark:border-neutral-800 dark:text-neutral-100",
               error
                 ? "border-error-300 focus-visible:ring-error-500"
                 : "border-neutral-200 focus-visible:ring-secondary-500 dark:border-neutral-700",
@@ -141,9 +141,7 @@ export function Select({
             <span
               className={cn(
                 "truncate",
-                selected
-                  ? "text-neutral-900 dark:text-neutral-100"
-                  : "text-neutral-400",
+                selected ? "text-neutral-900 dark:text-neutral-100" : "text-neutral-400 dark:text-neutral-400",
               )}
             >
               {selected ? selected.label : placeholder}

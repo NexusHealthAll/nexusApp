@@ -14,7 +14,7 @@ export function UpdateAvailableToast() {
   if (!needRefresh || !updateServiceWorker) return null;
 
   return (
-    <div className="fixed inset-x-4 bottom-20 z-50 flex items-center justify-between gap-3 rounded-2xl bg-neutral-900 px-4 py-3 text-white shadow-lg md:inset-x-auto md:bottom-4 md:right-4 md:w-80">
+    <div className="fixed inset-x-4 bottom-20 z-50 flex items-center justify-between gap-3 rounded-2xl bg-neutral-900 px-4 py-3 text-white shadow-lg dark:bg-neutral-800 dark:border dark:border-neutral-700 md:inset-x-auto md:bottom-4 md:right-4 md:w-80">
       <div className="flex items-center gap-2 text-sm">
         <RefreshCw className="h-4 w-4 shrink-0" />
         <span>New version available</span>
@@ -22,7 +22,7 @@ export function UpdateAvailableToast() {
       <button
         type="button"
         onClick={() => updateServiceWorker()}
-        className="shrink-0 rounded-lg bg-white px-3 py-1.5 text-xs font-bold text-neutral-900"
+        className="shrink-0 rounded-lg bg-white px-3 py-1.5 text-xs font-bold text-neutral-900 hover:bg-neutral-100 dark:bg-neutral-100 dark:text-neutral-900"
       >
         Refresh
       </button>

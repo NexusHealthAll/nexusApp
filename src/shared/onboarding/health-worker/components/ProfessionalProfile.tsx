@@ -5,6 +5,7 @@ import { Button } from "@/shared/components/ui/Button";
 import { Select } from "@/shared/components/ui/Select";
 import { NexusCareLogo } from "@/shared/components/ui/NexusCareLogo";
 import { X, Bell, Award, User, Lock, ShieldCheck, ArrowLeft } from "lucide-react";
+import { ThemeToggle } from "@/shared/components/ui/ThemeToggle";
 import { useAuthStore } from "@/shared/auth/store/authStore";
 import apiClient from "@/lib/apiClient";
 import { ApiError } from "@/lib/apiError";
@@ -201,7 +202,8 @@ export function ProfessionalProfile() {
               <NexusCareLogo size="md" />
             </div>
             <div className="flex items-center space-x-3">
-              <Bell className="h-5 w-5 text-slate-400 dark:text-neutral-500" />
+              <ThemeToggle />
+              <Bell className="h-5 w-5 text-slate-400" />
               <button
                 onClick={handleClose}
                 className="p-1 hover:bg-slate-100 rounded-full transition-colors dark:hover:bg-neutral-800"

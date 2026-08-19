@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useAuthStore } from '@/shared/auth/store/authStore';
 import apiClient from '@/lib/apiClient';
+import { ThemeToggle } from '@/shared/components/ui/ThemeToggle';
 
 export function EmailSignup() {
   const navigate = useNavigate();
@@ -67,9 +68,7 @@ export function EmailSignup() {
           <div className="bg-white px-6 py-4 border-b border-gray-100 flex-shrink-0 dark:bg-neutral-900 dark:border-neutral-800">
             <div className="flex items-center justify-between">
               <NexusCareLogo size="sm" />
-              <div className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center dark:bg-neutral-800">
-                <div className="w-2 h-2 bg-gray-400 rounded-full dark:bg-neutral-500"></div>
-              </div>
+              <ThemeToggle />
             </div>
           </div>
 

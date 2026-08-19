@@ -14,6 +14,7 @@ import {
   UserCheck,
   CheckCircle2,
 } from "lucide-react";
+import { ThemeToggle } from "@/shared/components/ui/ThemeToggle";
 import { useAuthStore } from "@/shared/auth/store/authStore";
 import apiClient from "@/lib/apiClient";
 import { ApiError } from "@/lib/apiError";
@@ -317,7 +318,8 @@ export function IdentityVerification() {
               <NexusCareLogo size="md" />
             </div>
             <div className="flex items-center space-x-3">
-              <Bell className="h-5 w-5 text-slate-400 dark:text-neutral-500" />
+              <ThemeToggle />
+              <Bell className="h-5 w-5 text-slate-400" />
               <button
                 type="button"
                 onClick={handleClose}

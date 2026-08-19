@@ -126,36 +126,43 @@ export function ScheduleScreen({
           <div
             key={day.label + day.date}
             className={cn(
-              "flex h-20 w-14 shrink-0 flex-col items-center justify-center gap-1 rounded-xl",
-              day.isToday ? "bg-brand-700 shadow-[0_0_0_4px_rgba(0,65,162,0.1)]" : "bg-brand-100 dark:bg-brand-950",
+              "flex h-20 w-14 shrink-0 flex-col items-center justify-center gap-1 rounded-xl transition-colors",
+              day.isToday
+                ? "bg-brand-700 text-white shadow-[0_0_0_4px_rgba(0,65,162,0.1)] dark:bg-brand-600"
+                : "bg-brand-100 dark:bg-neutral-800 dark:text-neutral-200",
             )}
           >
             <span
               className={cn(
                 "text-xs font-medium uppercase",
-                day.isToday ? "text-white/80" : "text-ink-700/60 dark:text-neutral-500",
+                day.isToday ? "text-white/80" : "text-ink-700/60 dark:text-neutral-400",
               )}
             >
               {day.label}
             </span>
-            <span className={cn("text-lg font-bold", day.isToday ? "text-white" : "text-ink-700 dark:text-neutral-400")}>
+            <span
+              className={cn(
+                "text-lg font-bold",
+                day.isToday ? "text-white" : "text-ink-700 dark:text-neutral-100",
+              )}
+            >
               {day.date}
             </span>
           </div>
         ))}
       </div>
 
-      <div className="flex items-start justify-center gap-1 rounded-xl bg-brand-100 p-1 dark:bg-brand-950">
+      <div className="flex items-start justify-center gap-1 rounded-xl bg-brand-100 p-1 dark:bg-neutral-800">
         {tabs.map((tab) => (
           <button
             type="button"
             key={tab.id}
             onClick={() => onScheduleTabChange(tab.id)}
             className={cn(
-              "flex-1 rounded-xl px-4 py-2.5 text-sm font-semibold",
+              "flex-1 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors",
               scheduleTab === tab.id
-                ? "bg-white text-brand-700 shadow-sm dark:bg-neutral-900 dark:text-brand-300"
-                : "text-ink-700 dark:text-neutral-400",
+                ? "bg-white text-brand-700 shadow-sm dark:bg-neutral-900 dark:text-brand-400"
+                : "text-ink-700 dark:text-neutral-400 hover:text-ink-900 dark:hover:text-neutral-200",
             )}
           >
             {tab.label}

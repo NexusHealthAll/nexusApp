@@ -392,7 +392,7 @@ export function AILiveTranscriber({
             Save Notes
           </Button>
           <Button
-            className="flex-1 h-12 bg-slate-900 hover:bg-slate-800 text-white"
+            className="flex-1 h-12 bg-slate-900 hover:bg-slate-800 text-white dark:bg-brand-700 dark:hover:bg-brand-600"
             onClick={onCompleteConsultation}
           >
             <Send className="h-4 w-4 mr-2" />

@@ -17,6 +17,7 @@ import { useAuthStore } from "@/shared/auth/store/authStore";
 import type { AuthUser } from "@/shared/auth/store/authStore";
 import { useHospitalShift } from "@/features/hospital/shifts/hooks/useHospitalShift";
 import type { ApiShift } from "@/features/hospital/shifts/types";
+import { ThemeToggle } from "@/shared/components/ui/ThemeToggle";
 import {
   useHealthWorkerShifts,
   type EarningsSummary,
@@ -86,9 +87,6 @@ function Shell({
   user: AuthUser | null;
   onNotifications: () => void;
   showTabs?: boolean;
-  // Only the main tab screens (home/marketplace/schedule/earnings/profile) get the
-  // persistent NexusCare top app bar — every other view renders its own contextual
-  // back/title header (see DashboardChrome's Header), so showing both would double up.
   showTopBar?: boolean;
 }) {
   const tabs = [
@@ -103,7 +101,7 @@ function Shell({
     [user?.first_name, user?.last_name].filter(Boolean).join(" ") || user?.email || null;
 
   return (
-    <div className="min-h-screen bg-[#f5faff] text-neutral-950 dark:bg-neutral-950 dark:text-neutral-50">
+    <div className="min-h-screen bg-[#f5faff] text-neutral-950 dark:bg-neutral-950 dark:text-neutral-100 transition-colors duration-200">
       <div className="flex min-h-screen w-full bg-[#f5faff] shadow-2xl dark:bg-neutral-950">
         {showTabs && (
           <aside className="hidden md:flex md:w-72 md:flex-col md:shrink-0 border-r border-neutral-100 bg-white/95 p-4 dark:border-neutral-800 dark:bg-neutral-900/95">
@@ -122,8 +120,10 @@ function Shell({
                     type="button"
                     onClick={() => onTabChange(tab.id)}
                     className={cn(
-                      "flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold",
-                      isActive ? "bg-brand-700 text-white" : "text-neutral-700 hover:bg-neutral-50 dark:text-neutral-400 dark:hover:bg-neutral-800",
+                      "flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold transition-colors",
+                      isActive
+                        ? "bg-brand-700 text-white dark:bg-brand-600"
+                        : "text-neutral-700 hover:bg-neutral-50 dark:text-neutral-300 dark:hover:bg-neutral-800",
                     )}
                   >
                     <Icon className="h-5 w-5" />
@@ -138,20 +138,23 @@ function Shell({
         <div className="flex-1 overflow-y-auto pb-24">
           <div className="mx-auto w-full max-w-[430px] md:max-w-none">
             {showTopBar && (
-              <header className="sticky top-0 z-30 flex items-center justify-between gap-3 bg-[#f5faff]/80 px-4 py-3 backdrop-blur-md dark:bg-neutral-950/80">
+              <header className="sticky top-0 z-30 flex items-center justify-between gap-3 bg-[#f5faff]/80 px-4 py-3 backdrop-blur-md dark:bg-neutral-900/80 dark:border-b dark:border-neutral-800">
                 <div className="flex min-w-0 items-center gap-3">
                   <Avatar name={displayName} photoUrl={user?.avatar_url} size="sm" />
                   <span className={cn("truncate text-sm font-extrabold tracking-tight", GRADIENT_WORDMARK_CLASS)}>
                     NEXUSCARE
                   </span>
                 </div>
-                <button
-                  type="button"
-                  onClick={onNotifications}
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-brand-700 hover:bg-brand-50 dark:text-brand-300 dark:hover:bg-brand-950"
-                >
-                  <Bell className="h-5 w-5" />
-                </button>
+                <div className="flex items-center gap-2">
+                  <ThemeToggle />
+                  <button
+                    type="button"
+                    onClick={onNotifications}
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-brand-700 hover:bg-brand-50 dark:text-brand-400 dark:hover:bg-neutral-800"
+                  >
+                    <Bell className="h-5 w-5" />
+                  </button>
+                </div>
               </header>
             )}
             <div className="px-4 md:px-8">
@@ -162,7 +165,7 @@ function Shell({
         </div>
 
         {showTabs && (
-          <nav className="fixed bottom-0 left-1/2 z-40 flex w-full max-w-[430px] -translate-x-1/2 items-center gap-1 rounded-t-2xl bg-[#f5faff]/80 px-2 py-2 shadow-[0_-8px_24px_0_rgba(15,29,37,0.06)] backdrop-blur-md md:hidden dark:bg-neutral-950/80">
+          <nav className="fixed bottom-0 left-1/2 z-40 flex w-full max-w-[430px] -translate-x-1/2 items-center gap-1 rounded-t-2xl bg-[#f5faff]/80 px-2 py-2 shadow-[0_-8px_24px_0_rgba(15,29,37,0.06)] backdrop-blur-md dark:bg-neutral-900/90 dark:border-t dark:border-neutral-800 md:hidden">
             {tabs.map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -173,7 +176,9 @@ function Shell({
                   onClick={() => onTabChange(tab.id)}
                   className={cn(
                     "flex flex-1 flex-col items-center justify-center gap-1 rounded-xl px-2 py-2 text-[10px] font-semibold transition-colors",
-                    isActive ? "bg-brand-600 text-white" : "text-neutral-500 dark:text-neutral-500",
+                    isActive
+                      ? "bg-brand-600 text-white dark:bg-brand-700"
+                      : "text-neutral-500 dark:text-neutral-400",
                   )}
                 >
                   <Icon className="h-[18px] w-[18px]" />

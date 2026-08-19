@@ -128,9 +128,9 @@ export function ShiftDetailScreen({
         </Card>
 
         {shift.shift_type === "in_person" && (
-          <section className="rounded-2xl bg-neutral-900 p-4 text-white">
-            <div className="flex h-36 items-center justify-center rounded-xl bg-neutral-800">
-              <Navigation className="h-10 w-10 text-brand-300" />
+          <section className="rounded-2xl bg-brand-50 p-4 text-brand-950 border border-brand-100 dark:bg-neutral-900 dark:text-white dark:border-neutral-800">
+            <div className="flex h-36 items-center justify-center rounded-xl bg-brand-100/60 dark:bg-neutral-800">
+              <Navigation className="h-10 w-10 text-brand-700 dark:text-brand-300" />
             </div>
             <p className="mt-3 text-sm font-bold">On-site — exact address shown after assignment</p>
           </section>
