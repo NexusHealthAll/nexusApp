@@ -11,6 +11,7 @@ import {
   LayoutGrid,
   MessageSquare,
   Settings,
+  Stethoscope,
   UserPlus,
   Users,
   Video,
@@ -29,6 +30,7 @@ interface NavItem {
 
 const mainNavItems: NavItem[] = [
   { name: "Dashboard", href: PATHS.hospital.dashboard, icon: LayoutGrid },
+  { name: "Patients", href: PATHS.hospital.patients, icon: Stethoscope },
   {
     name: "Shift Management",
     href: PATHS.hospital.shifts,
