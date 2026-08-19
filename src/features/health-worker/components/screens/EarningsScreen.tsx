@@ -22,15 +22,15 @@ export function EarningsScreen({
   return (
     <>
       <main className="space-y-5 py-4">
-        <h1 className="text-base font-extrabold text-ink-900 dark:text-neutral-50">Earnings</h1>
+        <h1 className="text-base font-extrabold text-ink-900 dark:text-neutral-100">Earnings</h1>
         {loadError && (
-          <p className="rounded-xl bg-error-50 px-4 py-3 text-sm text-error-700 dark:bg-error-950 dark:text-error-300">{loadError}</p>
+          <p className="rounded-xl bg-error-50 px-4 py-3 text-sm text-error-700 dark:bg-error-950/40 dark:text-error-300">{loadError}</p>
         )}
-        {isLoading && <p className="text-sm text-ink-500 dark:text-neutral-500">Loading...</p>}
+        {isLoading && <p className="text-sm text-ink-500 dark:text-neutral-400">Loading...</p>}
 
         {earnings && (
           <>
-            <section className="rounded-2xl bg-brand-700 p-5 text-white">
+            <section className="rounded-2xl bg-brand-700 p-5 text-white dark:bg-brand-800">
               <p className="text-xs text-brand-100">Total Earned</p>
               <p className="text-3xl font-bold">{formatKobo(earnings.total_earned_kobo)}</p>
             </section>
@@ -44,15 +44,15 @@ export function EarningsScreen({
             </div>
             <section>
               <div className="mb-3 flex items-center justify-between">
-                <h2 className="font-bold text-ink-900 dark:text-neutral-50">Recent Earnings</h2>
-                <span className="text-xs text-ink-500 dark:text-neutral-500">
+                <h2 className="font-bold text-ink-900 dark:text-neutral-100">Recent Earnings</h2>
+                <span className="text-xs text-ink-500 dark:text-neutral-400">
                   {earnings.total_transactions} total
                 </span>
               </div>
               {earnings.transactions.length === 0 ? (
                 <EmptyState
                   className="bg-white dark:bg-neutral-900"
-                  icon={<WalletCards className="h-10 w-10 text-brand-300" />}
+                  icon={<WalletCards className="h-10 w-10 text-brand-300 dark:text-brand-400" />}
                   title="No payouts yet"
                 />
               ) : (

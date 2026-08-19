@@ -49,11 +49,11 @@ export function HomeScreen({
         <button
           type="button"
           onClick={() => navigate("/medical-staff/onboarding/profile")}
-          className="flex w-full items-start gap-3 rounded-lg border border-warning-200 bg-warning-50 p-3 text-left transition-colors hover:bg-warning-100 dark:border-warning-800 dark:bg-warning-950 dark:hover:bg-warning-900"
+          className="flex w-full items-start gap-3 rounded-lg border border-warning-200 bg-warning-50 p-3 text-left transition-colors hover:bg-warning-100 dark:border-warning-800/60 dark:bg-warning-950/40 dark:hover:bg-warning-900/40"
         >
           <ShieldCheck className="mt-0.5 h-4 w-4 flex-shrink-0 text-warning-600 dark:text-warning-400" />
           <span>
-            <span className="block text-sm font-semibold text-warning-800 dark:text-warning-300">
+            <span className="block text-sm font-semibold text-warning-800 dark:text-warning-200">
               Complete your professional profile
             </span>
             <span className="block text-sm text-warning-900 dark:text-warning-300">
@@ -64,7 +64,7 @@ export function HomeScreen({
 
         <section className="flex items-start justify-between">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-wide text-ink-500 dark:text-neutral-500">
+            <p className="text-[10px] font-bold uppercase tracking-wide text-ink-500 dark:text-neutral-400">
               Welcome back
             </p>
             <h1 className="mt-1 text-3xl font-bold leading-tight text-brand-800 dark:text-brand-300">
@@ -77,7 +77,7 @@ export function HomeScreen({
         </section>
 
         {upcoming && (
-          <section className="rounded-2xl bg-brand-700 p-4 text-white shadow-lg">
+          <section className="rounded-2xl bg-brand-700 p-4 text-white shadow-lg dark:bg-brand-800">
             <div className="flex items-center justify-between">
               <StatusBadge>Upcoming Shift</StatusBadge>
               <Calendar className="h-5 w-5" />
@@ -102,7 +102,7 @@ export function HomeScreen({
             <Button
               type="button"
               onClick={() => onOpenShift(upcoming.shift_id)}
-              className="mt-4 w-full bg-white text-brand-800 hover:bg-brand-50"
+              className="mt-4 w-full bg-white text-brand-800 hover:bg-brand-50 dark:bg-neutral-900 dark:text-white dark:hover:bg-neutral-800"
             >
               View Details
               <ChevronRight className="ml-2 h-4 w-4" />
@@ -122,43 +122,43 @@ export function HomeScreen({
         <button
           type="button"
           onClick={onMarketplace}
-          className="flex w-full items-center justify-between rounded-2xl bg-white p-4 text-left shadow-sm dark:bg-neutral-900"
+          className="flex w-full items-center justify-between rounded-2xl bg-white p-4 text-left shadow-sm dark:border dark:border-neutral-800 dark:bg-neutral-900"
         >
           <div className="flex items-center gap-3">
             <span className="rounded-xl bg-brand-50 p-2 text-brand-700 dark:bg-brand-950 dark:text-brand-300">
               <BriefcaseMedical className="h-5 w-5" />
             </span>
             <div>
-              <p className="font-bold text-ink-900 dark:text-neutral-50">Marketplace</p>
-              <p className="text-xs text-ink-500 dark:text-neutral-500">Find new shifts near you</p>
+              <p className="font-bold text-ink-900 dark:text-neutral-100">Marketplace</p>
+              <p className="text-xs text-ink-500 dark:text-neutral-400">Find new shifts near you</p>
             </div>
           </div>
-          <ChevronRight className="h-5 w-5 text-ink-500 dark:text-neutral-500" />
+          <ChevronRight className="h-5 w-5 text-ink-500 dark:text-neutral-400" />
         </button>
 
         <section>
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="font-bold text-ink-900 dark:text-neutral-50">Recent Activity</h2>
+            <h2 className="font-bold text-ink-900 dark:text-neutral-100">Recent Activity</h2>
           </div>
           <div className="space-y-3">
-            {isLoading && <p className="text-sm text-ink-500 dark:text-neutral-500">Loading...</p>}
+            {isLoading && <p className="text-sm text-ink-500 dark:text-neutral-400">Loading...</p>}
             {!isLoading && (earnings?.transactions.length ?? 0) === 0 && (
               <EmptyState
                 className="bg-white dark:bg-neutral-900"
-                icon={<Receipt className="h-10 w-10 text-brand-300" />}
+                icon={<Receipt className="h-10 w-10 text-brand-300 dark:text-brand-400" />}
                 title="No completed shifts yet"
               />
             )}
             {(earnings?.transactions ?? []).slice(0, 4).map((item) => (
               <div
                 key={item.id}
-                className="flex items-center justify-between rounded-xl bg-white p-3 shadow-sm dark:bg-neutral-900"
+                className="flex items-center justify-between rounded-xl bg-white p-3 shadow-sm dark:border dark:border-neutral-800 dark:bg-neutral-900"
               >
                 <div className="border-l-4 border-success-500 pl-3">
-                  <p className="text-sm font-bold text-ink-900 dark:text-neutral-50">{item.hospital_name ?? "Hospital"}</p>
-                  <p className="text-[10px] uppercase text-ink-500 dark:text-neutral-500">{item.role_title ?? ""}</p>
+                  <p className="text-sm font-bold text-ink-900 dark:text-neutral-100">{item.hospital_name ?? "Hospital"}</p>
+                  <p className="text-[10px] uppercase text-ink-500 dark:text-neutral-400">{item.role_title ?? ""}</p>
                 </div>
-                <p className="text-sm font-bold text-ink-900 dark:text-neutral-50">{formatKobo(item.amount_kobo)}</p>
+                <p className="text-sm font-bold text-ink-900 dark:text-neutral-100">{formatKobo(item.amount_kobo)}</p>
               </div>
             ))}
           </div>

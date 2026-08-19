@@ -162,11 +162,11 @@ export function ProfileScreen({
 
   return (
     <main className="space-y-4 py-4">
-      <section className="flex flex-col items-center gap-3 rounded-[32px] bg-brand-100 p-8 text-center dark:bg-brand-950">
+      <section className="flex flex-col items-center gap-3 rounded-[32px] bg-brand-100 p-8 text-center dark:border dark:border-neutral-800 dark:bg-neutral-900">
         <Avatar name={displayName} photoUrl={user?.avatar_url} size="lg" />
         <div>
-          <h1 className="text-2xl font-bold text-ink-900 dark:text-neutral-50">{displayName}</h1>
-          <p className="mt-1 text-base font-medium text-ink-700 dark:text-neutral-400">
+          <h1 className="text-2xl font-bold text-ink-900 dark:text-neutral-100">{displayName}</h1>
+          <p className="mt-1 text-base font-medium text-ink-700 dark:text-neutral-300">
             {[roleLabel, specialtyLabel].filter(Boolean).join(" • ") || "—"}
           </p>
         </div>
@@ -178,14 +178,14 @@ export function ProfileScreen({
         )}
       </section>
 
-      <section className="rounded-[24px] bg-white p-6 dark:bg-neutral-900">
+      <section className="rounded-[24px] bg-white p-6 dark:border dark:border-neutral-800 dark:bg-neutral-900">
         <p className="text-xs font-bold uppercase tracking-[1.2px] text-ink-700 dark:text-neutral-400">
           Credentials &amp; Licensing
         </p>
         <div className="mt-4 space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-sm text-ink-700 dark:text-neutral-400">Email</span>
-            <span className="text-sm font-bold text-ink-900 dark:text-neutral-50">{user?.email ?? "—"}</span>
+            <span className="text-sm font-bold text-ink-900 dark:text-neutral-100">{user?.email ?? "—"}</span>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-sm text-ink-700 dark:text-neutral-400">License Number</span>
@@ -197,15 +197,15 @@ export function ProfileScreen({
       </section>
 
       {specialtyLabel && (
-        <section className="rounded-[24px] bg-white p-6 dark:bg-neutral-900">
-          <h2 className="text-lg font-bold text-ink-900 dark:text-neutral-50">Specialties &amp; Expertise</h2>
-          <span className="mt-3 inline-block rounded-xl bg-success-700/10 px-4 py-2 text-sm font-medium text-success-700 dark:bg-success-950 dark:text-success-300">
+        <section className="rounded-[24px] bg-white p-6 dark:border dark:border-neutral-800 dark:bg-neutral-900">
+          <h2 className="text-lg font-bold text-ink-900 dark:text-neutral-100">Specialties &amp; Expertise</h2>
+          <span className="mt-3 inline-block rounded-xl bg-success-700/10 px-4 py-2 text-sm font-medium text-success-700 dark:bg-success-950/60 dark:text-success-300">
             {specialtyLabel}
           </span>
         </section>
       )}
 
-      <p className="text-center text-xs text-ink-500 dark:text-neutral-500">
+      <p className="text-center text-xs text-ink-500 dark:text-neutral-400">
         There's no endpoint to fetch your saved profile yet — this only shows what you entered
         during onboarding or in this session's edits.
       </p>
@@ -214,18 +214,18 @@ export function ProfileScreen({
         <h2 className="px-2 text-sm font-bold uppercase tracking-[1.4px] text-ink-700 dark:text-neutral-400">
           Account Management
         </h2>
-        <div className="overflow-hidden rounded-[24px] bg-white dark:bg-neutral-900">
+        <div className="overflow-hidden rounded-[24px] bg-white dark:border dark:border-neutral-800 dark:bg-neutral-900">
           <button
             type="button"
             onClick={() => setIsEditing(true)}
-            className="flex w-full items-center justify-between p-5 text-left"
+            className="flex w-full items-center justify-between p-5 text-left border-b border-neutral-100 dark:border-neutral-800"
           >
             <span className="flex items-center gap-4">
               <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-700/10 text-brand-700 dark:bg-brand-950 dark:text-brand-300">
                 <Settings className="h-5 w-5" />
               </span>
               <span>
-                <span className="block text-base font-semibold text-ink-900 dark:text-neutral-50">Edit Profile</span>
+                <span className="block text-base font-semibold text-ink-900 dark:text-neutral-100">Edit Profile</span>
                 <span className="block text-xs text-ink-700 dark:text-neutral-400">Update your role, specialty, and license</span>
               </span>
             </span>
@@ -233,20 +233,20 @@ export function ProfileScreen({
           <button
             type="button"
             onClick={onLogout}
-            className="flex w-full items-center gap-4 border-t border-neutral-100 p-5 text-left dark:border-neutral-800"
+            className="flex w-full items-center gap-4 p-5 text-left"
           >
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-error-700/10 text-error-700 dark:bg-error-950 dark:text-error-400">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-error-700/10 text-error-700 dark:bg-error-950/40 dark:text-error-400">
               <LogOut className="h-5 w-5" />
             </span>
             <span>
               <span className="block text-base font-semibold text-error-700 dark:text-error-400">Logout</span>
-              <span className="block text-xs text-error-700/60 dark:text-error-400/70">Securely sign out of your session</span>
+              <span className="block text-xs text-error-700/60 dark:text-error-400/60">Securely sign out of your session</span>
             </span>
           </button>
         </div>
       </section>
 
-      <section className="flex items-center justify-between rounded-[32px] bg-gradient-to-br from-brand-700 to-brand-600 p-6">
+      <section className="flex items-center justify-between rounded-[32px] bg-gradient-to-br from-brand-700 to-brand-600 p-6 dark:from-neutral-900 dark:to-neutral-800 dark:border dark:border-neutral-800">
         <div>
           <p className="text-lg font-bold text-brand-100">Active for Booking</p>
           <p className="mt-1 text-sm text-brand-100/80">

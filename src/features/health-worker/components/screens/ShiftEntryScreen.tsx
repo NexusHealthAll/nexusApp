@@ -208,7 +208,7 @@ export function ShiftEntryScreen({
 
         {(stage === "ready" || stage === "locating" || stage === "error") && (
           <>
-            <div className="flex h-52 items-center justify-center rounded-3xl bg-neutral-900 text-brand-300">
+            <div className="flex h-52 items-center justify-center rounded-3xl bg-brand-50 text-brand-700 border border-brand-100 dark:bg-neutral-900 dark:text-brand-300 dark:border-neutral-800">
               <MapPin className="h-14 w-14" />
             </div>
             <Button

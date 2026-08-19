@@ -53,7 +53,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             required={required}
             aria-invalid={Boolean(error)}
             className={cn(
-              "w-full rounded-lg border bg-neutral-50 px-4 py-2.5 text-sm text-neutral-900 placeholder:text-neutral-400 transition-colors duration-150 focus:outline-none focus:ring-2 dark:bg-neutral-800 dark:text-neutral-100 dark:placeholder:text-neutral-500",
+              "w-full rounded-lg border bg-neutral-50 px-4 py-2.5 text-sm text-neutral-900 placeholder:text-neutral-400 transition-colors duration-150 focus:outline-none focus:ring-2 dark:bg-neutral-900 dark:text-neutral-100 dark:border-neutral-800 dark:placeholder:text-neutral-400",
               error
                 ? "border-error-300 focus:border-error-500 focus:ring-error-500 dark:border-error-700"
                 : "border-neutral-200 focus:border-transparent focus:ring-secondary-500 dark:border-neutral-700",

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Monitor, Moon, Sun } from "lucide-react";
 import apiClient from "@/lib/apiClient";
 import { Button } from "@/shared/components/ui/Button";
 import { Input } from "@/shared/components/ui/Input";
@@ -11,7 +12,6 @@ import { authUtils } from "@/shared/auth/utils/authUtils";
 import { useAuthStore } from "@/shared/auth/store/authStore";
 import { useHospitalProfile } from "@/features/hospital/hooks/useHospitalProfile";
 import { useTheme, type ThemeMode } from "@/shared/theme/ThemeContext";
-import { Monitor, Moon, Sun } from "lucide-react";
 
 type SettingsSection =
   | "account"
@@ -69,6 +69,7 @@ interface StoredPrefs {
   twoFactor: boolean;
   notifications: Record<string, boolean>;
   language: string;
+  theme?: ThemeMode;
 }
 
 function loadPrefs(): StoredPrefs {
@@ -132,13 +133,19 @@ export function SettingsPage() {
   const { theme, setTheme } = useTheme();
 
   const [section, setSection] = useState<SettingsSection>("account");
-  const [prefs, setPrefsState] = useState<StoredPrefs>(loadPrefs);
+  const [prefs, setPrefsState] = useState<StoredPrefs>(() => {
+    const loaded = loadPrefs();
+    return { ...loaded, theme };
+  });
   const [newPassword, setNewPassword] = useState("");
   const [isSendingReset, setIsSendingReset] = useState(false);
 
   const setPrefs = (next: StoredPrefs) => {
     setPrefsState(next);
     localStorage.setItem(PREFS_STORAGE_KEY, JSON.stringify(next));
+    if (next.theme && next.theme !== theme) {
+      setTheme(next.theme);
+    }
   };
 
   const fullName =

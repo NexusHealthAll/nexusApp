@@ -1,6 +1,7 @@
 import type { ComponentType, ReactNode } from "react";
 import { ArrowLeft, Bell } from "lucide-react";
 import { cn } from "@/shared/utils/cn";
+import { ThemeToggle } from "@/shared/components/ui/ThemeToggle";
 
 function getInitials(name?: string | null): string {
   const parts = (name ?? "").trim().split(/\s+/).filter(Boolean);
@@ -70,20 +71,20 @@ export function Header({
   onNotifications?: () => void;
 }) {
   return (
-    <header className="sticky top-0 z-30 border-b border-neutral-100 bg-[#f6fbff]/95 px-5 py-4 backdrop-blur dark:border-neutral-800 dark:bg-neutral-950/95">
+    <header className="sticky top-0 z-30 border-b border-neutral-100 bg-[#f6fbff]/95 px-5 py-4 backdrop-blur dark:border-neutral-800 dark:bg-neutral-900/95">
       <div className="flex items-center justify-between">
         <div className="flex min-w-0 items-center gap-3">
           {onBack && (
             <button
               type="button"
               onClick={onBack}
-              className="rounded-full p-1.5 text-brand-700 hover:bg-brand-50 dark:text-brand-300 dark:hover:bg-brand-950"
+              className="rounded-full p-1.5 text-brand-700 hover:bg-brand-50 dark:text-brand-400 dark:hover:bg-brand-950/40"
             >
               <ArrowLeft className="h-5 w-5" />
             </button>
           )}
           <div className="min-w-0">
-            <p className="text-[10px] font-bold uppercase tracking-wide text-brand-700 dark:text-brand-300">
+            <p className="text-[10px] font-bold uppercase tracking-wide text-brand-700 dark:text-brand-400">
               NexusCare
             </p>
             {title && (
@@ -91,18 +92,21 @@ export function Header({
                 {title}
               </h1>
             )}
-            {subtitle && <p className="text-xs text-neutral-500 dark:text-neutral-500">{subtitle}</p>}
+            {subtitle && <p className="text-xs text-neutral-500 dark:text-neutral-400">{subtitle}</p>}
           </div>
         </div>
-        {onNotifications && (
-          <button
-            type="button"
-            onClick={onNotifications}
-            className="rounded-full p-2 text-brand-700 hover:bg-brand-50 dark:text-brand-300 dark:hover:bg-brand-950"
-          >
-            <Bell className="h-5 w-5" />
-          </button>
-        )}
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          {onNotifications && (
+            <button
+              type="button"
+              onClick={onNotifications}
+              className="rounded-full p-2 text-brand-700 hover:bg-brand-50 dark:text-brand-400 dark:hover:bg-brand-950/40"
+            >
+              <Bell className="h-5 w-5" />
+            </button>
+          )}
+        </div>
       </div>
     </header>
   );
@@ -139,10 +143,10 @@ export function Metric({
   icon: ComponentType<{ className?: string }>;
 }) {
   return (
-    <div className="rounded-2xl bg-white p-4 shadow-sm dark:bg-neutral-900">
-      <Icon className="h-5 w-5 text-brand-700 dark:text-brand-300" />
-      <p className="mt-3 text-xs text-neutral-500 dark:text-neutral-500">{label}</p>
-      <p className="text-xl font-bold">{value}</p>
+    <div className="rounded-2xl bg-white p-4 shadow-sm dark:bg-neutral-900 dark:border dark:border-neutral-800">
+      <Icon className="h-5 w-5 text-brand-700 dark:text-brand-400" />
+      <p className="mt-3 text-xs text-neutral-500 dark:text-neutral-400">{label}</p>
+      <p className="text-xl font-bold text-neutral-900 dark:text-neutral-50">{value}</p>
     </div>
   );
 }
@@ -157,10 +161,10 @@ export function InfoTile({
   value: string;
 }) {
   return (
-    <div className="rounded-2xl bg-white p-4 shadow-sm dark:bg-neutral-900">
-      <Icon className="h-5 w-5 text-brand-700 dark:text-brand-300" />
-      <p className="mt-2 text-xs text-neutral-500 dark:text-neutral-500">{label}</p>
-      <p className="text-sm font-bold">{value}</p>
+    <div className="rounded-2xl bg-white p-4 shadow-sm dark:bg-neutral-900 dark:border dark:border-neutral-800">
+      <Icon className="h-5 w-5 text-brand-700 dark:text-brand-400" />
+      <p className="mt-2 text-xs text-neutral-500 dark:text-neutral-400">{label}</p>
+      <p className="text-sm font-bold text-neutral-900 dark:text-neutral-50">{value}</p>
     </div>
   );
 }
@@ -180,8 +184,8 @@ export function InfoRow({
         <Icon className="h-5 w-5" />
       </span>
       <div>
-        <p className="text-xs text-neutral-500 dark:text-neutral-500">{label}</p>
-        <p className="font-bold">{value}</p>
+        <p className="text-xs text-neutral-500 dark:text-neutral-400">{label}</p>
+        <p className="font-bold text-neutral-900 dark:text-neutral-50">{value}</p>
       </div>
     </div>
   );

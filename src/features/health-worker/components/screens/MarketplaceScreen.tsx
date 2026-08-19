@@ -50,7 +50,7 @@ function ShiftCard({ shift, onOpen }: { shift: NearbyShiftCard; onOpen: () => vo
     <button
       type="button"
       onClick={onOpen}
-      className="w-full rounded-xl bg-white p-5 text-left shadow-sm ring-1 ring-neutral-900/5 dark:bg-neutral-900 dark:ring-white/10"
+      className="w-full rounded-xl bg-white p-5 text-left shadow-sm ring-1 ring-neutral-900/5 dark:bg-neutral-900 dark:ring-neutral-800 dark:border dark:border-neutral-800 transition-colors"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
@@ -66,28 +66,28 @@ function ShiftCard({ shift, onOpen }: { shift: NearbyShiftCard; onOpen: () => vo
             <span
               className={cn(
                 "text-xs font-semibold",
-                shift.priority === "stat" ? "text-error-800 dark:text-error-400" : "text-ink-500 dark:text-neutral-500",
+                shift.priority === "stat" ? "text-error-800 dark:text-error-400" : "text-ink-500 dark:text-neutral-400",
               )}
             >
               {priorityCaption(shift)}
             </span>
           </div>
-          <h3 className="mt-1 text-lg font-extrabold text-ink-900 dark:text-neutral-50">{shift.role_title}</h3>
-          <p className="text-sm font-medium text-ink-700 dark:text-neutral-400">
+          <h3 className="mt-1 text-lg font-extrabold text-ink-900 dark:text-neutral-100">{shift.role_title}</h3>
+          <p className="text-sm font-medium text-ink-700 dark:text-neutral-300">
             {shift.hospital_name ?? "Hospital"}
             {shift.specialty ? ` • ${shift.specialty}` : ""}
           </p>
         </div>
         <div className="shrink-0 text-right">
-          <p className="text-lg font-extrabold text-brand-700 dark:text-brand-300">{shiftPayoutLabel(shift)}</p>
-          <p className="text-[10px] font-bold uppercase tracking-wide text-ink-500 dark:text-neutral-500">
+          <p className="text-lg font-extrabold text-brand-700 dark:text-brand-400">{shiftPayoutLabel(shift)}</p>
+          <p className="text-[10px] font-bold uppercase tracking-wide text-ink-500 dark:text-neutral-400">
             {shift.pay_type === "fixed_rate" ? "Fixed" : "Per shift"}
           </p>
         </div>
       </div>
 
-      <div className="mt-4 flex items-center justify-between gap-3 border-t border-neutral-100 pt-4 dark:border-neutral-800">
-        <div className="flex min-w-0 items-center gap-3 text-xs text-ink-700 dark:text-neutral-400">
+      <div className="mt-4 flex items-center justify-between gap-3 border-t border-neutral-100 dark:border-neutral-800 pt-4">
+        <div className="flex min-w-0 items-center gap-3 text-xs text-ink-700 dark:text-neutral-300">
           {typeof shift.distance_km === "number" && (
             <span className="flex shrink-0 items-center gap-1">
               <MapPin className="h-3 w-3" />
@@ -99,11 +99,11 @@ function ShiftCard({ shift, onOpen }: { shift: NearbyShiftCard; onOpen: () => vo
             {shift.duration_hours}h
           </span>
           {shift.shift_type === "virtual" ? (
-            <span className="shrink-0 rounded-full bg-brand-700 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white">
+            <span className="shrink-0 rounded-full bg-brand-700 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white dark:bg-brand-600">
               Virtual
             </span>
           ) : (
-            <span className="shrink-0 rounded-full border border-brand-700 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-brand-700 dark:border-brand-400 dark:text-brand-300">
+            <span className="shrink-0 rounded-full border border-brand-700 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-brand-700 dark:border-brand-400 dark:text-brand-400">
               Physical
             </span>
           )}

@@ -19,6 +19,7 @@ import {
   useNotificationsStore,
   useUnreadNotificationCount,
 } from "@/features/hospital/notifications/useNotificationsStore";
+import { ThemeToggle } from "@/shared/components/ui/ThemeToggle";
 
 interface HospitalTopBarProps {
   onMenuClick: () => void;
@@ -26,7 +27,7 @@ interface HospitalTopBarProps {
 
 /**
  * Hospital top bar per the Figma redesign: global search, dark Create Shift
- * CTA, messages + notifications icon buttons, and the admin avatar menu.
+ * CTA, messages + notifications icon buttons, theme toggle, and the admin avatar menu.
  */
 export function HospitalTopBar({ onMenuClick }: HospitalTopBarProps) {
   const navigate = useNavigate();
@@ -59,7 +60,7 @@ export function HospitalTopBar({ onMenuClick }: HospitalTopBarProps) {
   const adminName = profile?.adminName ?? "—";
 
   return (
-    <header className="flex h-16 items-center gap-3 border-b border-neutral-200 bg-white px-4 dark:border-neutral-800 dark:bg-neutral-900 lg:px-6">
+    <header className="flex h-16 items-center gap-3 border-b border-neutral-200 bg-white px-4 lg:px-6 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100 transition-colors duration-200">
       <button
         onClick={onMenuClick}
         className="rounded-md p-2 text-neutral-500 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800 lg:hidden"
@@ -79,15 +80,17 @@ export function HospitalTopBar({ onMenuClick }: HospitalTopBarProps) {
       <div className="ml-auto flex flex-shrink-0 items-center gap-2.5">
         <button
           onClick={() => navigate(PATHS.hospital.createShift)}
-          className="hidden h-9 items-center gap-1.5 rounded-lg bg-neutral-800 px-3.5 text-sm font-semibold text-white transition-colors hover:bg-neutral-900 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white sm:flex"
+          className="hidden h-9 items-center gap-1.5 rounded-lg bg-neutral-800 px-3.5 text-sm font-semibold text-white transition-colors hover:bg-neutral-900 dark:bg-brand-600 dark:hover:bg-brand-700 sm:flex"
         >
           <Plus className="h-4 w-4" />
           Create Shift
         </button>
 
+        <ThemeToggle />
+
         <Link
           to={PATHS.hospital.messages}
-          className="flex h-9 w-9 items-center justify-center rounded-lg border border-neutral-200 text-neutral-500 transition-colors hover:bg-neutral-50 hover:text-neutral-700 dark:border-neutral-700 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
+          className="flex h-9 w-9 items-center justify-center rounded-lg border border-neutral-200 text-neutral-500 transition-colors hover:bg-neutral-50 hover:text-neutral-700 dark:border-neutral-700 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
           aria-label="Messages"
         >
           <MessageSquare className="h-4 w-4" />
@@ -95,7 +98,7 @@ export function HospitalTopBar({ onMenuClick }: HospitalTopBarProps) {
 
         <Link
           to={PATHS.hospital.notifications}
-          className="relative flex h-9 w-9 items-center justify-center rounded-lg border border-neutral-200 text-neutral-500 transition-colors hover:bg-neutral-50 hover:text-neutral-700 dark:border-neutral-700 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
+          className="relative flex h-9 w-9 items-center justify-center rounded-lg border border-neutral-200 text-neutral-500 transition-colors hover:bg-neutral-50 hover:text-neutral-700 dark:border-neutral-700 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
           aria-label="Notifications"
         >
           <Bell className="h-4 w-4" />
@@ -114,7 +117,7 @@ export function HospitalTopBar({ onMenuClick }: HospitalTopBarProps) {
             <span className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary-500 text-xs font-bold text-white">
               {profile?.adminInitials ?? "—"}
             </span>
-            <span className="hidden text-sm font-semibold text-neutral-900 dark:text-neutral-50 md:block">
+            <span className="hidden text-sm font-semibold text-neutral-900 dark:text-neutral-100 md:block">
               {adminName}
             </span>
             <ChevronDown
@@ -126,9 +129,9 @@ export function HospitalTopBar({ onMenuClick }: HospitalTopBarProps) {
           </button>
 
           {menuOpen && (
-            <div className="absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-strong dark:border-neutral-700 dark:bg-neutral-900">
+            <div className="absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-strong dark:border-neutral-800 dark:bg-neutral-900">
               <div className="border-b border-neutral-100 px-4 py-3 dark:border-neutral-800">
-                <p className="truncate text-sm font-semibold text-neutral-900 dark:text-neutral-50">
+                <p className="truncate text-sm font-semibold text-neutral-900 dark:text-neutral-100">
                   {adminName}
                 </p>
                 <p className="truncate text-xs text-neutral-400 dark:text-neutral-500">
@@ -138,7 +141,7 @@ export function HospitalTopBar({ onMenuClick }: HospitalTopBarProps) {
               <Link
                 to={PATHS.hospital.profile}
                 onClick={() => setMenuOpen(false)}
-                className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-50"
+                className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-white"
               >
                 <Building2 className="h-4 w-4" />
                 Hospital Profile
@@ -146,14 +149,14 @@ export function HospitalTopBar({ onMenuClick }: HospitalTopBarProps) {
               <Link
                 to={PATHS.hospital.settings}
                 onClick={() => setMenuOpen(false)}
-                className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-50"
+                className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-white"
               >
                 <Settings className="h-4 w-4" />
                 Settings
               </Link>
               <button
                 onClick={handleLogout}
-                className="flex w-full items-center gap-2.5 border-t border-neutral-100 px-4 py-2.5 text-sm font-medium text-error-600 hover:bg-error-50 dark:border-neutral-800 dark:text-error-400 dark:hover:bg-error-950"
+                className="flex w-full items-center gap-2.5 border-t border-neutral-100 px-4 py-2.5 text-sm font-medium text-error-600 hover:bg-error-50 dark:border-neutral-800 dark:text-error-400 dark:hover:bg-error-950/40"
               >
                 <LogOut className="h-4 w-4" />
                 Log Out

@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/shared/components/ui/Card";
 import { Button } from "@/shared/components/ui/Button";
 import { NexusCareLogo } from "@/shared/components/ui/NexusCareLogo";
 import { ArrowLeft } from "lucide-react";
+import { ThemeToggle } from "@/shared/components/ui/ThemeToggle";
 
 import { useAuthStore, type AuthUser } from "@/shared/auth/store/authStore";
 import apiClient from "@/lib/apiClient";
@@ -301,14 +302,17 @@ export function OtpVerify() {
   return (
     <div className="min-h-screen bg-[#F3FAFF] dark:bg-neutral-950 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        {/* Back Button */}
-        <button
-          onClick={() => navigate("/auth/login")}
-          className="flex items-center space-x-2 text-onboarding-textSecondary dark:text-neutral-400 hover:text-onboarding-textPrimary dark:hover:text-neutral-100 mb-6 transition-colors"
-        >
-          <ArrowLeft className="h-5 w-5" />
-          <span className="font-medium">Back</span>
-        </button>
+        {/* Back Button & Theme Toggle */}
+        <div className="flex items-center justify-between mb-6">
+          <button
+            onClick={() => navigate("/auth/login")}
+            className="flex items-center space-x-2 text-onboarding-textSecondary hover:text-onboarding-textPrimary transition-colors"
+          >
+            <ArrowLeft className="h-5 w-5" />
+            <span className="font-medium">Back</span>
+          </button>
+          <ThemeToggle />
+        </div>
 
         {/* Logo */}
         <div className="text-center mb-8">
