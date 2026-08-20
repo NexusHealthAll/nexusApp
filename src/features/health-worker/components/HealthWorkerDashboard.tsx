@@ -26,6 +26,7 @@ import {
   type NdprConsent,
   type NearbyShiftCard,
 } from "../hooks/useHealthWorkerShifts";
+import { PatientService, type PatientDetailResponse, type PredictionResponse } from "@/shared/patients/services/patientService";
 import type { PatientRecord } from "../types";
 import { Avatar } from "./DashboardChrome";
 import { InstallPromptBanner } from "./InstallPromptBanner";
@@ -198,6 +199,7 @@ function Shell({
 export function HealthWorkerDashboard() {
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
+  const accessToken = useAuthStore((s) => s.accessToken);
   const workerApi = useHealthWorkerShifts();
   const { getShiftDetails } = useHospitalShift();
 
@@ -232,7 +234,80 @@ export function HealthWorkerDashboard() {
   const [handoverError, setHandoverError] = useState<string | null>(null);
 
   const [patients, setPatients] = useState<PatientRecord[]>([]);
+  const [isIngestingPatient, setIsIngestingPatient] = useState(false);
   const [selectedPatient, setSelectedPatient] = useState<PatientRecord | null>(null);
+  const patientsRef = useRef(patients);
+  patientsRef.current = patients;
+
+  // Real-time SSE updates for AI Triage predictions during active shifts
+  useEffect(() => {
+    if (!accessToken) return;
+    const url = `${apiClient.defaults.baseURL}/api/v1/pipeline/events?token=${encodeURIComponent(accessToken)}`;
+    const source = new EventSource(url);
+
+    source.addEventListener("prediction_completed", (e) => {
+      try {
+        const payload = JSON.parse((e as MessageEvent).data);
+        setPatients((prev) =>
+          prev.map((p) =>
+            p.backendPatientId === payload.patient_id || p.id === payload.patient_id
+              ? { ...p, prediction: payload.prediction }
+              : p,
+          ),
+        );
+        if (selectedPatient && (selectedPatient.backendPatientId === payload.patient_id || selectedPatient.id === payload.patient_id)) {
+          setSelectedPatient((prev) => prev ? { ...prev, prediction: payload.prediction } : null);
+        }
+      } catch {
+        // Fallback or parse error ignore
+      }
+    });
+
+    source.addEventListener("prediction_failed", (e) => {
+      try {
+        const payload = JSON.parse((e as MessageEvent).data);
+        setPatients((prev) =>
+          prev.map((p) =>
+            p.backendPatientId === payload.patient_id || p.id === payload.patient_id
+              ? {
+                  ...p,
+                  prediction: p.prediction
+                    ? { ...p.prediction, status: "failed", last_error: payload.error }
+                    : null,
+                }
+              : p,
+          ),
+        );
+      } catch {
+        // Fallback ignore
+      }
+    });
+
+    return () => source.close();
+  }, [accessToken, selectedPatient]);
+
+  // Safety-net poll for patients still in pending / processing AI Triage status
+  useEffect(() => {
+    const interval = setInterval(() => {
+      patientsRef.current.forEach((p) => {
+        const targetId = p.backendPatientId || p.id;
+        if (targetId && (p.prediction?.status === "pending" || p.prediction?.status === "processing")) {
+          PatientService.get(targetId)
+            .then((detail: PatientDetailResponse) => {
+              if (detail.prediction) {
+                setPatients((prev) =>
+                  prev.map((item) =>
+                    item.id === p.id ? { ...item, prediction: detail.prediction } : item,
+                  ),
+                );
+              }
+            })
+            .catch(() => {});
+        }
+      });
+    }, 8000);
+    return () => clearInterval(interval);
+  }, []);
 
   const [isBookingActive, setIsBookingActive] = useState(true);
   const [profileFields, setProfileFields] = useState<ProfileEditableFields | null>(null);
@@ -438,9 +513,57 @@ export function HealthWorkerDashboard() {
     await workerApi.requestClockinApproval(selectedShiftId, payload);
   }
 
-  function handleNewPatientSubmit(patient: PatientRecord) {
-    setPatients((prev) => [...prev, patient]);
-    setView("waiting-room");
+  async function handleNewPatientSubmit(patient: PatientRecord) {
+    setIsIngestingPatient(true);
+    try {
+      const res = await PatientService.ingest({
+        full_name: patient.name,
+        age: patient.age,
+        gender: patient.gender,
+        symptoms: patient.chiefComplaint,
+        severity_level: patient.severityLevel ?? "Mild",
+        existing_conditions: patient.existingConditions ?? "None",
+      });
+
+      const optimisticPrediction: PredictionResponse = {
+        id: res.prediction_id,
+        patient_id: res.patient_id,
+        status: "pending",
+        diagnosis_condition: null,
+        diagnosis_confidence: null,
+        diagnosis_probabilities: null,
+        risk_level: null,
+        risk_score: null,
+        deterioration_probability: null,
+        risk_probabilities: null,
+        drug_recommendation: null,
+        recommendation_confidence: null,
+        recommendations: null,
+        urgency: null,
+        route_to: null,
+        department: null,
+        alert_priority: null,
+        last_error: null,
+        created_at: new Date().toISOString(),
+        completed_at: null,
+      };
+
+      const updatedPatient: PatientRecord = {
+        ...patient,
+        backendPatientId: res.patient_id,
+        prediction: optimisticPrediction,
+      };
+
+      setPatients((prev) => [...prev, updatedPatient]);
+      appToast.success("Patient submitted", "Running AI triage — results appear shortly.");
+    } catch {
+      // Graceful fallback if backend ingest fails or offline
+      setPatients((prev) => [...prev, patient]);
+      appToast.info("Patient added to shift", "AI triage offline or unavailable.");
+    } finally {
+      setIsIngestingPatient(false);
+      setView("waiting-room");
+    }
   }
 
   function handleStartConsultation(patient: PatientRecord) {
@@ -705,6 +828,7 @@ export function HealthWorkerDashboard() {
         <PatientIntakeScreen
           onBack={() => setView("active-shift")}
           onSubmit={handleNewPatientSubmit}
+          isSubmitting={isIngestingPatient}
         />
       </Shell>
     );
