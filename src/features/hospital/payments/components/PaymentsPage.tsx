@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Download, Landmark, ReceiptText } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Badge, type BadgeVariant } from "@/shared/components/ui/Badge";
@@ -20,6 +20,7 @@ import {
   type PaymentStatus,
   type PaymentsOverview,
 } from "../paymentsService";
+import { WalletSetupModal } from "./WalletSetupModal";
 
 type PaymentTab = "all" | "pending" | "completed";
 
@@ -49,6 +50,12 @@ export function PaymentsPage() {
   const [search, setSearch] = useState("");
   const [dateRange, setDateRange] = useState("all");
   const [page, setPage] = useState(1);
+  const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
+
+  const loadOverview = useCallback(async () => {
+    const data = await PaymentsService.getOverview();
+    setOverview(data);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -121,11 +128,19 @@ export function PaymentsPage() {
             size="sm"
             className="flex items-center gap-1.5 text-sm font-semibold"
             title="Billing runs through your SafeHaven wallet account"
+            onClick={() => setIsWalletModalOpen(true)}
           >
             <Landmark className="h-4 w-4" />
             Manage Billing Methods
           </Button>
         }
+      />
+
+      <WalletSetupModal
+        isOpen={isWalletModalOpen}
+        onClose={() => setIsWalletModalOpen(false)}
+        wallet={overview?.wallet ?? null}
+        onWalletChanged={loadOverview}
       />
 
       {/* Stats */}

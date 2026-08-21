@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { Building2, Check, Clock, MapPin, Plus } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Building2, Camera, Check, Clock, MapPin, Plus } from "lucide-react";
 import { Badge } from "@/shared/components/ui/Badge";
 import { Button } from "@/shared/components/ui/Button";
 import { EmptyState, EmptyStateIcon } from "@/shared/components/ui/EmptyState";
@@ -7,6 +7,7 @@ import { Input } from "@/shared/components/ui/Input";
 import { Skeleton } from "@/shared/components/ui/Skeleton";
 import { appToast } from "@/shared/components/feedback/toast";
 import { cn } from "@/shared/utils/cn";
+import { fileToBase64 } from "@/shared/utils/fileToBase64";
 import {
   HospitalProfileService,
   type HospitalDetails,
@@ -28,6 +29,8 @@ export function HospitalProfilePage() {
   // No backend field for departments yet — additions are local-only.
   const [departments, setDepartments] = useState<string[]>([]);
   const [newDepartment, setNewDepartment] = useState<string | null>(null);
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+  const logoInputRef = useRef<HTMLInputElement | null>(null);
   const refreshShared = useHospitalProfileStore((s) => s.refresh);
 
   useEffect(() => {
@@ -60,14 +63,12 @@ export function HospitalProfilePage() {
     try {
       await HospitalProfileService.updateHospitalDetails({
         name: form.name,
-        email: form.email,
         address: form.address,
         phone_number: form.phoneNumber,
       });
       setDetails({
         ...details,
         name: form.name,
-        email: form.email,
         address: form.address,
         phoneNumber: form.phoneNumber,
       });
@@ -78,6 +79,27 @@ export function HospitalProfilePage() {
       appToast.fromError(err, "Unable to update the hospital profile");
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleLogoSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file || !details) return;
+    setIsUploadingLogo(true);
+    try {
+      const photoBase64 = await fileToBase64(file);
+      const logoUrl = await HospitalProfileService.updateLogo(
+        photoBase64,
+        file.type,
+      );
+      setDetails({ ...details, logoUrl });
+      appToast.success("Hospital logo updated");
+      refreshShared();
+    } catch (err) {
+      appToast.fromError(err, "Unable to update the hospital logo");
+    } finally {
+      setIsUploadingLogo(false);
     }
   };
 
@@ -110,9 +132,35 @@ export function HospitalProfilePage() {
 
       {/* Header card */}
       <div className="flex flex-wrap items-start gap-5 rounded-2xl border border-neutral-100 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
-        <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-secondary-700 text-white">
-          <Building2 className="h-8 w-8" />
-        </span>
+        <div className="relative shrink-0">
+          {details.logoUrl ? (
+            <img
+              src={details.logoUrl}
+              alt={`${details.name} logo`}
+              className="h-16 w-16 rounded-2xl object-cover"
+            />
+          ) : (
+            <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-secondary-700 text-white">
+              <Building2 className="h-8 w-8" />
+            </span>
+          )}
+          <input
+            ref={logoInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleLogoSelected}
+          />
+          <button
+            type="button"
+            aria-label="Change hospital logo"
+            onClick={() => logoInputRef.current?.click()}
+            disabled={isUploadingLogo}
+            className="absolute -bottom-1.5 -right-1.5 flex h-7 w-7 items-center justify-center rounded-full border-2 border-white bg-secondary-700 text-white shadow-soft transition-colors hover:bg-secondary-800 disabled:opacity-60 dark:border-neutral-900"
+          >
+            <Camera className="h-3.5 w-3.5" />
+          </button>
+        </div>
         <div className="min-w-0 flex-1">
           <h2 className="text-2xl font-bold text-secondary-800 dark:text-secondary-300">
             {details.name}
@@ -227,9 +275,9 @@ export function HospitalProfilePage() {
                 label="Email"
                 type="email"
                 value={form.email}
-                readOnly={!isEditing}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
-                className={cn(!isEditing && "bg-neutral-50 dark:bg-neutral-800")}
+                readOnly
+                hint={isEditing ? "Email can't be changed here" : undefined}
+                className="bg-neutral-50 dark:bg-neutral-800"
               />
             </div>
           </div>

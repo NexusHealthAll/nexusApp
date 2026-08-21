@@ -1,8 +1,11 @@
-import { useState } from "react";
-import { ArrowLeft, Calendar, LogOut, Settings } from "lucide-react";
+import { useRef, useState } from "react";
+import { ArrowLeft, Calendar, Camera, LogOut, Settings } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
 import { Select } from "@/shared/components/ui/Select";
+import { appToast } from "@/shared/components/feedback/toast";
 import { cn } from "@/shared/utils/cn";
+import { fileToBase64 } from "@/shared/utils/fileToBase64";
+import { AvatarService } from "@/shared/auth/services/avatarService";
 import type { AuthUser } from "@/shared/auth/store/authStore";
 import { Avatar } from "../DashboardChrome";
 
@@ -60,6 +63,8 @@ export function ProfileScreen({
   onLogout: () => void;
 }) {
   const [isEditing, setIsEditing] = useState(false);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const photoInputRef = useRef<HTMLInputElement | null>(null);
   const [form, setForm] = useState<ProfileEditableFields>(
     editableFields ?? {
       firstName: user?.first_name ?? "",
@@ -76,6 +81,22 @@ export function ProfileScreen({
   const handleSave = async () => {
     await onSaveProfile(form);
     setIsEditing(false);
+  };
+
+  const handlePhotoSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setIsUploadingPhoto(true);
+    try {
+      const photoBase64 = await fileToBase64(file);
+      await AvatarService.updateAvatar(photoBase64, file.type);
+      appToast.success("Profile photo updated");
+    } catch (err) {
+      appToast.fromError(err, "Unable to update your profile photo");
+    } finally {
+      setIsUploadingPhoto(false);
+    }
   };
 
   if (isEditing) {
@@ -163,7 +184,25 @@ export function ProfileScreen({
   return (
     <main className="space-y-4 py-4">
       <section className="flex flex-col items-center gap-3 rounded-[32px] bg-brand-100 p-8 text-center dark:bg-brand-950">
-        <Avatar name={displayName} photoUrl={user?.avatar_url} size="lg" />
+        <div className="relative">
+          <Avatar name={displayName} photoUrl={user?.avatar_url} size="lg" />
+          <input
+            ref={photoInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handlePhotoSelected}
+          />
+          <button
+            type="button"
+            aria-label="Change profile photo"
+            onClick={() => photoInputRef.current?.click()}
+            disabled={isUploadingPhoto}
+            className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-brand-700 text-white shadow-soft transition-colors hover:bg-brand-800 disabled:opacity-60 dark:border-neutral-900"
+          >
+            <Camera className="h-4 w-4" />
+          </button>
+        </div>
         <div>
           <h1 className="text-2xl font-bold text-ink-900 dark:text-neutral-50">{displayName}</h1>
           <p className="mt-1 text-base font-medium text-ink-700 dark:text-neutral-400">

@@ -54,7 +54,6 @@ interface HospitalDetailsResponse {
 
 export interface UpdateHospitalPatch {
   name?: string;
-  email?: string;
   address?: string;
   phone_number?: string;
 }
@@ -137,7 +136,13 @@ export class HospitalProfileService {
     };
   }
 
-  /** PATCH /hospitals/:id — only name/email/address/phone are updatable. */
+  /**
+   * PATCH /hospitals/:id — name/address/phone are updatable.
+   * `email` is deliberately excluded from the patch: the backend's UPDATE
+   * has no pre-check for its UNIQUE constraint (unlike hospital creation),
+   * so sending an email already used by another hospital 500s with a
+   * generic "database error occurred" instead of a clean conflict.
+   */
   static async updateHospitalDetails(
     patch: UpdateHospitalPatch,
   ): Promise<void> {
@@ -147,5 +152,19 @@ export class HospitalProfileService {
       `/api/v1/hospitals/${encodeURIComponent(hospitalId)}`,
       patch,
     );
+  }
+
+  /** PATCH /hospitals/:id/logo — replaces the hospital's logo image. */
+  static async updateLogo(
+    photoBase64: string,
+    mimeType: string,
+  ): Promise<string> {
+    const hospitalId = useAuthStore.getState().user?.hospital_id;
+    if (!hospitalId) throw new Error("No hospital on the current session");
+    const res = await apiClient.patch<{ logo_url: string }>(
+      `/api/v1/hospitals/${encodeURIComponent(hospitalId)}/logo`,
+      { photo_base64: photoBase64, photo_mime_type: mimeType },
+    );
+    return res.data.logo_url;
   }
 }

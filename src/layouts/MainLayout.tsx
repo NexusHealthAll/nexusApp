@@ -38,7 +38,7 @@ export function MainLayout({ children }: MainLayoutProps) {
         <HospitalApprovalPendingBanner />
 
         <main className="flex-1 overflow-y-auto">
-          <div className="mx-auto max-w-7xl p-4 lg:p-8">{children}</div>
+          <div className="mx-auto h-full max-w-7xl p-4 lg:p-8">{children}</div>
         </main>
       </div>
     </div>

@@ -53,13 +53,14 @@ function buildShiftPayload(data: ShiftFormData) {
     department: data.department || data.specialty || "",
     duration_hours: data.duration || 0,
     equipment: (data.equipment || []).map((e) => e.name),
-    fixed_rate_kobo: Math.trunc(data.fixedRate * 100),
+    fixed_rate_kobo:
+      data.payType === "fixed" ? Math.trunc(data.fixedRate * 100) : null,
     job_description: data.jobDescription || "",
     notes: "",
     pay_type: data.payType === "fixed" ? "fixed_rate" : "hourly_rate",
     priority: urgencyToPriority[data.urgencyLevel] ?? "normal",
     rate_kobo_per_hour:
-      data.payType === "hourly" ? Math.trunc(data.hourlyRate * 100) : 0,
+      data.payType === "hourly" ? Math.trunc(data.hourlyRate * 100) : null,
     requirements,
     role_category: roleToCategory[data.roleNeeded] ?? "doctor",
     role_title: data.roleNeeded || "",

@@ -72,7 +72,9 @@ export function DashboardOverview() {
       {/* Greeting header */}
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-sm text-neutral-400 dark:text-neutral-500">{today}</p>
+          <p className="text-sm text-neutral-400 dark:text-neutral-500">
+            {today}
+          </p>
           <h1 className="mt-1 text-2xl font-bold text-neutral-900 lg:text-3xl dark:text-neutral-50">
             {greetingForNow()}
             {adminFirstName ? `, ${adminFirstName}` : ""}
@@ -133,7 +135,7 @@ export function DashboardOverview() {
           />
           <MetricCard
             label="Worker Availability"
-            value={availableWorkers ?? "—"}
+            value={availableWorkers ?? "0"}
             icon={UserRound}
             sub={
               availableWorkers === null

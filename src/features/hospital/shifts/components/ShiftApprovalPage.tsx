@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
+  ArrowLeft,
   Ban,
   CalendarClock,
   CheckCircle2,
@@ -131,6 +132,7 @@ function buildTimeline(shift: ApiShift): TimelineEventUi[] {
 }
 
 export function ShiftApprovalPage() {
+  const navigate = useNavigate();
   const { shiftId } = useParams<{ shiftId: string }>();
   const {
     getShiftDetails,
@@ -289,6 +291,17 @@ export function ShiftApprovalPage() {
         className="bg-white dark:bg-neutral-900"
         title="Shift not found"
         description={loadError ?? "This shift could not be loaded."}
+        action={
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1.5"
+            onClick={() => navigate(-1)}
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            Back
+          </Button>
+        }
       />
     );
   }
@@ -300,6 +313,15 @@ export function ShiftApprovalPage() {
 
   return (
     <div className="space-y-6">
+      <button
+        type="button"
+        onClick={() => navigate(-1)}
+        className="flex items-center gap-2 text-sm font-semibold text-neutral-600 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        Back
+      </button>
+
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
