@@ -80,10 +80,11 @@ export function HospitalTopBar({ onMenuClick }: HospitalTopBarProps) {
       <div className="ml-auto flex flex-shrink-0 items-center gap-2.5">
         <button
           onClick={() => navigate(PATHS.hospital.createShift)}
-          className="hidden h-9 items-center gap-1.5 rounded-lg bg-neutral-800 px-3.5 text-sm font-semibold text-white transition-colors hover:bg-neutral-900 dark:bg-brand-600 dark:hover:bg-brand-700 sm:flex"
+          aria-label="Create Shift"
+          className="flex h-9 items-center justify-center gap-1.5 rounded-lg bg-neutral-800 px-2.5 text-sm font-semibold text-white transition-colors hover:bg-neutral-900 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white md:px-3.5"
         >
           <Plus className="h-4 w-4" />
-          Create Shift
+          <span className="hidden md:inline">Create Shift</span>
         </button>
 
         <ThemeToggle />

@@ -10,7 +10,7 @@ import {
 import { NexusCareLogo } from "@/shared/components/ui/NexusCareLogo";
 import { Button } from "@/shared/components/ui/Button";
 import { AvatarInitials } from "@/shared/components/ui/AvatarInitials";
-import { authUtils, type UserData } from "@/shared/auth/utils/authUtils";
+import { useHospitalProfile } from "@/features/hospital/hooks/useHospitalProfile";
 import {
   waitlistFooterSections,
   waitlistNavItems,
@@ -22,12 +22,28 @@ export function WaitlistFlowShell() {
   const navigate = useNavigate();
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [currentUser, setCurrentUser] = useState<UserData | null>(() =>
-    authUtils.isAuthenticated() ? authUtils.getCurrentUser() : null,
-  );
   const [openAccordion, setOpenAccordion] = useState<
     "hospital" | "health-worker" | null
   >(null);
+
+  const accessToken = useAuthStore((s) => s.accessToken);
+  const authUser = useAuthStore((s) => s.user);
+  const clearAuthSession = useAuthStore((s) => s.clearAuthSession);
+  const isLoggedIn = !!accessToken && !!authUser;
+  const isHospitalAdmin = authUser?.role === "hospital_admin";
+
+  const { profile: hospitalProfile } = useHospitalProfile(isHospitalAdmin);
+
+  const displayName = useMemo(() => {
+    if (!authUser) return "";
+    if (isHospitalAdmin) {
+      return hospitalProfile?.name || authUser.email || "Hospital";
+    }
+    const fullName = [authUser.first_name, authUser.last_name]
+      .filter(Boolean)
+      .join(" ");
+    return fullName || authUser.email || "User";
+  }, [authUser, isHospitalAdmin, hospitalProfile]);
 
   useEffect(() => {
     if (!isDropdownOpen) {
@@ -233,7 +249,9 @@ export function WaitlistFlowShell() {
                 <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-50">
                   Health worker
                 </p>
-                <p className="text-xs text-neutral-600 dark:text-neutral-400">Join as a clinician</p>
+                <p className="text-xs text-neutral-600 dark:text-neutral-400">
+                  Join as a clinician
+                </p>
               </div>
               <ChevronDown
                 className={`h-5 w-5 text-neutral-500 transition-transform duration-300 dark:text-neutral-400 ${
@@ -311,7 +329,7 @@ export function WaitlistFlowShell() {
 
             {/* Logged-in users see their avatar instead of the Get started CTA */}
             <div className="relative" data-waitlist-get-started>
-              {currentUser ? (
+              {isLoggedIn ? (
                 <button
                   type="button"
                   aria-haspopup="true"
@@ -321,7 +339,8 @@ export function WaitlistFlowShell() {
                   className="flex items-center gap-1.5 rounded-full transition-opacity hover:opacity-85"
                 >
                   <AvatarInitials
-                    name={currentUser.fullName || currentUser.email || "User"}
+                    name={displayName}
+                    imageUrl={authUser?.avatar_url ?? undefined}
                     size="md"
                     className="bg-onboarding-primaryBlue font-bold text-white"
                   />
@@ -363,14 +382,14 @@ export function WaitlistFlowShell() {
                   }`}
                 >
                   <div className="relative" role="menu">
-                    {currentUser ? (
+                    {isLoggedIn ? (
                       <div className="mt-3 w-64 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-soft dark:border-neutral-800 dark:bg-neutral-900">
                         <div className="border-b border-neutral-100 px-4 py-3 dark:border-neutral-800">
                           <p className="truncate text-sm font-semibold text-neutral-900 dark:text-neutral-50">
-                            {currentUser.fullName || "Account"}
+                            {displayName || "Account"}
                           </p>
                           <p className="truncate text-xs text-neutral-500">
-                            {currentUser.email}
+                            {authUser?.email}
                           </p>
                         </div>
                         <button
@@ -378,7 +397,7 @@ export function WaitlistFlowShell() {
                           data-waitlist-get-started
                           onClick={() =>
                             navigate(
-                              currentUser.role === "hospital_admin"
+                              isHospitalAdmin
                                 ? "/hospital/dashboard"
                                 : "/medical-staff/dashboard",
                             )
@@ -392,8 +411,7 @@ export function WaitlistFlowShell() {
                           type="button"
                           data-waitlist-get-started
                           onClick={() => {
-                            authUtils.clearAuth();
-                            setCurrentUser(null);
+                            clearAuthSession();
                             setIsDropdownOpen(false);
                           }}
                           className="flex w-full items-center gap-2.5 border-t border-neutral-100 px-4 py-2.5 text-sm font-medium text-error-600 transition-colors hover:bg-error-50 dark:border-neutral-800 dark:hover:bg-error-950"

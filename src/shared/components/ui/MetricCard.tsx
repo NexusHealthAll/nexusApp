@@ -4,24 +4,24 @@ import { cn } from "@/shared/utils/cn";
 type MetricTone = "secondary" | "primary" | "success" | "warning" | "error";
 
 interface MetricCardProps {
-  /** Small uppercase label, e.g. "WEEKLY REVENUE". */
   label: string;
   value: ReactNode;
-  /** Line under the value — plain text or rich node (e.g. trend). */
   sub?: ReactNode;
   icon?: ComponentType<{ className?: string }>;
-  /** Tint of the icon bubble and optionally the value. */
   tone?: MetricTone;
-  /** Tint the value itself (design highlights urgent counts). */
   valueTone?: MetricTone | "default";
   className?: string;
 }
 
 const iconTones: Record<MetricTone, string> = {
-  secondary: "bg-secondary-50 text-secondary-600 dark:bg-secondary-950 dark:text-secondary-300",
-  primary: "bg-primary-50 text-primary-600 dark:bg-primary-950 dark:text-primary-300",
-  success: "bg-success-50 text-success-600 dark:bg-success-950 dark:text-success-300",
-  warning: "bg-warning-50 text-warning-600 dark:bg-warning-950 dark:text-warning-300",
+  secondary:
+    "bg-secondary-50 text-secondary-600 dark:bg-secondary-950 dark:text-secondary-300",
+  primary:
+    "bg-primary-50 text-primary-600 dark:bg-primary-950 dark:text-primary-300",
+  success:
+    "bg-success-50 text-success-600 dark:bg-success-950 dark:text-success-300",
+  warning:
+    "bg-warning-50 text-warning-600 dark:bg-warning-950 dark:text-warning-300",
   error: "bg-error-50 text-error-600 dark:bg-error-950 dark:text-error-300",
 };
 
@@ -109,9 +109,7 @@ export function MetricTrend({
         {direction === "up" ? "↑" : "↓"} {label}
       </span>
       {suffix && (
-        <span className="text-neutral-400 dark:text-neutral-500">
-          {suffix}
-        </span>
+        <span className="text-neutral-400 dark:text-neutral-500">{suffix}</span>
       )}
     </span>
   );

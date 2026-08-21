@@ -327,7 +327,7 @@ export function ShiftSchedulePage() {
   ];
 
   return (
-    <div>
+    <div className="flex h-full flex-col">
       <PageHeader
         title="Shift Management"
         breadcrumbs={[
@@ -427,10 +427,10 @@ export function ShiftSchedulePage() {
       </div>
 
       {/* Table card */}
-      <div className="mt-5 overflow-hidden rounded-2xl border border-neutral-100 bg-white dark:border-neutral-800 dark:bg-neutral-900">
+      <div className="mt-5 flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-neutral-100 bg-white dark:border-neutral-800 dark:bg-neutral-900">
         {/* Bulk actions bar */}
         {selected.size > 0 && (
-          <div className="flex flex-wrap items-center gap-4 bg-neutral-900 px-5 py-3 text-sm text-white dark:bg-neutral-800">
+          <div className="flex flex-shrink-0 flex-wrap items-center gap-4 bg-neutral-900 px-5 py-3 text-sm text-white dark:bg-neutral-800">
             <span className="font-semibold">
               {selected.size} shift{selected.size === 1 ? "" : "s"} selected
             </span>
@@ -457,13 +457,13 @@ export function ShiftSchedulePage() {
         )}
 
         {isLoading ? (
-          <div className="space-y-2 p-5">
+          <div className="flex-1 space-y-2 p-5">
             {Array.from({ length: 6 }).map((_, i) => (
               <Skeleton key={i} className="h-14 w-full rounded-lg" />
             ))}
           </div>
         ) : pageRows.length === 0 ? (
-          <div className="p-8">
+          <div className="flex-1 p-8">
             <EmptyState
               icon={<EmptyStateIcon icon={CalendarPlus} />}
               title={rows.length === 0 ? "No shifts yet" : "No shifts found"}
@@ -484,10 +484,10 @@ export function ShiftSchedulePage() {
             />
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="min-h-0 flex-1 overflow-auto">
             <table className="w-full min-w-[880px] text-sm">
               <thead>
-                <tr className="border-b border-neutral-100 bg-neutral-50/60 text-left text-xs font-semibold uppercase tracking-wider text-neutral-400 dark:border-neutral-800 dark:bg-neutral-800/60 dark:text-neutral-500">
+                <tr className="border-b border-neutral-100 text-left text-xs font-semibold uppercase tracking-wider text-neutral-400 dark:border-neutral-800 dark:text-neutral-500 [&>th]:sticky [&>th]:top-0 [&>th]:z-10 [&>th]:bg-neutral-50 [&>th]:dark:bg-neutral-800">
                   <th className="w-12 px-4 py-3">
                     <input
                       type="checkbox"
@@ -628,7 +628,7 @@ export function ShiftSchedulePage() {
         )}
 
         {!isLoading && filteredRows.length > 0 && (
-          <div className="border-t border-neutral-100 px-5 py-4 dark:border-neutral-800">
+          <div className="flex-shrink-0 border-t border-neutral-100 px-5 py-4 dark:border-neutral-800">
             <Pagination
               page={page}
               pageCount={pageCount}

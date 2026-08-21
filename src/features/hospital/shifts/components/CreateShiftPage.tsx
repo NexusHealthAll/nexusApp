@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft, CheckCircle2, Plus, Upload, X } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
 import { Input } from "@/shared/components/ui/Input";
@@ -113,6 +113,8 @@ function naira(amount: number): string {
  */
 export function CreateShiftPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const isVirtualLocked = searchParams.get("type") === "virtual";
   const { profile } = useHospitalProfile();
   const { isLoading: isApprovalLoading, isApproved, status } =
     useHospitalApprovalStatus();
@@ -121,7 +123,10 @@ export function CreateShiftPage() {
   const { draft, setDraft, clearDraft } = useShiftDraftStore();
 
   const [step, setStep] = useState(0);
-  const [formData, setFormData] = useState<ShiftFormData>(draft ?? defaultFormData);
+  const [formData, setFormData] = useState<ShiftFormData>(() => {
+    const initial = draft ?? defaultFormData;
+    return isVirtualLocked ? { ...initial, shiftType: "virtual" } : initial;
+  });
   const [attachments, setAttachments] = useState<File[]>([]);
   const [customCertificate, setCustomCertificate] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
@@ -328,6 +333,7 @@ export function CreateShiftPage() {
                   onChange={(v) =>
                     update({ shiftType: v as ShiftFormData["shiftType"] })
                   }
+                  disabled={isVirtualLocked}
                 />
                 <Input
                   label="Date"
@@ -533,20 +539,18 @@ export function CreateShiftPage() {
                   onChange={(tasks) => update({ tasks })}
                 />
 
-                <Input
+                <ListEditor
                   label="Equipment Provided"
+                  addLabel="+ Add Equipment"
                   placeholder="e.g. PPE, scrubs, badge"
-                  value={formData.equipment.map((e) => e.name).join(", ")}
-                  onChange={(e) =>
+                  items={formData.equipment.map((e) => e.name)}
+                  onChange={(names) =>
                     update({
-                      equipment: e.target.value
-                        .split(",")
-                        .map((name, i) => ({
-                          id: `eq-${i}`,
-                          name: name.trim(),
-                          description: "",
-                        }))
-                        .filter((eq) => eq.name),
+                      equipment: names.map((name, i) => ({
+                        id: `eq-${i}`,
+                        name,
+                        description: "",
+                      })),
                     })
                   }
                 />

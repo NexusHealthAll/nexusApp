@@ -104,7 +104,7 @@ export function VirtualShiftsPage() {
               Live
             </span>
             <button
-              onClick={() => navigate(PATHS.hospital.createShift)}
+              onClick={() => navigate(`${PATHS.hospital.createShift}?type=virtual`)}
               className="flex h-9 items-center gap-1.5 rounded-lg bg-neutral-900 px-3.5 text-sm font-semibold text-white transition-colors hover:bg-neutral-800 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-200"
             >
               <Plus className="h-4 w-4" />
@@ -177,7 +177,7 @@ export function VirtualShiftsPage() {
             description="When patients check in at a telehealth kiosk, their live sessions will appear here."
             action={
               <button
-                onClick={() => navigate(PATHS.hospital.createShift)}
+                onClick={() => navigate(`${PATHS.hospital.createShift}?type=virtual`)}
                 className="mt-2 flex items-center gap-1.5 rounded-lg bg-neutral-900 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-neutral-800 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-200"
               >
                 <Plus className="h-3.5 w-3.5" />

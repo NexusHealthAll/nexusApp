@@ -1,8 +1,11 @@
-import { useState } from "react";
-import { ArrowLeft, Calendar, LogOut, Settings } from "lucide-react";
+import { useRef, useState } from "react";
+import { ArrowLeft, Calendar, Camera, LogOut, Settings } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
 import { Select } from "@/shared/components/ui/Select";
+import { appToast } from "@/shared/components/feedback/toast";
 import { cn } from "@/shared/utils/cn";
+import { fileToBase64 } from "@/shared/utils/fileToBase64";
+import { AvatarService } from "@/shared/auth/services/avatarService";
 import type { AuthUser } from "@/shared/auth/store/authStore";
 import { Avatar } from "../DashboardChrome";
 
@@ -60,6 +63,8 @@ export function ProfileScreen({
   onLogout: () => void;
 }) {
   const [isEditing, setIsEditing] = useState(false);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const photoInputRef = useRef<HTMLInputElement | null>(null);
   const [form, setForm] = useState<ProfileEditableFields>(
     editableFields ?? {
       firstName: user?.first_name ?? "",
@@ -71,11 +76,31 @@ export function ProfileScreen({
   );
 
   const displayName =
-    [user?.first_name, user?.last_name].filter(Boolean).join(" ") || user?.email || "—";
+    [user?.first_name, user?.last_name].filter(Boolean).join(" ") ||
+    user?.email ||
+    "—";
 
   const handleSave = async () => {
     await onSaveProfile(form);
     setIsEditing(false);
+  };
+
+  const handlePhotoSelected = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setIsUploadingPhoto(true);
+    try {
+      const photoBase64 = await fileToBase64(file);
+      await AvatarService.updateAvatar(photoBase64, file.type);
+      appToast.success("Profile photo updated");
+    } catch (err) {
+      appToast.fromError(err, "Unable to update your profile photo");
+    } finally {
+      setIsUploadingPhoto(false);
+    }
   };
 
   if (isEditing) {
@@ -97,7 +122,9 @@ export function ProfileScreen({
               </label>
               <input
                 value={form.firstName}
-                onChange={(e) => setForm((p) => ({ ...p, firstName: e.target.value }))}
+                onChange={(e) =>
+                  setForm((p) => ({ ...p, firstName: e.target.value }))
+                }
                 className="w-full rounded-lg bg-neutral-100 px-3 py-2.5 text-sm outline-none dark:bg-neutral-800"
               />
             </div>
@@ -107,7 +134,9 @@ export function ProfileScreen({
               </label>
               <input
                 value={form.lastName}
-                onChange={(e) => setForm((p) => ({ ...p, lastName: e.target.value }))}
+                onChange={(e) =>
+                  setForm((p) => ({ ...p, lastName: e.target.value }))
+                }
                 className="w-full rounded-lg bg-neutral-100 px-3 py-2.5 text-sm outline-none dark:bg-neutral-800"
               />
             </div>
@@ -125,7 +154,9 @@ export function ProfileScreen({
             </label>
             <input
               value={form.licenseNumber}
-              onChange={(e) => setForm((p) => ({ ...p, licenseNumber: e.target.value }))}
+              onChange={(e) =>
+                setForm((p) => ({ ...p, licenseNumber: e.target.value }))
+              }
               className="w-full rounded-lg bg-neutral-100 px-3 py-2.5 text-sm outline-none dark:bg-neutral-800"
             />
           </div>
@@ -136,7 +167,11 @@ export function ProfileScreen({
             placeholder="Select specialty"
             options={SPECIALTY_OPTIONS}
           />
-          {saveError && <p className="text-sm text-error-600 dark:text-error-400">{saveError}</p>}
+          {saveError && (
+            <p className="text-sm text-error-600 dark:text-error-400">
+              {saveError}
+            </p>
+          )}
           <Button
             type="button"
             className="w-full bg-brand-700"
@@ -157,15 +192,38 @@ export function ProfileScreen({
     ? SPECIALTY_OPTIONS.find((s) => s.value === editableFields.specialty)?.label
     : null;
   const joinedDate = user?.created_at
-    ? new Date(user.created_at).toLocaleDateString("en-NG", { month: "long", year: "numeric" })
+    ? new Date(user.created_at).toLocaleDateString("en-NG", {
+        month: "long",
+        year: "numeric",
+      })
     : null;
 
   return (
     <main className="space-y-4 py-4">
-      <section className="flex flex-col items-center gap-3 rounded-[32px] bg-brand-100 p-8 text-center dark:border dark:border-neutral-800 dark:bg-neutral-900">
-        <Avatar name={displayName} photoUrl={user?.avatar_url} size="lg" />
+      <section className="flex flex-col items-center gap-3 rounded-[32px] bg-brand-100 p-8 text-center dark:bg-brand-950">
+        <div className="relative">
+          <Avatar name={displayName} photoUrl={user?.avatar_url} size="lg" />
+          <input
+            ref={photoInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handlePhotoSelected}
+          />
+          <button
+            type="button"
+            aria-label="Change profile photo"
+            onClick={() => photoInputRef.current?.click()}
+            disabled={isUploadingPhoto}
+            className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-brand-700 text-white shadow-soft transition-colors hover:bg-brand-800 disabled:opacity-60 dark:border-neutral-900"
+          >
+            <Camera className="h-4 w-4" />
+          </button>
+        </div>
         <div>
-          <h1 className="text-2xl font-bold text-ink-900 dark:text-neutral-100">{displayName}</h1>
+          <h1 className="text-2xl font-bold text-ink-900 dark:text-neutral-100">
+            {displayName}
+          </h1>
           <p className="mt-1 text-base font-medium text-ink-700 dark:text-neutral-300">
             {[roleLabel, specialtyLabel].filter(Boolean).join(" • ") || "—"}
           </p>
@@ -184,11 +242,17 @@ export function ProfileScreen({
         </p>
         <div className="mt-4 space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-ink-700 dark:text-neutral-400">Email</span>
-            <span className="text-sm font-bold text-ink-900 dark:text-neutral-100">{user?.email ?? "—"}</span>
+            <span className="text-sm text-ink-700 dark:text-neutral-400">
+              Email
+            </span>
+            <span className="text-sm font-bold text-ink-900 dark:text-neutral-100">
+              {user?.email ?? "—"}
+            </span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-sm text-ink-700 dark:text-neutral-400">License Number</span>
+            <span className="text-sm text-ink-700 dark:text-neutral-400">
+              License Number
+            </span>
             <span className="font-bold text-brand-700 dark:text-brand-300">
               {editableFields?.licenseNumber || "—"}
             </span>
@@ -198,7 +262,9 @@ export function ProfileScreen({
 
       {specialtyLabel && (
         <section className="rounded-[24px] bg-white p-6 dark:border dark:border-neutral-800 dark:bg-neutral-900">
-          <h2 className="text-lg font-bold text-ink-900 dark:text-neutral-100">Specialties &amp; Expertise</h2>
+          <h2 className="text-lg font-bold text-ink-900 dark:text-neutral-100">
+            Specialties &amp; Expertise
+          </h2>
           <span className="mt-3 inline-block rounded-xl bg-success-700/10 px-4 py-2 text-sm font-medium text-success-700 dark:bg-success-950/60 dark:text-success-300">
             {specialtyLabel}
           </span>
@@ -206,8 +272,8 @@ export function ProfileScreen({
       )}
 
       <p className="text-center text-xs text-ink-500 dark:text-neutral-400">
-        There's no endpoint to fetch your saved profile yet — this only shows what you entered
-        during onboarding or in this session's edits.
+        There's no endpoint to fetch your saved profile yet — this only shows
+        what you entered during onboarding or in this session's edits.
       </p>
 
       <section className="space-y-3">
@@ -225,8 +291,12 @@ export function ProfileScreen({
                 <Settings className="h-5 w-5" />
               </span>
               <span>
-                <span className="block text-base font-semibold text-ink-900 dark:text-neutral-100">Edit Profile</span>
-                <span className="block text-xs text-ink-700 dark:text-neutral-400">Update your role, specialty, and license</span>
+                <span className="block text-base font-semibold text-ink-900 dark:text-neutral-100">
+                  Edit Profile
+                </span>
+                <span className="block text-xs text-ink-700 dark:text-neutral-400">
+                  Update your role, specialty, and license
+                </span>
               </span>
             </span>
           </button>
@@ -239,8 +309,12 @@ export function ProfileScreen({
               <LogOut className="h-5 w-5" />
             </span>
             <span>
-              <span className="block text-base font-semibold text-error-700 dark:text-error-400">Logout</span>
-              <span className="block text-xs text-error-700/60 dark:text-error-400/60">Securely sign out of your session</span>
+              <span className="block text-base font-semibold text-error-700 dark:text-error-400">
+                Logout
+              </span>
+              <span className="block text-xs text-error-700/60 dark:text-error-400/60">
+                Securely sign out of your session
+              </span>
             </span>
           </button>
         </div>
@@ -250,7 +324,8 @@ export function ProfileScreen({
         <div>
           <p className="text-lg font-bold text-brand-100">Active for Booking</p>
           <p className="mt-1 text-sm text-brand-100/80">
-            This session only — there's no availability endpoint to persist it yet.
+            This session only — there's no availability endpoint to persist it
+            yet.
           </p>
         </div>
         <button
@@ -258,7 +333,9 @@ export function ProfileScreen({
           onClick={onToggleBooking}
           className={cn(
             "flex h-8 w-14 shrink-0 items-center rounded-xl p-1 transition",
-            isBookingActive ? "justify-end bg-success-700" : "justify-start bg-white/20",
+            isBookingActive
+              ? "justify-end bg-success-700"
+              : "justify-start bg-white/20",
           )}
         >
           <span className="h-6 w-6 rounded-lg bg-white" />
