@@ -75,14 +75,14 @@ export function Modal({
             exit={{ opacity: 0, scale: 0.96, y: 12 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
             className={cn(
-              "relative z-10 w-full rounded-3xl border border-neutral-200 bg-white p-6 shadow-strong sm:p-8 dark:border-neutral-800 dark:bg-neutral-900",
+              "relative z-10 w-full rounded-3xl border border-neutral-200 bg-white p-6 shadow-strong sm:p-8 dark:bg-neutral-900 dark:border-neutral-800 dark:text-neutral-100",
               sizeClasses[size],
               className,
             )}
           >
             <div className="mb-5 flex items-start justify-between gap-4">
               {title ? (
-                <h2 className="text-2xl font-semibold text-neutral-950 sm:text-3xl dark:text-neutral-50">
+                <h2 className="text-2xl font-semibold text-neutral-950 sm:text-3xl dark:text-neutral-100">
                   {title}
                 </h2>
               ) : (
@@ -92,7 +92,7 @@ export function Modal({
               <button
                 type="button"
                 onClick={onClose}
-                className="rounded-lg border border-neutral-200 p-2 text-neutral-600 transition-colors hover:bg-neutral-50 hover:text-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-50"
+                className="rounded-lg border border-neutral-200 p-2 text-neutral-600 transition-colors hover:bg-neutral-50 hover:text-neutral-900 dark:border-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
               >
                 <X className="h-4 w-4" />
               </button>

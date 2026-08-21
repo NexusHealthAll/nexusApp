@@ -15,11 +15,10 @@ import {
   waitlistFooterSections,
   waitlistNavItems,
 } from "../constants/waitlistContent";
-import { useWaitlistFlow } from "./waitlistFlowContext";
 import { WaitlistJoinModalFlow } from "./WaitlistJoinModalFlow";
+import { ThemeToggle } from "@/shared/components/ui/ThemeToggle";
 
 export function WaitlistFlowShell() {
-  const { openJoinModal } = useWaitlistFlow();
   const navigate = useNavigate();
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -296,8 +295,8 @@ export function WaitlistFlowShell() {
   }, [openAccordion, handleLoginNavigation, handleRegisterNavigation]);
 
   return (
-    <div className="min-h-screen bg-white text-onboarding-textPrimary dark:bg-neutral-950 dark:text-neutral-100">
-      <header className="sticky top-0 z-20 border-b border-neutral-200/80 bg-white/90 backdrop-blur dark:border-neutral-800 dark:bg-neutral-950/90">
+    <div className="min-h-screen bg-white text-onboarding-textPrimary dark:bg-[#0b0f17] dark:text-neutral-100">
+      <header className="sticky top-0 z-20 border-b border-neutral-200/80 bg-white/90 backdrop-blur dark:bg-[#0b0f17]/90 dark:border-neutral-800">
         <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
           <Link aria-label="NexusCare home" className="shrink-0" to="/">
             <NexusCareLogo size="md" />
@@ -318,7 +317,8 @@ export function WaitlistFlowShell() {
             ))}
           </nav>
 
-          <div className="flex flex-row gap-4">
+          <div className="flex flex-row items-center gap-3">
+            <ThemeToggle />
             {/* <Button
               type="button"
               onClick={openJoinModal}

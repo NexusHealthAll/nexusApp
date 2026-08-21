@@ -11,6 +11,7 @@ import {
   LayoutGrid,
   MessageSquare,
   Settings,
+  Stethoscope,
   UserPlus,
   Users,
   Video,
@@ -29,6 +30,7 @@ interface NavItem {
 
 const mainNavItems: NavItem[] = [
   { name: "Dashboard", href: PATHS.hospital.dashboard, icon: LayoutGrid },
+  { name: "Patients", href: PATHS.hospital.patients, icon: Stethoscope },
   {
     name: "Shift Management",
     href: PATHS.hospital.shifts,
@@ -108,7 +110,7 @@ export function HospitalSidebar({ isOpen, onClose }: HospitalSidebarProps) {
   return (
     <aside
       className={cn(
-        "fixed inset-y-0 left-0 z-50 flex w-64 transform flex-col border-r border-neutral-200 bg-white transition-transform duration-300 ease-in-out dark:border-neutral-800 dark:bg-neutral-900 lg:static lg:inset-0 lg:translate-x-0",
+        "fixed inset-y-0 left-0 z-50 flex w-64 transform flex-col border-r border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900 transition-transform duration-300 ease-in-out lg:static lg:inset-0 lg:translate-x-0",
         isOpen ? "translate-x-0" : "-translate-x-full",
       )}
     >

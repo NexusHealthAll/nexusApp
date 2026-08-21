@@ -31,8 +31,8 @@ export function ConsultationScreen({
     <>
       <Header title={patient.name} subtitle={`${patient.age}y • ${patient.gender}`} onBack={onBack} />
       <main className="space-y-5 px-5 py-4">
-        <section className="relative overflow-hidden rounded-3xl bg-neutral-900 text-white">
-          <div className="flex h-80 items-center justify-center bg-gradient-to-br from-neutral-700 to-neutral-950">
+        <section className="relative overflow-hidden rounded-3xl bg-neutral-100 text-neutral-900 border border-neutral-200 dark:bg-neutral-900 dark:text-white dark:border-neutral-800">
+          <div className="flex h-80 items-center justify-center bg-gradient-to-br from-neutral-200 to-neutral-300 dark:from-neutral-700 dark:to-neutral-950">
             <User className="h-20 w-20 text-neutral-300" />
           </div>
           <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-3">

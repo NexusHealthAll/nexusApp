@@ -9,6 +9,8 @@ import { useAuthStore } from "@/shared/auth/store/authStore";
 import apiClient from "@/lib/apiClient";
 import { ApiError } from "@/lib/apiError";
 
+import { ThemeToggle } from "@/shared/components/ui/ThemeToggle";
+
 export function EmailLogin() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -131,9 +133,7 @@ export function EmailLogin() {
               <div className="transition-transform duration-300 hover:scale-105">
                 <NexusCareLogo size="sm" />
               </div>
-              <div className="w-6 h-6 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 dark:from-neutral-700 dark:to-neutral-800 flex items-center justify-center shadow-inner">
-                <div className="w-2 h-2 bg-gradient-to-br from-gray-400 to-gray-500 dark:from-neutral-500 dark:to-neutral-600 rounded-full"></div>
-              </div>
+              <ThemeToggle />
             </div>
           </div>
 

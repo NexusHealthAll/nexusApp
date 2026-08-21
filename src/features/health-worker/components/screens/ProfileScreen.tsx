@@ -76,14 +76,18 @@ export function ProfileScreen({
   );
 
   const displayName =
-    [user?.first_name, user?.last_name].filter(Boolean).join(" ") || user?.email || "—";
+    [user?.first_name, user?.last_name].filter(Boolean).join(" ") ||
+    user?.email ||
+    "—";
 
   const handleSave = async () => {
     await onSaveProfile(form);
     setIsEditing(false);
   };
 
-  const handlePhotoSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoSelected = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = e.target.files?.[0];
     e.target.value = "";
     if (!file) return;
@@ -118,7 +122,9 @@ export function ProfileScreen({
               </label>
               <input
                 value={form.firstName}
-                onChange={(e) => setForm((p) => ({ ...p, firstName: e.target.value }))}
+                onChange={(e) =>
+                  setForm((p) => ({ ...p, firstName: e.target.value }))
+                }
                 className="w-full rounded-lg bg-neutral-100 px-3 py-2.5 text-sm outline-none dark:bg-neutral-800"
               />
             </div>
@@ -128,7 +134,9 @@ export function ProfileScreen({
               </label>
               <input
                 value={form.lastName}
-                onChange={(e) => setForm((p) => ({ ...p, lastName: e.target.value }))}
+                onChange={(e) =>
+                  setForm((p) => ({ ...p, lastName: e.target.value }))
+                }
                 className="w-full rounded-lg bg-neutral-100 px-3 py-2.5 text-sm outline-none dark:bg-neutral-800"
               />
             </div>
@@ -146,7 +154,9 @@ export function ProfileScreen({
             </label>
             <input
               value={form.licenseNumber}
-              onChange={(e) => setForm((p) => ({ ...p, licenseNumber: e.target.value }))}
+              onChange={(e) =>
+                setForm((p) => ({ ...p, licenseNumber: e.target.value }))
+              }
               className="w-full rounded-lg bg-neutral-100 px-3 py-2.5 text-sm outline-none dark:bg-neutral-800"
             />
           </div>
@@ -157,7 +167,11 @@ export function ProfileScreen({
             placeholder="Select specialty"
             options={SPECIALTY_OPTIONS}
           />
-          {saveError && <p className="text-sm text-error-600 dark:text-error-400">{saveError}</p>}
+          {saveError && (
+            <p className="text-sm text-error-600 dark:text-error-400">
+              {saveError}
+            </p>
+          )}
           <Button
             type="button"
             className="w-full bg-brand-700"
@@ -178,7 +192,10 @@ export function ProfileScreen({
     ? SPECIALTY_OPTIONS.find((s) => s.value === editableFields.specialty)?.label
     : null;
   const joinedDate = user?.created_at
-    ? new Date(user.created_at).toLocaleDateString("en-NG", { month: "long", year: "numeric" })
+    ? new Date(user.created_at).toLocaleDateString("en-NG", {
+        month: "long",
+        year: "numeric",
+      })
     : null;
 
   return (
@@ -204,8 +221,10 @@ export function ProfileScreen({
           </button>
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-ink-900 dark:text-neutral-50">{displayName}</h1>
-          <p className="mt-1 text-base font-medium text-ink-700 dark:text-neutral-400">
+          <h1 className="text-2xl font-bold text-ink-900 dark:text-neutral-100">
+            {displayName}
+          </h1>
+          <p className="mt-1 text-base font-medium text-ink-700 dark:text-neutral-300">
             {[roleLabel, specialtyLabel].filter(Boolean).join(" • ") || "—"}
           </p>
         </div>
@@ -217,17 +236,23 @@ export function ProfileScreen({
         )}
       </section>
 
-      <section className="rounded-[24px] bg-white p-6 dark:bg-neutral-900">
+      <section className="rounded-[24px] bg-white p-6 dark:border dark:border-neutral-800 dark:bg-neutral-900">
         <p className="text-xs font-bold uppercase tracking-[1.2px] text-ink-700 dark:text-neutral-400">
           Credentials &amp; Licensing
         </p>
         <div className="mt-4 space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-ink-700 dark:text-neutral-400">Email</span>
-            <span className="text-sm font-bold text-ink-900 dark:text-neutral-50">{user?.email ?? "—"}</span>
+            <span className="text-sm text-ink-700 dark:text-neutral-400">
+              Email
+            </span>
+            <span className="text-sm font-bold text-ink-900 dark:text-neutral-100">
+              {user?.email ?? "—"}
+            </span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-sm text-ink-700 dark:text-neutral-400">License Number</span>
+            <span className="text-sm text-ink-700 dark:text-neutral-400">
+              License Number
+            </span>
             <span className="font-bold text-brand-700 dark:text-brand-300">
               {editableFields?.licenseNumber || "—"}
             </span>
@@ -236,60 +261,71 @@ export function ProfileScreen({
       </section>
 
       {specialtyLabel && (
-        <section className="rounded-[24px] bg-white p-6 dark:bg-neutral-900">
-          <h2 className="text-lg font-bold text-ink-900 dark:text-neutral-50">Specialties &amp; Expertise</h2>
-          <span className="mt-3 inline-block rounded-xl bg-success-700/10 px-4 py-2 text-sm font-medium text-success-700 dark:bg-success-950 dark:text-success-300">
+        <section className="rounded-[24px] bg-white p-6 dark:border dark:border-neutral-800 dark:bg-neutral-900">
+          <h2 className="text-lg font-bold text-ink-900 dark:text-neutral-100">
+            Specialties &amp; Expertise
+          </h2>
+          <span className="mt-3 inline-block rounded-xl bg-success-700/10 px-4 py-2 text-sm font-medium text-success-700 dark:bg-success-950/60 dark:text-success-300">
             {specialtyLabel}
           </span>
         </section>
       )}
 
-      <p className="text-center text-xs text-ink-500 dark:text-neutral-500">
-        There's no endpoint to fetch your saved profile yet — this only shows what you entered
-        during onboarding or in this session's edits.
+      <p className="text-center text-xs text-ink-500 dark:text-neutral-400">
+        There's no endpoint to fetch your saved profile yet — this only shows
+        what you entered during onboarding or in this session's edits.
       </p>
 
       <section className="space-y-3">
         <h2 className="px-2 text-sm font-bold uppercase tracking-[1.4px] text-ink-700 dark:text-neutral-400">
           Account Management
         </h2>
-        <div className="overflow-hidden rounded-[24px] bg-white dark:bg-neutral-900">
+        <div className="overflow-hidden rounded-[24px] bg-white dark:border dark:border-neutral-800 dark:bg-neutral-900">
           <button
             type="button"
             onClick={() => setIsEditing(true)}
-            className="flex w-full items-center justify-between p-5 text-left"
+            className="flex w-full items-center justify-between p-5 text-left border-b border-neutral-100 dark:border-neutral-800"
           >
             <span className="flex items-center gap-4">
               <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-700/10 text-brand-700 dark:bg-brand-950 dark:text-brand-300">
                 <Settings className="h-5 w-5" />
               </span>
               <span>
-                <span className="block text-base font-semibold text-ink-900 dark:text-neutral-50">Edit Profile</span>
-                <span className="block text-xs text-ink-700 dark:text-neutral-400">Update your role, specialty, and license</span>
+                <span className="block text-base font-semibold text-ink-900 dark:text-neutral-100">
+                  Edit Profile
+                </span>
+                <span className="block text-xs text-ink-700 dark:text-neutral-400">
+                  Update your role, specialty, and license
+                </span>
               </span>
             </span>
           </button>
           <button
             type="button"
             onClick={onLogout}
-            className="flex w-full items-center gap-4 border-t border-neutral-100 p-5 text-left dark:border-neutral-800"
+            className="flex w-full items-center gap-4 p-5 text-left"
           >
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-error-700/10 text-error-700 dark:bg-error-950 dark:text-error-400">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-error-700/10 text-error-700 dark:bg-error-950/40 dark:text-error-400">
               <LogOut className="h-5 w-5" />
             </span>
             <span>
-              <span className="block text-base font-semibold text-error-700 dark:text-error-400">Logout</span>
-              <span className="block text-xs text-error-700/60 dark:text-error-400/70">Securely sign out of your session</span>
+              <span className="block text-base font-semibold text-error-700 dark:text-error-400">
+                Logout
+              </span>
+              <span className="block text-xs text-error-700/60 dark:text-error-400/60">
+                Securely sign out of your session
+              </span>
             </span>
           </button>
         </div>
       </section>
 
-      <section className="flex items-center justify-between rounded-[32px] bg-gradient-to-br from-brand-700 to-brand-600 p-6">
+      <section className="flex items-center justify-between rounded-[32px] bg-gradient-to-br from-brand-700 to-brand-600 p-6 dark:from-neutral-900 dark:to-neutral-800 dark:border dark:border-neutral-800">
         <div>
           <p className="text-lg font-bold text-brand-100">Active for Booking</p>
           <p className="mt-1 text-sm text-brand-100/80">
-            This session only — there's no availability endpoint to persist it yet.
+            This session only — there's no availability endpoint to persist it
+            yet.
           </p>
         </div>
         <button
@@ -297,7 +333,9 @@ export function ProfileScreen({
           onClick={onToggleBooking}
           className={cn(
             "flex h-8 w-14 shrink-0 items-center rounded-xl p-1 transition",
-            isBookingActive ? "justify-end bg-success-700" : "justify-start bg-white/20",
+            isBookingActive
+              ? "justify-end bg-success-700"
+              : "justify-start bg-white/20",
           )}
         >
           <span className="h-6 w-6 rounded-lg bg-white" />

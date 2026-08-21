@@ -7,31 +7,36 @@ import type { PatientRecord } from "../../types";
 export function PatientIntakeScreen({
   onBack,
   onSubmit,
+  isSubmitting = false,
 }: {
   onBack: () => void;
-  onSubmit: (patient: PatientRecord) => void;
+  onSubmit: (patient: PatientRecord) => void | Promise<void>;
+  isSubmitting?: boolean;
 }) {
   const [name, setName] = useState("");
   const [age, setAge] = useState("");
-  const [gender, setGender] = useState("");
+  const [gender, setGender] = useState("Male");
   const [chiefComplaint, setChiefComplaint] = useState("");
+  const [severityLevel, setSeverityLevel] = useState("Mild");
   const [systolic, setSystolic] = useState("");
   const [diastolic, setDiastolic] = useState("");
   const [temp, setTemp] = useState("");
   const [heartRate, setHeartRate] = useState("");
   const [error, setError] = useState("");
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     if (!name.trim() || !age || !gender || !chiefComplaint.trim()) {
       setError("Please fill in patient name, age, gender, and chief complaint.");
       return;
     }
-    onSubmit({
+    setError("");
+    await onSubmit({
       id: crypto.randomUUID(),
       name: name.trim(),
       age: Number(age),
       gender,
       chiefComplaint: chiefComplaint.trim(),
+      severityLevel,
       vitals: {
         bloodPressureSystolic: Number(systolic) || 0,
         bloodPressureDiastolic: Number(diastolic) || 0,
@@ -48,7 +53,7 @@ export function PatientIntakeScreen({
       <Header title="Patient Intake" subtitle="Consultation phase 1" onBack={onBack} />
       <main className="space-y-5 px-5 py-4">
         <p className="rounded-xl bg-brand-50 px-4 py-3 text-xs text-brand-800 dark:bg-brand-950 dark:text-brand-300">
-          Recorded for this shift session only — not saved to a patient record system.
+          Recorded for this shift session — automatically ingested for real-time AI Triage predictions.
         </p>
 
         <section className="space-y-3">
@@ -96,7 +101,7 @@ export function PatientIntakeScreen({
           <p className="text-xs font-bold uppercase text-neutral-500 dark:text-neutral-500">Presentation</p>
           <div>
             <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-neutral-500 dark:text-neutral-500">
-              Chief Complaint
+              Chief Complaint / Symptoms
             </label>
             <textarea
               rows={3}
@@ -106,6 +111,17 @@ export function PatientIntakeScreen({
               className="w-full resize-none rounded-lg bg-neutral-100 px-3 py-2.5 text-sm outline-none dark:bg-neutral-800"
             />
           </div>
+          <Select
+            label="Severity Level"
+            value={severityLevel}
+            onChange={setSeverityLevel}
+            options={[
+              { value: "Mild", label: "Mild" },
+              { value: "Moderate", label: "Moderate" },
+              { value: "Severe", label: "Severe" },
+              { value: "Critical", label: "Critical" },
+            ]}
+          />
         </section>
 
         <section className="space-y-3">
@@ -164,10 +180,11 @@ export function PatientIntakeScreen({
 
         {error && <p className="text-sm text-error-600 dark:text-error-400">{error}</p>}
 
-        <Button type="button" className="w-full bg-brand-700" onClick={handleContinue}>
-          Continue
+        <Button type="button" className="w-full bg-brand-700" onClick={handleContinue} disabled={isSubmitting}>
+          {isSubmitting ? "Ingesting for AI Triage..." : "Submit & Run AI Triage"}
         </Button>
       </main>
     </>
   );
 }
+

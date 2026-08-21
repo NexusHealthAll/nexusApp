@@ -21,9 +21,7 @@ export function NotificationsScreen({ onBack }: { onBack: () => void }) {
               onClick={() => setFilter(f)}
               className={cn(
                 "rounded-full px-4 py-2 text-xs font-bold",
-                filter === f
-                  ? "bg-brand-700 text-white"
-                  : "bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400",
+                filter === f ? "bg-brand-700 text-white" : "bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300",
               )}
             >
               {f}

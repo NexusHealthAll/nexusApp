@@ -182,10 +182,10 @@ export function DropdownItem({
       className={cn(
         "flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors duration-100",
         destructive
-          ? "text-error-600 hover:bg-error-50 dark:hover:bg-error-950"
-          : "text-neutral-700 hover:bg-neutral-50 dark:text-neutral-200 dark:hover:bg-neutral-700",
+          ? "text-error-600 hover:bg-error-50 dark:text-error-400 dark:hover:bg-error-950/40"
+          : "text-neutral-700 hover:bg-neutral-50 dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-neutral-100",
         active &&
-          "bg-neutral-50 font-medium text-neutral-900 dark:bg-neutral-700 dark:text-neutral-50",
+          "bg-neutral-50 font-medium text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100",
         className,
       )}
       {...props}

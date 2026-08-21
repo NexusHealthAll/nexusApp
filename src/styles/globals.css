@@ -6,41 +6,184 @@
 
 @layer base {
   * {
-    @apply border-neutral-200;
-  }
-
-  body {
-    @apply bg-neutral-50 text-neutral-900;
-    font-feature-settings:
-      "rlig" 1,
-      "calt" 1;
+    @apply border-neutral-200 dark:border-neutral-800;
   }
 
   html {
     scroll-behavior: smooth;
   }
+
+  html.dark {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-neutral-50 text-neutral-900 transition-colors duration-200;
+    font-feature-settings:
+      "rlig" 1,
+      "calt" 1;
+  }
+
+  html.dark body {
+    @apply bg-neutral-950 text-neutral-100;
+    background-color: #0b0f17 !important;
+  }
 }
 
-@layer components {
-  /* Custom scrollbar styles */
-  .scrollbar-thin {
-    scrollbar-width: thin;
-    scrollbar-color: theme("colors.neutral.300") theme("colors.neutral.100");
-  }
+/* Comprehensive Dark Mode Global Styles */
+html.dark .bg-white,
+html.dark [class*="bg-white"] {
+  background-color: #121824 !important;
+  color: #f3f4f6 !important;
+}
 
-  .scrollbar-thin::-webkit-scrollbar {
-    width: 6px;
-  }
+html.dark .bg-\[\#f5faff\],
+html.dark .bg-\[\#f6fbff\],
+html.dark .bg-\[\#F3FAFF\],
+html.dark .bg-\[\#F4FAFF\],
+html.dark .bg-\[\#f4f6fa\],
+html.dark .bg-\[\#eef0f5\],
+html.dark .bg-\[\#e6f2f8\],
+html.dark .bg-neutral-50,
+html.dark .bg-slate-50 {
+  background-color: #0b0f17 !important;
+}
 
-  .scrollbar-thin::-webkit-scrollbar-track {
-    @apply bg-neutral-100;
-  }
+html.dark .bg-\[\#f3f4f8\],
+html.dark .bg-\[\#DAE8F3\],
+html.dark .bg-\[\#D0E5F2\],
+html.dark .bg-\[\#E8F4FD\],
+html.dark .bg-\[\#EBF4FF\],
+html.dark .bg-\[\#E8F5F4\],
+html.dark .bg-\[\#F0F9F8\],
+html.dark .bg-onboarding-inputBackground,
+html.dark .bg-slate-100,
+html.dark .bg-slate-200 {
+  background-color: #1a2538 !important;
+  color: #f9fafb !important;
+}
 
-  .scrollbar-thin::-webkit-scrollbar-thumb {
-    @apply bg-neutral-300 rounded-full;
-  }
+html.dark .bg-warning-50,
+html.dark .bg-warning-100 {
+  background-color: #261c0d !important;
+  border-color: #78350f !important;
+}
 
-  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    @apply bg-neutral-400;
-  }
+html.dark .text-warning-800,
+html.dark .text-warning-900 {
+  color: #fde68a !important;
+}
+
+html.dark .text-warning-600 {
+  color: #fbbf24 !important;
+}
+
+html.dark .text-brand-800,
+html.dark .text-brand-700,
+html.dark .text-brand-900 {
+  color: #60a5fa !important;
+}
+
+html.dark .bg-brand-100,
+html.dark .bg-brand-100\/50,
+html.dark .bg-brand-50,
+html.dark .bg-neutral-100,
+html.dark .bg-neutral-200 {
+  background-color: #1a2538 !important;
+  color: #e5e7eb !important;
+}
+
+html.dark .text-ink-900,
+html.dark .text-onboarding-textPrimary,
+html.dark .text-neutral-950,
+html.dark .text-neutral-900,
+html.dark .text-neutral-800,
+html.dark .text-slate-900,
+html.dark .text-slate-800 {
+  color: #f9fafb !important;
+}
+
+html.dark .text-ink-700,
+html.dark .text-onboarding-textSecondary,
+html.dark .text-neutral-700,
+html.dark .text-neutral-600,
+html.dark .text-slate-700,
+html.dark .text-slate-600 {
+  color: #cbd5e1 !important;
+}
+
+html.dark .text-ink-500,
+html.dark .text-neutral-500,
+html.dark .text-neutral-400,
+html.dark .text-slate-500,
+html.dark .text-slate-400 {
+  color: #94a3b8 !important;
+}
+
+html.dark .border-neutral-100,
+html.dark .border-neutral-200,
+html.dark .border-neutral-300,
+html.dark .border-slate-100,
+html.dark .border-slate-200,
+html.dark .border-warning-200,
+html.dark .border-\[\#C8DFEF\],
+html.dark .border-\[\#D6E8F5\],
+html.dark .border-\[\#e7e9ee\],
+html.dark .border-\[rgba\(194\,198\,212\,0\.1\)\] {
+  border-color: #232f48 !important;
+}
+
+html.dark .bg-teal-50,
+html.dark .bg-teal-50\/60 {
+  background-color: #064e3b !important;
+  border-color: #047857 !important;
+}
+
+html.dark .text-teal-900,
+html.dark .text-teal-950 {
+  color: #ecfdf5 !important;
+}
+
+html.dark .text-teal-700,
+html.dark .text-teal-600 {
+  color: #34d399 !important;
+}
+
+html.dark input,
+html.dark select,
+html.dark textarea {
+  background-color: #1a2538 !important;
+  color: #f9fafb !important;
+  border-color: #232f48 !important;
+}
+
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: #94a3b8 !important;
+}
+
+/* Custom scrollbar styles */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: theme("colors.neutral.300") theme("colors.neutral.100");
+}
+
+.dark .scrollbar-thin {
+  scrollbar-color: theme("colors.neutral.700") theme("colors.neutral.900");
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  @apply bg-neutral-100 dark:bg-neutral-900;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  @apply bg-neutral-300 dark:bg-neutral-700 rounded-full;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  @apply bg-neutral-400 dark:bg-neutral-600;
 }
