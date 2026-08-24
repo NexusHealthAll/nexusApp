@@ -1,6 +1,8 @@
 import {
   WalletService,
+  type PayoutHistoryItem,
   type WalletSummary,
+  type WithdrawalHistoryItem,
 } from "@/features/hospital/services/walletService";
 
 export type PaymentStatus = "pending" | "completed" | "refunded";
@@ -22,6 +24,8 @@ export interface PaymentsOverview {
   completedThisMonthKobo: number;
   refundsThisMonthKobo: number;
   transactions: PaymentTransaction[];
+  payouts: PayoutHistoryItem[];
+  withdrawals: WithdrawalHistoryItem[];
 }
 
 function statusForKind(kind: string): PaymentStatus {
@@ -47,9 +51,11 @@ function labelForKind(kind: string): string {
  */
 export const PaymentsService = {
   async getOverview(): Promise<PaymentsOverview> {
-    const [wallet, entries] = await Promise.all([
+    const [wallet, entries, payoutsPage, withdrawalsPage] = await Promise.all([
       WalletService.getWalletSummary().catch(() => null),
       WalletService.getLedger().catch(() => []),
+      WalletService.getPayouts().catch(() => ({ items: [], total: 0 })),
+      WalletService.getWithdrawals().catch(() => ({ items: [], total: 0 })),
     ]);
 
     const now = new Date();
@@ -93,6 +99,8 @@ export const PaymentsService = {
       completedThisMonthKobo,
       refundsThisMonthKobo,
       transactions,
+      payouts: payoutsPage.items,
+      withdrawals: withdrawalsPage.items,
     };
   },
 };

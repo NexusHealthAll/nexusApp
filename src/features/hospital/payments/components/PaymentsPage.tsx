@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Download, Landmark, ReceiptText } from "lucide-react";
+import { ArrowUpRight, Download, Landmark, PiggyBank, ReceiptText, RefreshCw } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Badge, type BadgeVariant } from "@/shared/components/ui/Badge";
 import { Button } from "@/shared/components/ui/Button";
@@ -16,13 +16,26 @@ import { PATHS } from "@/routes/paths";
 import { formatKobo } from "@/shared/utils/currency";
 import { downloadCsv } from "@/shared/utils/downloadCsv";
 import {
+  WalletService,
+  type PayoutHistoryItem,
+  type WithdrawalHistoryItem,
+} from "@/features/hospital/services/walletService";
+import {
   PaymentsService,
   type PaymentStatus,
   type PaymentsOverview,
 } from "../paymentsService";
 import { WalletSetupModal } from "./WalletSetupModal";
+import { WithdrawModal } from "./WithdrawModal";
 
-type PaymentTab = "all" | "pending" | "completed";
+type PaymentTab = "all" | "pending" | "completed" | "payouts" | "withdrawals";
+
+const historyStatusVariant: Record<string, BadgeVariant> = {
+  success: "success",
+  completed: "success",
+  pending: "warning",
+  failed: "error",
+};
 
 const PAGE_SIZE = 6;
 
@@ -51,34 +64,67 @@ export function PaymentsPage() {
   const [dateRange, setDateRange] = useState("all");
   const [page, setPage] = useState(1);
   const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
+  const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
+  const [payouts, setPayouts] = useState<PayoutHistoryItem[]>([]);
+  const [withdrawals, setWithdrawals] = useState<WithdrawalHistoryItem[]>([]);
+  const [refreshingId, setRefreshingId] = useState<string | null>(null);
 
   const loadOverview = useCallback(async () => {
     const data = await PaymentsService.getOverview();
     setOverview(data);
+    setPayouts(data.payouts);
+    setWithdrawals(data.withdrawals);
   }, []);
 
   useEffect(() => {
     let cancelled = false;
     PaymentsService.getOverview().then((data) => {
-      if (!cancelled) setOverview(data);
+      if (!cancelled) {
+        setOverview(data);
+        setPayouts(data.payouts);
+        setWithdrawals(data.withdrawals);
+      }
     });
     return () => {
       cancelled = true;
     };
   }, []);
 
+  const refreshPayoutStatus = async (id: string) => {
+    setRefreshingId(id);
+    try {
+      const status = await WalletService.getPayoutStatus(id);
+      setPayouts((prev) => prev.map((p) => (p.id === id ? { ...p, status } : p)));
+    } finally {
+      setRefreshingId(null);
+    }
+  };
+
+  const refreshWithdrawalStatus = async (id: string) => {
+    setRefreshingId(id);
+    try {
+      const status = await WalletService.getWithdrawalStatus(id);
+      setWithdrawals((prev) => prev.map((w) => (w.id === id ? { ...w, status } : w)));
+    } finally {
+      setRefreshingId(null);
+    }
+  };
+
   const transactions = useMemo(
     () => overview?.transactions ?? [],
     [overview],
   );
 
+  const isWithinDateRange = (iso: string) => {
+    if (dateRange === "all") return true;
+    const cutoff = Date.now() - Number(dateRange) * 24 * 60 * 60 * 1000;
+    return new Date(iso).getTime() >= cutoff;
+  };
+
   const filtered = useMemo(() => {
     return transactions.filter((t) => {
       if (tab !== "all" && t.status !== tab) return false;
-      if (dateRange !== "all") {
-        const cutoff = Date.now() - Number(dateRange) * 24 * 60 * 60 * 1000;
-        if (new Date(t.createdAt).getTime() < cutoff) return false;
-      }
+      if (!isWithinDateRange(t.createdAt)) return false;
       if (search.trim()) {
         const q = search.trim().toLowerCase();
         if (
@@ -89,14 +135,62 @@ export function PaymentsPage() {
       }
       return true;
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [transactions, tab, dateRange, search]);
+
+  const filteredPayouts = useMemo(() => {
+    return payouts.filter((p) => {
+      if (!isWithinDateRange(p.createdAt)) return false;
+      if (search.trim()) {
+        const q = search.trim().toLowerCase();
+        if (
+          !`${p.description ?? ""} ${p.shiftId ?? ""} ${p.providerReference ?? ""}`
+            .toLowerCase()
+            .includes(q)
+        ) {
+          return false;
+        }
+      }
+      return true;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [payouts, dateRange, search]);
+
+  const filteredWithdrawals = useMemo(() => {
+    return withdrawals.filter((w) => {
+      if (!isWithinDateRange(w.createdAt)) return false;
+      if (search.trim()) {
+        const q = search.trim().toLowerCase();
+        if (
+          !`${w.description ?? ""} ${w.providerReference ?? ""}`
+            .toLowerCase()
+            .includes(q)
+        ) {
+          return false;
+        }
+      }
+      return true;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [withdrawals, dateRange, search]);
 
   useEffect(() => {
     setPage(1);
   }, [tab, dateRange, search]);
 
-  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const activeCount =
+    tab === "payouts"
+      ? filteredPayouts.length
+      : tab === "withdrawals"
+        ? filteredWithdrawals.length
+        : filtered.length;
+  const pageCount = Math.max(1, Math.ceil(activeCount / PAGE_SIZE));
   const pageRows = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const payoutPageRows = filteredPayouts.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const withdrawalPageRows = filteredWithdrawals.slice(
+    (page - 1) * PAGE_SIZE,
+    page * PAGE_SIZE,
+  );
 
   const handleExport = () =>
     downloadCsv(
@@ -113,6 +207,7 @@ export function PaymentsPage() {
     );
 
   const billingAccount = overview?.wallet?.safehavenAccountNumber;
+  const hasWallet = Boolean(overview?.wallet?.hasSubAccount);
 
   return (
     <div>
@@ -123,16 +218,33 @@ export function PaymentsPage() {
           { label: "Payments" },
         ]}
         actions={
-          <Button
-            variant="outline"
-            size="sm"
-            className="flex items-center gap-1.5 text-sm font-semibold"
-            title="Billing runs through your SafeHaven wallet account"
-            onClick={() => setIsWalletModalOpen(true)}
-          >
-            <Landmark className="h-4 w-4" />
-            Manage Billing Methods
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant={hasWallet ? "outline" : "primary"}
+              size="sm"
+              className="flex items-center gap-1.5 text-sm font-semibold"
+              title={
+                hasWallet
+                  ? "Billing runs through your SafeHaven wallet account"
+                  : "Set up your hospital's SafeHaven wallet to start funding and paying workers"
+              }
+              onClick={() => setIsWalletModalOpen(true)}
+            >
+              {hasWallet ? <Landmark className="h-4 w-4" /> : <PiggyBank className="h-4 w-4" />}
+              {hasWallet ? "Manage Billing Methods" : "Create Wallet"}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-1.5 text-sm font-semibold"
+              title={hasWallet ? "Withdraw to your hospital's bank" : "Create a wallet first to withdraw"}
+              disabled={!hasWallet}
+              onClick={() => setIsWithdrawModalOpen(true)}
+            >
+              <ArrowUpRight className="h-4 w-4" />
+              Withdraw
+            </Button>
+          </div>
         }
       />
 
@@ -141,6 +253,13 @@ export function PaymentsPage() {
         onClose={() => setIsWalletModalOpen(false)}
         wallet={overview?.wallet ?? null}
         onWalletChanged={loadOverview}
+      />
+
+      <WithdrawModal
+        isOpen={isWithdrawModalOpen}
+        onClose={() => setIsWithdrawModalOpen(false)}
+        wallet={overview?.wallet ?? null}
+        onWithdrawn={loadOverview}
       />
 
       {/* Stats */}
@@ -191,6 +310,8 @@ export function PaymentsPage() {
             { label: "All Transactions", value: "all" },
             { label: "Pending", value: "pending" },
             { label: "Completed", value: "completed" },
+            { label: "Payouts", value: "payouts" },
+            { label: "Withdrawals", value: "withdrawals" },
           ]}
           value={tab}
           onChange={setTab}
@@ -198,7 +319,13 @@ export function PaymentsPage() {
 
         <div className="mt-4 flex flex-wrap items-center gap-3">
           <SearchInput
-            placeholder="Search by worker or invoice #..."
+            placeholder={
+              tab === "payouts"
+                ? "Search by shift or reference..."
+                : tab === "withdrawals"
+                  ? "Search by reference or note..."
+                  : "Search by worker or invoice #..."
+            }
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             containerClassName="w-full sm:w-64"
@@ -228,6 +355,38 @@ export function PaymentsPage() {
                 <Skeleton key={i} className="h-14 w-full rounded-lg" />
               ))}
             </div>
+          ) : tab === "payouts" ? (
+            payoutPageRows.length === 0 ? (
+              <div className="py-6">
+                <EmptyState
+                  icon={<EmptyStateIcon icon={ReceiptText} />}
+                  title="No payouts yet"
+                  description="Worker payouts are triggered automatically once you approve a shift handover."
+                />
+              </div>
+            ) : (
+              <PayoutsTable
+                rows={payoutPageRows}
+                refreshingId={refreshingId}
+                onRefresh={refreshPayoutStatus}
+              />
+            )
+          ) : tab === "withdrawals" ? (
+            withdrawalPageRows.length === 0 ? (
+              <div className="py-6">
+                <EmptyState
+                  icon={<EmptyStateIcon icon={ReceiptText} />}
+                  title="No withdrawals yet"
+                  description="Withdrawals to your hospital's bank account will appear here."
+                />
+              </div>
+            ) : (
+              <WithdrawalsTable
+                rows={withdrawalPageRows}
+                refreshingId={refreshingId}
+                onRefresh={refreshWithdrawalStatus}
+              />
+            )
           ) : pageRows.length === 0 ? (
             <div className="py-6">
               <EmptyState
@@ -305,17 +464,177 @@ export function PaymentsPage() {
           )}
         </div>
 
-        {overview !== null && filtered.length > 0 && (
+        {overview !== null && activeCount > 0 && (
           <div className="mt-2 border-t border-neutral-100 pt-4 dark:border-neutral-800">
             <Pagination
               page={page}
               pageCount={pageCount}
               onPageChange={setPage}
-              summary={`Showing ${pageRows.length} of ${filtered.length} transactions`}
+              summary={`Showing ${
+                tab === "payouts"
+                  ? payoutPageRows.length
+                  : tab === "withdrawals"
+                    ? withdrawalPageRows.length
+                    : pageRows.length
+              } of ${activeCount} ${tab === "payouts" ? "payouts" : tab === "withdrawals" ? "withdrawals" : "transactions"}`}
             />
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+function RefreshStatusButton({
+  isRefreshing,
+  onClick,
+}: {
+  isRefreshing: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={isRefreshing}
+      className="flex items-center gap-1 text-xs font-semibold text-secondary-600 hover:text-secondary-700 disabled:opacity-50 dark:text-secondary-400"
+    >
+      <RefreshCw className={`h-3 w-3 ${isRefreshing ? "animate-spin" : ""}`} />
+      Refresh
+    </button>
+  );
+}
+
+function PayoutsTable({
+  rows,
+  refreshingId,
+  onRefresh,
+}: {
+  rows: PayoutHistoryItem[];
+  refreshingId: string | null;
+  onRefresh: (id: string) => void;
+}) {
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full min-w-[680px] text-sm">
+        <thead>
+          <tr className="border-b border-neutral-100 text-left text-xs font-semibold uppercase tracking-wider text-neutral-400 dark:border-neutral-800 dark:text-neutral-500">
+            <th className="py-3 pr-4 font-semibold">Description</th>
+            <th className="py-3 pr-4 font-semibold">Reference</th>
+            <th className="py-3 pr-4 font-semibold">Date</th>
+            <th className="py-3 pr-4 font-semibold">Amount</th>
+            <th className="py-3 pr-4 font-semibold">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((p) => (
+            <tr
+              key={p.id}
+              className="border-b border-neutral-50 last:border-b-0 dark:border-neutral-800"
+            >
+              <td className="py-4 pr-4 font-semibold text-neutral-900 dark:text-neutral-50">
+                {p.description ?? (p.shiftId ? `Shift ${p.shiftId.slice(0, 8)}` : "Payout")}
+              </td>
+              <td className="py-4 pr-4 text-neutral-500 dark:text-neutral-400">
+                {p.providerReference ?? "—"}
+              </td>
+              <td className="py-4 pr-4 text-neutral-600 dark:text-neutral-400">
+                {new Date(p.createdAt).toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                })}
+              </td>
+              <td className="py-4 pr-4 font-bold text-neutral-900 dark:text-neutral-50">
+                {formatKobo(p.amountKobo)}
+              </td>
+              <td className="py-4 pr-4">
+                <div className="flex items-center gap-2">
+                  <Badge
+                    variant={historyStatusVariant[p.status] ?? "neutral"}
+                    className="uppercase tracking-wide"
+                  >
+                    {p.status}
+                  </Badge>
+                  {p.status === "pending" && (
+                    <RefreshStatusButton
+                      isRefreshing={refreshingId === p.id}
+                      onClick={() => onRefresh(p.id)}
+                    />
+                  )}
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function WithdrawalsTable({
+  rows,
+  refreshingId,
+  onRefresh,
+}: {
+  rows: WithdrawalHistoryItem[];
+  refreshingId: string | null;
+  onRefresh: (id: string) => void;
+}) {
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full min-w-[680px] text-sm">
+        <thead>
+          <tr className="border-b border-neutral-100 text-left text-xs font-semibold uppercase tracking-wider text-neutral-400 dark:border-neutral-800 dark:text-neutral-500">
+            <th className="py-3 pr-4 font-semibold">Description</th>
+            <th className="py-3 pr-4 font-semibold">Reference</th>
+            <th className="py-3 pr-4 font-semibold">Date</th>
+            <th className="py-3 pr-4 font-semibold">Amount</th>
+            <th className="py-3 pr-4 font-semibold">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((w) => (
+            <tr
+              key={w.id}
+              className="border-b border-neutral-50 last:border-b-0 dark:border-neutral-800"
+            >
+              <td className="py-4 pr-4 font-semibold text-neutral-900 dark:text-neutral-50">
+                {w.description ?? "Withdrawal"}
+              </td>
+              <td className="py-4 pr-4 text-neutral-500 dark:text-neutral-400">
+                {w.providerReference ?? "—"}
+              </td>
+              <td className="py-4 pr-4 text-neutral-600 dark:text-neutral-400">
+                {new Date(w.createdAt).toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                })}
+              </td>
+              <td className="py-4 pr-4 font-bold text-neutral-900 dark:text-neutral-50">
+                {formatKobo(w.amountKobo)}
+              </td>
+              <td className="py-4 pr-4">
+                <div className="flex items-center gap-2">
+                  <Badge
+                    variant={historyStatusVariant[w.status] ?? "neutral"}
+                    className="uppercase tracking-wide"
+                  >
+                    {w.status}
+                  </Badge>
+                  {w.status === "pending" && (
+                    <RefreshStatusButton
+                      isRefreshing={refreshingId === w.id}
+                      onClick={() => onRefresh(w.id)}
+                    />
+                  )}
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
