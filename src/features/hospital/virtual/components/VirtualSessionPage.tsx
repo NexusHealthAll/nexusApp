@@ -246,6 +246,38 @@ export function VirtualSessionPage() {
           Back to Virtual Shifts
         </button>
         <div className="flex items-center gap-3">
+          <button
+            onClick={toggleMic}
+            className={cn(
+              "flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-colors",
+              isMicOn
+                ? "border-white/20 bg-white/10 text-white"
+                : "border-error-500/40 bg-error-500/10 text-error-400",
+            )}
+          >
+            {isMicOn ? (
+              <Mic className="h-3.5 w-3.5" />
+            ) : (
+              <MicOff className="h-3.5 w-3.5" />
+            )}
+            {isMicOn ? "Mic On" : "Mic Muted"}
+          </button>
+          <button
+            onClick={toggleCam}
+            className={cn(
+              "flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-colors",
+              isCamOn
+                ? "border-primary-400/40 bg-primary-500/10 text-primary-300"
+                : "border-white/20 bg-white/5 text-white/60",
+            )}
+          >
+            {isCamOn ? (
+              <Video className="h-3.5 w-3.5" />
+            ) : (
+              <VideoOff className="h-3.5 w-3.5" />
+            )}
+            {isCamOn ? "Camera On" : "Turn On Camera"}
+          </button>
           <span
             className={cn(
               "flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold",
