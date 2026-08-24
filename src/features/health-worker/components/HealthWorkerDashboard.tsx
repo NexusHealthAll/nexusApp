@@ -872,6 +872,7 @@ export function HealthWorkerDashboard() {
           onToggleCam={toggleCam}
           isMicOn={isMicOn}
           isCamOn={isCamOn}
+          videoTrack={videoTrackRef.current}
         />
       </Shell>
     );

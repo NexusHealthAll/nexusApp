@@ -1,5 +1,6 @@
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Check, Mic, Star, Video, VideoOff } from "lucide-react";
+import { ArrowLeft, Check, Mic, MicOff, Star, Video, VideoOff } from "lucide-react";
 import { cn } from "@/shared/utils/cn";
 import { PATHS } from "@/routes/paths";
 import { AvatarInitials } from "@/shared/components/ui/AvatarInitials";
@@ -50,6 +51,67 @@ export function VirtualSessionPage() {
   const advance = useVirtualSessionsStore((s) => s.advance);
   const end = useVirtualSessionsStore((s) => s.end);
 
+  const [isCamOn, setIsCamOn] = useState(false);
+  const [isMicOn, setIsMicOn] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const mediaStreamRef = useRef<MediaStream | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (mediaStreamRef.current) {
+        mediaStreamRef.current.getTracks().forEach((t) => t.stop());
+        mediaStreamRef.current = null;
+      }
+    };
+  }, []);
+
+  async function toggleCam() {
+    try {
+      if (isCamOn) {
+        if (mediaStreamRef.current) {
+          mediaStreamRef.current.getVideoTracks().forEach((t) => t.stop());
+        }
+        setIsCamOn(false);
+        return;
+      }
+      if (!navigator?.mediaDevices?.getUserMedia) return;
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: isMicOn });
+      mediaStreamRef.current = stream;
+      setIsCamOn(true);
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        videoRef.current.play().catch(() => {});
+      }
+    } catch (err) {
+      console.error("Failed to enable camera:", err);
+    }
+  }
+
+  async function toggleMic() {
+    try {
+      if (isMicOn) {
+        if (mediaStreamRef.current) {
+          mediaStreamRef.current.getAudioTracks().forEach((t) => t.stop());
+        }
+        setIsMicOn(false);
+        return;
+      }
+      if (!navigator?.mediaDevices?.getUserMedia) return;
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: isCamOn });
+      mediaStreamRef.current = stream;
+      setIsMicOn(true);
+    } catch (err) {
+      console.error("Failed to enable mic:", err);
+    }
+  }
+
+  useEffect(() => {
+    if (isCamOn && mediaStreamRef.current && videoRef.current) {
+      videoRef.current.srcObject = mediaStreamRef.current;
+      videoRef.current.play().catch(() => {});
+    }
+  }, [isCamOn]);
+
   if (!session) {
     return (
       <div className="fixed inset-0 z-40 flex flex-col items-center justify-center bg-[#0d1424] text-white">
@@ -81,6 +143,26 @@ export function VirtualSessionPage() {
           Back to Virtual Shifts
         </button>
         <div className="flex items-center gap-3">
+          <button
+            onClick={toggleMic}
+            className={cn(
+              "flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-colors",
+              isMicOn ? "border-white/20 bg-white/10 text-white" : "border-error-500/40 bg-error-500/10 text-error-400",
+            )}
+          >
+            {isMicOn ? <Mic className="h-3.5 w-3.5" /> : <MicOff className="h-3.5 w-3.5" />}
+            {isMicOn ? "Mic On" : "Mic Muted"}
+          </button>
+          <button
+            onClick={toggleCam}
+            className={cn(
+              "flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-colors",
+              isCamOn ? "border-primary-400/40 bg-primary-500/10 text-primary-300" : "border-white/20 bg-white/5 text-white/60",
+            )}
+          >
+            {isCamOn ? <Video className="h-3.5 w-3.5" /> : <VideoOff className="h-3.5 w-3.5" />}
+            {isCamOn ? "Camera On" : "Turn On Camera"}
+          </button>
           <span
             className={cn(
               "flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold",
@@ -118,8 +200,16 @@ export function VirtualSessionPage() {
         </div>
 
         {/* Video area */}
-        <div className="relative mt-6 flex aspect-video items-center justify-center overflow-hidden rounded-2xl bg-black">
-          {isLive ? (
+        <div className="relative mt-6 flex aspect-video items-center justify-center overflow-hidden rounded-2xl bg-black border border-white/10 shadow-2xl">
+          {isCamOn ? (
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              muted
+              className="h-full w-full object-cover"
+            />
+          ) : isLive ? (
             <>
               <span className="absolute left-4 top-4 flex items-center gap-1.5 rounded-full border border-white/20 bg-black/60 px-3 py-1 text-xs font-semibold text-white">
                 <span className="h-1.5 w-1.5 rounded-full bg-success-400" />
@@ -133,7 +223,7 @@ export function VirtualSessionPage() {
               </div>
               <Video className="h-14 w-14 text-white/15" />
               <span className="absolute bottom-4 left-4 text-[10px] font-semibold uppercase tracking-widest text-white/30">
-                {session.kiosk} — Live feed placeholder
+                {session.kiosk} — Turn on camera to view live stream
               </span>
             </>
           ) : (
