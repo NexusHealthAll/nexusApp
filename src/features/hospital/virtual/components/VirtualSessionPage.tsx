@@ -1,62 +1,190 @@
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Check, Mic, Star, Video, VideoOff } from "lucide-react";
+import { Room, RoomEvent, Track, type RemoteTrack } from "livekit-client";
+import { ArrowLeft, Check, Star, Video, VideoOff, X } from "lucide-react";
 import { cn } from "@/shared/utils/cn";
 import { PATHS } from "@/routes/paths";
 import { AvatarInitials } from "@/shared/components/ui/AvatarInitials";
-import {
-  useVirtualSessionsStore,
-  type VirtualSession,
-} from "../virtualShiftsStore";
+import { Button } from "@/shared/components/ui/Button";
+import { Tooltip } from "@/shared/components/ui/Tooltip";
+import apiClient from "@/lib/apiClient";
+import { ApiError } from "@/lib/apiError";
+import { useHospitalShift } from "@/features/hospital/shifts/hooks/useHospitalShift";
+import { shiftStatusDisplay } from "@/features/hospital/shifts/shiftStatusDisplay";
+import type { ApiShift } from "@/features/hospital/shifts/types";
+import { getCallWindowInfo, type CallWindowState } from "../callWindow";
+import { VirtualCallService } from "../virtualCallService";
 
-function statusPill(session: VirtualSession): {
-  label: string;
-  className: string;
-} {
-  switch (session.stage) {
-    case "checked_in":
-      return {
-        label: "Patient Waiting",
-        className: "border border-warning-400/40 text-warning-400",
-      };
-    case "device_connected":
-      return {
-        label: "Connecting Device",
-        className: "border border-primary-400/40 text-primary-300",
-      };
-    case "doctor_joined":
-      return {
-        label: "In Consultation",
-        className: "border border-success-400/40 bg-success-500/10 text-success-400",
-      };
-    case "completed":
-      return {
-        label: "Completed",
-        className: "border border-neutral-500/40 text-neutral-400",
-      };
-  }
+interface WorkerPublicDetail {
+  first_name: string;
+  last_name: string;
+  rating: number;
+  role_title: string;
 }
 
-/**
- * Dark-theme live session console (Figma "on vitula" / "Live virtual"
- * frames). All session state is simulated locally — see
- * `virtualShiftsStore` for why (no backend telehealth endpoints yet).
- */
-export function VirtualSessionPage() {
-  const { sessionId } = useParams<{ sessionId: string }>();
-  const navigate = useNavigate();
-  const session = useVirtualSessionsStore((s) =>
-    s.sessions.find((x) => x.id === sessionId),
-  );
-  const advance = useVirtualSessionsStore((s) => s.advance);
-  const end = useVirtualSessionsStore((s) => s.end);
+type ConnectionState = "idle" | "connecting" | "connected" | "ended" | "error";
 
-  if (!session) {
+const CALL_BUTTON_LABEL: Record<CallWindowState, string> = {
+  too_early: "Call Not Open Yet",
+  open: "Connect Device & Join Call",
+  elapsed: "Call Window Closed",
+  completed: "Consultation Completed",
+  unavailable: "Call Unavailable",
+};
+
+function attachRemoteTrack(
+  track: RemoteTrack,
+  container: HTMLDivElement | null,
+) {
+  if (!container) return;
+  const el = track.attach();
+  if (track.kind === Track.Kind.Video) {
+    el.className = "h-full w-full object-cover";
+  }
+  container.appendChild(el);
+}
+
+export function VirtualSessionPage() {
+  const { shiftId } = useParams<{ shiftId: string }>();
+  const navigate = useNavigate();
+  const { getShiftDetails } = useHospitalShift();
+
+  const [shift, setShift] = useState<ApiShift | null>(null);
+  const [loadError, setLoadError] = useState("");
+  const [physician, setPhysician] = useState<WorkerPublicDetail | null>(null);
+  const [now, setNow] = useState(() => new Date());
+
+  const [connectionState, setConnectionState] =
+    useState<ConnectionState>("idle");
+  const [connectError, setConnectError] = useState("");
+  const [remoteJoined, setRemoteJoined] = useState(false);
+  const [cameraOk, setCameraOk] = useState<boolean | null>(null);
+  const [micOk, setMicOk] = useState<boolean | null>(null);
+
+  const roomRef = useRef<Room | null>(null);
+  const localVideoRef = useRef<HTMLDivElement | null>(null);
+  const remoteVideoRef = useRef<HTMLDivElement | null>(null);
+
+  // Load the real shift; recheck the call window every 30s so the button
+  // flips from disabled -> enabled without a manual refresh.
+  useEffect(() => {
+    if (!shiftId) return;
+    let cancelled = false;
+    getShiftDetails(shiftId)
+      .then((data) => {
+        if (cancelled) return;
+        setShift(data);
+        if (data.assigned_clinician_id) {
+          apiClient
+            .get<WorkerPublicDetail>(
+              `/api/v1/workers/${data.assigned_clinician_id}`,
+            )
+            .then((res) => {
+              if (!cancelled) setPhysician(res.data);
+            })
+            .catch(() => {});
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setLoadError(
+            err instanceof ApiError ? err.message : "Couldn't load this shift.",
+          );
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shiftId]);
+
+  useEffect(() => {
+    const interval = setInterval(() => setNow(new Date()), 30_000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Disconnect on unmount so we never leak an open LiveKit connection.
+  useEffect(() => {
+    return () => {
+      roomRef.current?.disconnect();
+    };
+  }, []);
+
+  const handleConnect = useCallback(async () => {
+    if (!shiftId) return;
+    setConnectError("");
+    setConnectionState("connecting");
+    try {
+      const { url, token } = await VirtualCallService.getCallToken(shiftId);
+
+      const room = new Room();
+      roomRef.current = room;
+
+      room.on(RoomEvent.TrackSubscribed, (track) =>
+        attachRemoteTrack(track, remoteVideoRef.current),
+      );
+      room.on(RoomEvent.ParticipantConnected, () => setRemoteJoined(true));
+      room.on(RoomEvent.ParticipantDisconnected, () => {
+        if (room.remoteParticipants.size === 0) setRemoteJoined(false);
+      });
+      room.on(RoomEvent.LocalTrackPublished, (publication) => {
+        if (publication.track && publication.track.kind === Track.Kind.Video) {
+          const el = publication.track.attach();
+          el.className = "h-full w-full object-cover";
+          localVideoRef.current?.appendChild(el);
+        }
+      });
+      room.on(RoomEvent.Disconnected, () => {
+        setConnectionState((prev) => (prev === "error" ? prev : "ended"));
+        setRemoteJoined(false);
+      });
+
+      await room.connect(url, token);
+      setRemoteJoined(room.remoteParticipants.size > 0);
+
+      try {
+        await room.localParticipant.setCameraEnabled(true);
+        setCameraOk(true);
+      } catch {
+        setCameraOk(false);
+      }
+      try {
+        await room.localParticipant.setMicrophoneEnabled(true);
+        setMicOk(true);
+      } catch {
+        setMicOk(false);
+      }
+
+      setConnectionState("connected");
+    } catch (err) {
+      setConnectError(
+        err instanceof ApiError
+          ? err.message
+          : "Couldn't connect to the call — check your connection and try again.",
+      );
+      setConnectionState("error");
+      roomRef.current?.disconnect();
+      roomRef.current = null;
+    }
+  }, [shiftId]);
+
+  const handleEnd = useCallback(() => {
+    roomRef.current?.disconnect();
+    roomRef.current = null;
+    setConnectionState("ended");
+    if (localVideoRef.current) localVideoRef.current.innerHTML = "";
+    if (remoteVideoRef.current) remoteVideoRef.current.innerHTML = "";
+  }, []);
+
+  if (loadError) {
     return (
-      <div className="fixed inset-0 z-40 flex flex-col items-center justify-center bg-[#0d1424] text-white">
-        <p className="text-lg font-semibold">Session not found</p>
+      <div className="flex flex-col items-center justify-center gap-4 py-24 text-center">
+        <p className="text-lg font-semibold text-neutral-900 dark:text-neutral-50">
+          {loadError}
+        </p>
         <button
           onClick={() => navigate(PATHS.hospital.virtualShifts)}
-          className="mt-4 rounded-lg border border-white/20 px-4 py-2 text-sm font-semibold text-white/80 hover:text-white"
+          className="rounded-lg border border-neutral-200 px-4 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
         >
           Back to Virtual Shifts
         </button>
@@ -64,18 +192,55 @@ export function VirtualSessionPage() {
     );
   }
 
-  const pill = statusPill(session);
-  const isLive = session.stage === "doctor_joined";
-  const deviceConnected =
-    session.stage === "device_connected" || isLive;
+  if (!shift) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-3 py-24">
+        <p className="text-sm text-neutral-500 dark:text-neutral-400">
+          Loading session...
+        </p>
+      </div>
+    );
+  }
+
+  const callWindow = getCallWindowInfo(shift, now);
+  const isConnected = connectionState === "connected";
+  const isConnecting = connectionState === "connecting";
+  const canConnect = callWindow.state === "open" && connectionState === "idle";
+  const physicianName = physician
+    ? `Dr. ${physician.first_name} ${physician.last_name}`
+    : null;
+
+  const statusPill = isConnected
+    ? {
+        label: "In Consultation",
+        className:
+          "border border-success-400/40 bg-success-500/10 text-success-700 dark:text-success-400",
+      }
+    : shift.status === "completed" || connectionState === "ended"
+      ? {
+          label: "Completed",
+          className:
+            "border border-neutral-300 text-neutral-500 dark:border-neutral-600 dark:text-neutral-400",
+        }
+      : isConnecting
+        ? {
+            label: "Connecting Device",
+            className:
+              "border border-primary-400/40 text-primary-600 dark:text-primary-300",
+          }
+        : {
+            label: shiftStatusDisplay[shift.status].label,
+            className:
+              "border border-neutral-300 text-neutral-500 dark:border-neutral-600 dark:text-neutral-400",
+          };
 
   return (
-    <div className="fixed inset-0 z-40 overflow-y-auto bg-[#0d1424]">
+    <div className="overflow-y-auto bg-neutral-50 dark:bg-[#0d1424]">
       {/* Top bar */}
-      <div className="sticky top-0 z-10 flex h-14 items-center justify-between border-b border-white/5 bg-[#0d1424]/95 px-4 backdrop-blur lg:px-6">
+      <div className="sticky top-0 z-10 flex h-14 items-center justify-between border-b border-neutral-100 bg-neutral-50/95 px-4 backdrop-blur dark:border-white/5 dark:bg-[#0d1424]/95 lg:px-6">
         <button
           onClick={() => navigate(PATHS.hospital.virtualShifts)}
-          className="flex items-center gap-2 text-sm font-semibold text-white/80 transition-colors hover:text-white"
+          className="flex items-center gap-2 text-sm font-semibold text-neutral-600 transition-colors hover:text-neutral-900 dark:text-white/80 dark:hover:text-white"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to Virtual Shifts
@@ -84,17 +249,17 @@ export function VirtualSessionPage() {
           <span
             className={cn(
               "flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold",
-              pill.className,
+              statusPill.className,
             )}
           >
-            {isLive && (
-              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-success-400" />
+            {isConnected && (
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-success-500" />
             )}
-            {pill.label}
+            {statusPill.label}
           </span>
-          {isLive && (
+          {isConnected && (
             <button
-              onClick={() => end(session.id)}
+              onClick={handleEnd}
               className="rounded-lg bg-[#2563eb] px-3.5 py-1.5 text-sm font-bold text-white transition-colors hover:bg-[#1d4ed8]"
             >
               End Consultation
@@ -107,171 +272,192 @@ export function VirtualSessionPage() {
         {/* Heading */}
         <div className="mt-8 flex items-end justify-between gap-4">
           <div>
-            <p className="text-xs font-bold uppercase tracking-widest text-secondary-400">
-              {session.visitType} • Virtual Visit
+            <p className="text-xs font-bold uppercase tracking-widest text-secondary-600 dark:text-secondary-400">
+              {shift.specialty ?? shift.role_title} • Virtual Visit
             </p>
-            <h1 className="mt-1.5 text-3xl font-bold text-white">
-              {session.patientLabel}
+            <h1 className="mt-1.5 text-3xl font-bold text-neutral-900 dark:text-white">
+              {shift.role_title}
             </h1>
           </div>
-          <p className="text-sm text-white/50">{session.kiosk}</p>
+          <p className="text-sm text-neutral-500 dark:text-white/50">
+            {new Date(shift.scheduled_start).toLocaleString("en-US", {
+              month: "short",
+              day: "numeric",
+              hour: "numeric",
+              minute: "2-digit",
+            })}
+          </p>
         </div>
 
         {/* Video area */}
         <div className="relative mt-6 flex aspect-video items-center justify-center overflow-hidden rounded-2xl bg-black">
-          {isLive ? (
+          {isConnected ? (
             <>
               <span className="absolute left-4 top-4 flex items-center gap-1.5 rounded-full border border-white/20 bg-black/60 px-3 py-1 text-xs font-semibold text-white">
                 <span className="h-1.5 w-1.5 rounded-full bg-success-400" />
                 Connected
               </span>
-              <div className="absolute right-4 top-4 flex h-20 w-28 items-center justify-center rounded-lg border border-white/10 bg-white/5">
-                <AvatarInitials
-                  name={session.doctor}
-                  className="bg-secondary-600/40 font-bold text-secondary-300"
-                />
+              <div
+                ref={remoteVideoRef}
+                className="absolute right-4 top-4 flex h-20 w-28 items-center justify-center overflow-hidden rounded-lg border border-white/10 bg-white/5"
+              >
+                {!remoteJoined && (
+                  <AvatarInitials
+                    name={physicianName ?? "Dr"}
+                    className="bg-secondary-600/40 font-bold text-secondary-300"
+                  />
+                )}
               </div>
-              <Video className="h-14 w-14 text-white/15" />
+              <div
+                ref={localVideoRef}
+                className="absolute inset-0 flex items-center justify-center"
+              >
+                <Video className="h-14 w-14 text-white/15" />
+              </div>
               <span className="absolute bottom-4 left-4 text-[10px] font-semibold uppercase tracking-widest text-white/30">
-                {session.kiosk} — Live feed placeholder
+                Kiosk device — live feed
               </span>
             </>
           ) : (
             <div className="flex flex-col items-center px-6 text-center">
               <VideoOff className="h-10 w-10 text-white/25" />
               <p className="mt-4 max-w-sm text-sm text-white/60">
-                {session.stage === "completed"
+                {connectionState === "ended"
                   ? "This consultation has ended."
-                  : `${session.kiosk} is ${
-                      deviceConnected ? "ready" : "idle"
-                    } — ${
-                      deviceConnected
-                        ? "doctor has not joined the call yet."
-                        : "device not yet connected to this session."
-                    }`}
+                  : isConnecting
+                    ? "Connecting device and requesting camera/microphone access..."
+                    : callWindow.message}
               </p>
-              {session.stage !== "completed" && (
-                <button
-                  onClick={() => advance(session.id)}
-                  className="mt-6 flex items-center gap-2 rounded-lg bg-[#2563eb] px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-[#1d4ed8]"
+              {connectError && (
+                <p className="mt-2 max-w-sm text-sm text-error-400">
+                  {connectError}
+                </p>
+              )}
+              {connectionState !== "ended" && (
+                <Tooltip
+                  content={
+                    !canConnect && !isConnecting
+                      ? callWindow.message
+                      : undefined
+                  }
                 >
-                  <Video className="h-4 w-4" />
-                  {deviceConnected
-                    ? "Join Call as Doctor"
-                    : "Connect Device & Join Call"}
-                </button>
+                  <Button
+                    onClick={handleConnect}
+                    disabled={!canConnect}
+                    isLoading={isConnecting}
+                    className="mt-6 flex items-center gap-2"
+                  >
+                    <Video className="h-4 w-4" />
+                    {isConnecting
+                      ? "Connecting..."
+                      : CALL_BUTTON_LABEL[callWindow.state]}
+                  </Button>
+                </Tooltip>
               )}
             </div>
           )}
         </div>
 
-        {/* Live transcription */}
-        {isLive && (
-          <div className="mt-6 rounded-2xl border border-white/5 bg-white/[0.03] p-6">
-            <div className="flex items-center justify-between">
-              <h2 className="flex items-center gap-2 text-base font-bold text-white">
-                <Mic className="h-4 w-4 text-white/60" />
-                Live Transcription & Translation
-              </h2>
-              <span className="flex items-center gap-1.5 rounded-full border border-success-400/40 bg-success-500/10 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-success-400">
-                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-success-400" />
-                Live
-              </span>
-            </div>
-
-            <div className="mt-5 grid gap-4 sm:grid-cols-2">
-              {[
-                { label: "Doctor's Language", value: "English" },
-                { label: "Patient's Language", value: "Spanish" },
-              ].map((lang) => (
-                <div key={lang.label}>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-white/40">
-                    {lang.label}
-                  </p>
-                  <div className="mt-2 rounded-lg border border-white/10 bg-white/[0.04] px-4 py-2.5 text-sm text-white">
-                    {lang.value}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-4 flex flex-col items-center gap-2 rounded-xl border border-white/5 bg-black/30 px-5 py-10 text-center">
-              <Mic className="h-6 w-6 text-white/25" />
-              <p className="text-sm text-white/60">
-                Live transcription will appear here as the doctor and patient
-                speak.
-              </p>
-            </div>
-          </div>
-        )}
-
         {/* Bottom grid */}
         <div className="mt-6 grid gap-4 lg:grid-cols-2">
-          {/* Timeline */}
-          <div className="rounded-2xl border border-white/5 bg-white/[0.03] p-6">
-            <h2 className="text-base font-bold text-white">Session Timeline</h2>
-            <ul className="mt-4 space-y-5 border-l border-white/10 pl-4">
-              {session.timeline.map((event, i) => (
-                <li key={i} className="relative">
-                  <span className="absolute -left-[22px] top-1 h-2.5 w-2.5 rounded-full bg-primary-500" />
-                  <p className="text-sm font-medium text-white/85">
-                    {event.label}
-                  </p>
-                  <p className="mt-0.5 text-xs text-white/40">{event.time}</p>
-                </li>
-              ))}
-            </ul>
+          {/* Session summary */}
+          <div className="rounded-2xl border border-neutral-100 bg-white p-6 dark:border-white/5 dark:bg-white/[0.03]">
+            <h2 className="text-base font-bold text-neutral-900 dark:text-white">
+              Session
+            </h2>
+            <dl className="mt-4 space-y-3 text-sm">
+              <div className="flex justify-between">
+                <dt className="text-neutral-500 dark:text-white/50">Status</dt>
+                <dd className="font-semibold text-neutral-900 dark:text-white">
+                  {shiftStatusDisplay[shift.status].label}
+                </dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-neutral-500 dark:text-white/50">
+                  Department
+                </dt>
+                <dd className="font-semibold text-neutral-900 dark:text-white">
+                  {shift.department ?? "—"}
+                </dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-neutral-500 dark:text-white/50">
+                  Call window
+                </dt>
+                <dd className="max-w-[220px] text-right font-semibold text-neutral-900 dark:text-white">
+                  {callWindow.message}
+                </dd>
+              </div>
+            </dl>
           </div>
 
           <div className="space-y-4">
             {/* Remote physician */}
-            <div className="rounded-2xl border border-white/5 bg-white/[0.03] p-6">
-              <h2 className="text-base font-bold text-white">
+            <div className="rounded-2xl border border-neutral-100 bg-white p-6 dark:border-white/5 dark:bg-white/[0.03]">
+              <h2 className="text-base font-bold text-neutral-900 dark:text-white">
                 Remote Physician
               </h2>
-              <div className="mt-4 flex items-center gap-3">
-                <AvatarInitials
-                  name={session.doctor}
-                  size="md"
-                  className="bg-secondary-500 font-bold text-white"
-                />
-                <div>
-                  <p className="text-sm font-bold text-white">
-                    {session.doctor}
-                  </p>
-                  <p className="mt-0.5 flex items-center gap-1.5 text-xs text-white/50">
-                    Connected remotely •
-                    <Star className="h-3 w-3 fill-warning-400 text-warning-400" />
-                    {session.doctorRating}
-                  </p>
+              {physicianName ? (
+                <div className="mt-4 flex items-center gap-3">
+                  <AvatarInitials
+                    name={physicianName}
+                    size="md"
+                    className="bg-secondary-500 font-bold text-white"
+                  />
+                  <div>
+                    <p className="text-sm font-bold text-neutral-900 dark:text-white">
+                      {physicianName}
+                    </p>
+                    <p className="mt-0.5 flex items-center gap-1.5 text-xs text-neutral-500 dark:text-white/50">
+                      {physician?.role_title ?? "Clinician"} •
+                      <Star className="h-3 w-3 fill-warning-400 text-warning-400" />
+                      {physician?.rating?.toFixed(1) ?? "—"}
+                    </p>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <p className="mt-3 text-sm text-neutral-400 dark:text-white/40">
+                  No clinician assigned yet.
+                </p>
+              )}
             </div>
 
             {/* Diagnostics */}
-            <div className="rounded-2xl border border-white/5 bg-white/[0.03] p-6">
-              <h2 className="text-base font-bold text-white">
-                Device Diagnostics
-              </h2>
-              <div className="mt-4 grid grid-cols-2 gap-3">
-                {["Camera OK", "Microphone OK"].map((check) => (
-                  <span
-                    key={check}
-                    className="flex items-center justify-center gap-2 rounded-lg border border-white/10 bg-black/30 px-3 py-2.5 text-sm font-medium text-white/80"
-                  >
-                    <Check className="h-4 w-4 text-success-400" />
-                    {check}
+            {isConnected && (
+              <div className="rounded-2xl border border-neutral-100 bg-white p-6 dark:border-white/5 dark:bg-white/[0.03]">
+                <h2 className="text-base font-bold text-neutral-900 dark:text-white">
+                  Device Diagnostics
+                </h2>
+                <div className="mt-4 grid grid-cols-2 gap-3">
+                  <span className="flex items-center justify-center gap-2 rounded-lg border border-neutral-100 bg-neutral-50 px-3 py-2.5 text-sm font-medium text-neutral-700 dark:border-white/10 dark:bg-black/30 dark:text-white/80">
+                    {cameraOk ? (
+                      <Check className="h-4 w-4 text-success-500" />
+                    ) : (
+                      <X className="h-4 w-4 text-error-500" />
+                    )}
+                    {cameraOk ? "Camera OK" : "Camera Blocked"}
                   </span>
-                ))}
+                  <span className="flex items-center justify-center gap-2 rounded-lg border border-neutral-100 bg-neutral-50 px-3 py-2.5 text-sm font-medium text-neutral-700 dark:border-white/10 dark:bg-black/30 dark:text-white/80">
+                    {micOk ? (
+                      <Check className="h-4 w-4 text-success-500" />
+                    ) : (
+                      <X className="h-4 w-4 text-error-500" />
+                    )}
+                    {micOk ? "Microphone OK" : "Microphone Blocked"}
+                  </span>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
 
         {/* Footer actions */}
         <div className="mt-6 grid gap-3 sm:grid-cols-2">
-          <button className="h-12 rounded-xl border border-white/10 bg-white/[0.03] text-sm font-bold text-white/85 transition-colors hover:bg-white/[0.07]">
-            Reassign Doctor
+          <button
+            onClick={() => navigate(`${PATHS.hospital.shifts}/${shift.id}`)}
+            className="h-12 rounded-xl border border-neutral-200 bg-white text-sm font-bold text-neutral-700 transition-colors hover:bg-neutral-50 dark:border-white/10 dark:bg-white/[0.03] dark:text-white/85 dark:hover:bg-white/[0.07]"
+          >
+            View Shift Details
           </button>
           <button
             onClick={() => navigate(PATHS.hospital.handoverReports)}

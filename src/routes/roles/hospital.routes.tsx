@@ -26,7 +26,7 @@ export const hospitalPageRoutes: RouteObject[] = [
   { path: "shifts/:shiftId/review", element: <ReviewApplicationsPage /> },
   { path: "create-shift", element: <CreateShiftPage /> },
   { path: "virtual-shifts", element: <VirtualShiftsPage /> },
-  { path: "virtual-shifts/:sessionId", element: <VirtualSessionPage /> },
+  { path: "virtual-shifts/:shiftId", element: <VirtualSessionPage /> },
   { path: "handover-reports", element: <HandoverReportsPage /> },
   { path: "handover-reports/:shiftId", element: <HandoverReportDetailPage /> },
   { path: "workers", element: <WorkersPage /> },
