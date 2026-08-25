@@ -16,11 +16,9 @@ import { MessagesPage } from "@/features/hospital/messages/components/MessagesPa
 import { NotificationsPage } from "@/features/hospital/notifications/components/NotificationsPage";
 import { HospitalProfilePage } from "@/features/hospital/profile/components/HospitalProfilePage";
 import { AnalyticsPage } from "@/features/hospital/analytics/components/AnalyticsPage";
-import { PatientList } from "@/shared/patients/components/PatientList";
 
 export const hospitalPageRoutes: RouteObject[] = [
   { path: "dashboard", element: <DashboardOverview /> },
-  { path: "patients", element: <PatientList /> },
   { path: "shifts", element: <ShiftSchedulePage /> },
   { path: "shifts/:shiftId", element: <ShiftApprovalPage /> },
   { path: "shifts/:shiftId/review", element: <ReviewApplicationsPage /> },

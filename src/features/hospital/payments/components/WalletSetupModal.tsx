@@ -50,6 +50,7 @@ export function WalletSetupModal({
   const [history, setHistory] = useState<DepositHistoryItem[] | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [refreshNotice, setRefreshNotice] = useState("");
+  const [walletCopied, setWalletCopied] = useState(false);
 
   useEffect(() => {
     if (!isOpen || !isProvisioned) return;
@@ -174,11 +175,19 @@ export function WalletSetupModal({
     });
   };
 
+  const handleCopyWalletAccount = () => {
+    if (!wallet?.safehavenAccountNumber) return;
+    navigator.clipboard.writeText(wallet.safehavenAccountNumber).then(() => {
+      setWalletCopied(true);
+      setTimeout(() => setWalletCopied(false), 2000);
+    });
+  };
+
   return (
     <Modal
       isOpen={isOpen}
       onClose={resetAndClose}
-      title={isProvisioned ? "Manage Billing Methods" : "Create Wallet"}
+      title={isProvisioned ? "Fund Wallet" : "Create Wallet"}
       size="sm"
     >
       {stage === "intro" && (
@@ -255,17 +264,42 @@ export function WalletSetupModal({
 
       {stage === "fund" && (
         <div className="flex flex-col gap-5">
-          <div className="flex items-start gap-3 rounded-xl bg-green-50 px-4 py-3 dark:bg-green-950">
-            <Check className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-600 dark:text-green-400" />
-            <p className="text-sm text-green-800 dark:text-green-300">
-              Your wallet account is set up
-              {wallet?.safehavenAccountNumber
-                ? ` (•••• ${wallet.safehavenAccountNumber.slice(-4)})`
-                : ""}
-              {wallet?.safehavenAccountName ? ` — ${wallet.safehavenAccountName}` : ""}
-              . Request a deposit account below to add funds.
+          <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-4 dark:border-neutral-700 dark:bg-neutral-800">
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-semibold uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
+                Wallet Account
+              </p>
+              <span className="rounded bg-neutral-900 px-1.5 py-0.5 text-[10px] font-bold uppercase text-white">
+                SafeHaven
+              </span>
+            </div>
+            <div className="mt-1 flex items-center justify-between gap-3">
+              <p className="text-xl font-bold tracking-wider text-neutral-900 dark:text-neutral-50">
+                {wallet?.safehavenAccountNumber ?? "—"}
+              </p>
+              <button
+                type="button"
+                onClick={handleCopyWalletAccount}
+                disabled={!wallet?.safehavenAccountNumber}
+                className="flex items-center gap-1.5 rounded-lg border border-neutral-200 px-2.5 py-1.5 text-xs font-medium text-neutral-600 transition-colors hover:bg-neutral-100 disabled:opacity-50 dark:border-neutral-600 dark:text-neutral-300 dark:hover:bg-neutral-700"
+              >
+                {walletCopied ? (
+                  <Check className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
+                ) : (
+                  <Copy className="h-3.5 w-3.5" />
+                )}
+                {walletCopied ? "Copied" : "Copy"}
+              </button>
+            </div>
+            <p className="mt-2 text-sm text-neutral-700 dark:text-neutral-300">
+              {wallet?.safehavenAccountName ?? "—"}
+              {wallet?.bankName ? ` · ${wallet.bankName}` : ""}
             </p>
           </div>
+
+          <p className="text-sm text-neutral-600 dark:text-neutral-400">
+            Request a deposit account below to add funds.
+          </p>
 
           <form onSubmit={handleRequestDeposit} className="flex flex-col gap-5">
             <Input

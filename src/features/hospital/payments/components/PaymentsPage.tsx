@@ -219,31 +219,42 @@ export function PaymentsPage() {
         ]}
         actions={
           <div className="flex items-center gap-2">
-            <Button
-              variant={hasWallet ? "outline" : "primary"}
-              size="sm"
-              className="flex items-center gap-1.5 text-sm font-semibold"
-              title={
-                hasWallet
-                  ? "Billing runs through your SafeHaven wallet account"
-                  : "Set up your hospital's SafeHaven wallet to start funding and paying workers"
-              }
-              onClick={() => setIsWalletModalOpen(true)}
-            >
-              {hasWallet ? <Landmark className="h-4 w-4" /> : <PiggyBank className="h-4 w-4" />}
-              {hasWallet ? "Manage Billing Methods" : "Create Wallet"}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="flex items-center gap-1.5 text-sm font-semibold"
-              title={hasWallet ? "Withdraw to your hospital's bank" : "Create a wallet first to withdraw"}
-              disabled={!hasWallet}
-              onClick={() => setIsWithdrawModalOpen(true)}
-            >
-              <ArrowUpRight className="h-4 w-4" />
-              Withdraw
-            </Button>
+            {!hasWallet && (
+              <Button
+                variant="primary"
+                size="sm"
+                className="flex items-center gap-1.5 text-sm font-semibold"
+                title="Set up your hospital's SafeHaven wallet to start funding and paying workers"
+                onClick={() => setIsWalletModalOpen(true)}
+              >
+                <PiggyBank className="h-4 w-4" />
+                Create Wallet
+              </Button>
+            )}
+            {hasWallet && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-1.5 text-sm font-semibold"
+                title="Add funds to your hospital's SafeHaven wallet"
+                onClick={() => setIsWalletModalOpen(true)}
+              >
+                <Landmark className="h-4 w-4" />
+                Fund Wallet
+              </Button>
+            )}
+            {hasWallet && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-1.5 text-sm font-semibold"
+                title="Withdraw to your hospital's bank"
+                onClick={() => setIsWithdrawModalOpen(true)}
+              >
+                <ArrowUpRight className="h-4 w-4" />
+                Withdraw
+              </Button>
+            )}
           </div>
         }
       />
