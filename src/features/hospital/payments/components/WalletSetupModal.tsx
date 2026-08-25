@@ -52,6 +52,16 @@ export function WalletSetupModal({
   const [refreshNotice, setRefreshNotice] = useState("");
   const [walletCopied, setWalletCopied] = useState(false);
 
+  // `wallet` often loads asynchronously after this component first mounts, so the
+  // `useState` initializer above can be stale by the time the modal is actually
+  // opened — resync on every open to land on the right stage (create vs. fund).
+  useEffect(() => {
+    if (isOpen) {
+      setStage(isProvisioned ? "fund" : "intro");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
+
   useEffect(() => {
     if (!isOpen || !isProvisioned) return;
     let cancelled = false;

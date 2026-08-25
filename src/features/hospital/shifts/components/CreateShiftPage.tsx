@@ -118,7 +118,7 @@ export function CreateShiftPage() {
   const { profile } = useHospitalProfile();
   const { isLoading: isApprovalLoading, isApproved, status } =
     useHospitalApprovalStatus();
-  const { isLoading: isWalletLoading, isFunded } = useWalletFunding();
+  const { isLoading: isWalletLoading, isFunded, hasSubAccount } = useWalletFunding();
   const { createShift, previewShift } = useHospitalShift();
   const { draft, setDraft, clearDraft } = useShiftDraftStore();
 
@@ -287,12 +287,28 @@ export function CreateShiftPage() {
         <WizardSteps steps={STEPS} current={step} className="mt-8" />
 
         {(gateBlocked || walletBlocked) && (
-          <div className="mt-6 rounded-xl border border-warning-200 bg-warning-50 px-4 py-3 text-sm text-warning-800 dark:border-warning-800 dark:bg-warning-950 dark:text-warning-300">
-            {gateBlocked
-              ? status === "rejected"
-                ? "Your hospital registration was not approved — contact support before creating shifts."
-                : "Your hospital registration is pending admin review. You can prepare a shift, but broadcasting is disabled until approval."
-              : "Fund your hospital wallet before broadcasting a shift."}
+          <div className="mt-6 flex items-center justify-between gap-3 rounded-xl border border-warning-200 bg-warning-50 px-4 py-3 text-sm text-warning-800 dark:border-warning-800 dark:bg-warning-950 dark:text-warning-300">
+            <span>
+              {gateBlocked
+                ? status === "rejected"
+                  ? "Your hospital registration was not approved — contact support before creating shifts."
+                  : "Your hospital registration is pending admin review. You can prepare a shift, but broadcasting is disabled until approval."
+                : hasSubAccount
+                  ? "Your hospital wallet has no funds yet — fund it before broadcasting a shift."
+                  : "Your hospital has no wallet yet — create one before broadcasting a shift."}
+            </span>
+            {walletBlocked && !gateBlocked && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="flex-shrink-0 whitespace-nowrap border-warning-400 bg-white text-xs font-semibold text-warning-800 hover:bg-warning-100 dark:border-warning-700 dark:bg-transparent dark:text-warning-300 dark:hover:bg-warning-900"
+                onClick={() =>
+                  navigate(PATHS.hospital.payments, { state: { openWalletModal: true } })
+                }
+              >
+                {hasSubAccount ? "Fund Wallet" : "Create Wallet"}
+              </Button>
+            )}
           </div>
         )}
 
