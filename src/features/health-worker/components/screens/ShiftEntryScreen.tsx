@@ -208,8 +208,17 @@ export function ShiftEntryScreen({
 
         {(stage === "ready" || stage === "locating" || stage === "error") && (
           <>
-            <div className="flex h-52 items-center justify-center rounded-3xl bg-brand-50 text-brand-700 border border-brand-100 dark:bg-neutral-900 dark:text-brand-300 dark:border-neutral-800">
-              <MapPin className="h-14 w-14" />
+            <div className="relative h-64 overflow-hidden rounded-3xl border border-neutral-200 shadow-sm dark:border-neutral-800">
+              <iframe
+                title="Facility map"
+                src={`https://www.openstreetmap.org/export/embed.html?bbox=3.3712%2C6.5164%2C3.3872%2C6.5324&layer=mapnik&marker=6.5244%2C3.3792`}
+                className="h-full w-full border-0"
+                loading="lazy"
+              />
+              <div className="absolute bottom-3 left-3 flex items-center gap-2 rounded-xl bg-white/90 px-3 py-1.5 text-xs font-semibold text-neutral-800 shadow backdrop-blur dark:bg-neutral-900/90 dark:text-neutral-200">
+                <MapPin className="h-4 w-4 text-brand-600 dark:text-brand-400" />
+                <span>{shift.hospital_name ?? "General Hospital Ikeja"}</span>
+              </div>
             </div>
             <Button
               type="button"

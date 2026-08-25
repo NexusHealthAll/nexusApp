@@ -116,6 +116,8 @@ export function VerificationPending() {
           <Button
             onClick={() => {
               // Onboarding is completed — user now logs in to establish an active session.
+              localStorage.setItem("profileCompleted", "true");
+              localStorage.setItem("payoutSetupCompleted", "true");
               useAuthStore.getState().clearClinicianId();
               navigate("/auth/login", { state: { justRegistered: true } });
             }}

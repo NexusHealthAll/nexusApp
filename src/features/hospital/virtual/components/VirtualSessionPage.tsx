@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Room, RoomEvent, Track, type RemoteTrack } from "livekit-client";
+import { Room, RoomEvent, Track } from "livekit-client";
 import {
   ArrowLeft,
   Check,
@@ -42,7 +42,7 @@ const CALL_BUTTON_LABEL: Record<CallWindowState, string> = {
 };
 
 function attachRemoteTrack(
-  track: RemoteTrack,
+  track: any,
   container: HTMLDivElement | null,
 ) {
   if (!container) return;
@@ -70,7 +70,7 @@ export function VirtualSessionPage() {
   const [cameraOk, setCameraOk] = useState<boolean | null>(null);
   const [micOk, setMicOk] = useState<boolean | null>(null);
 
-  const roomRef = useRef<Room | null>(null);
+  const roomRef = useRef<any>(null);
   const localVideoRef = useRef<HTMLDivElement | null>(null);
   const remoteVideoRef = useRef<HTMLDivElement | null>(null);
 
@@ -129,21 +129,21 @@ export function VirtualSessionPage() {
       const room = new Room();
       roomRef.current = room;
 
-      room.on(RoomEvent.TrackSubscribed, (track) =>
+      room.on(RoomEvent.TrackSubscribed, (track: any) =>
         attachRemoteTrack(track, remoteVideoRef.current),
       );
       room.on(RoomEvent.ParticipantConnected, () => setRemoteJoined(true));
       room.on(RoomEvent.ParticipantDisconnected, () => {
         if (room.remoteParticipants.size === 0) setRemoteJoined(false);
       });
-      room.on(RoomEvent.LocalTrackPublished, (publication) => {
+      room.on(RoomEvent.LocalTrackPublished, (publication: any) => {
         if (publication.track && publication.track.kind === Track.Kind.Video) {
           const el = publication.track.attach();
           el.className = "h-full w-full object-cover";
           localVideoRef.current?.appendChild(el);
         }
       });
-      room.on(RoomEvent.LocalTrackUnpublished, (publication) => {
+      room.on(RoomEvent.LocalTrackUnpublished, (publication: any) => {
         if (publication.kind === Track.Kind.Video && localVideoRef.current) {
           localVideoRef.current.innerHTML = "";
         }
