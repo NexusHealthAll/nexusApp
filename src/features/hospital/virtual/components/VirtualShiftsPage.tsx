@@ -1,23 +1,19 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ChevronRight, Plus, Video } from "lucide-react";
-import { Badge, type BadgeVariant } from "@/shared/components/ui/Badge";
+import { Badge } from "@/shared/components/ui/Badge";
 import { EmptyState, EmptyStateIcon } from "@/shared/components/ui/EmptyState";
 import { MetricCard } from "@/shared/components/ui/MetricCard";
 import { PageHeader } from "@/shared/components/ui/PageHeader";
+import { Skeleton } from "@/shared/components/ui/Skeleton";
 import { UnderlineTabs } from "@/shared/components/ui/UnderlineTabs";
 import { PATHS } from "@/routes/paths";
-import { cn } from "@/shared/utils/cn";
-import {
-  STAGES,
-  stageIndex,
-  stageLabels,
-  useVirtualSessionsStore,
-  type VirtualSession,
-  type VirtualSessionStage,
-} from "../virtualShiftsStore";
+import { useHospitalShift } from "@/features/hospital/shifts/hooks/useHospitalShift";
+import { shiftStatusDisplay } from "@/features/hospital/shifts/shiftStatusDisplay";
+import type { ApiShift } from "@/features/hospital/shifts/types";
+import { getCallWindowInfo } from "../callWindow";
 
-type SessionTab = "all" | "waiting" | "in_consultation" | "completed";
+type SessionTab = "all" | "upcoming" | "in_progress" | "completed";
 
 const HOW_IT_WORKS = [
   {
@@ -42,51 +38,65 @@ const HOW_IT_WORKS = [
   },
 ];
 
-function sessionStatus(session: VirtualSession): {
-  label: string;
-  variant: BadgeVariant;
-} {
-  switch (session.stage) {
-    case "checked_in":
-      return { label: "Patient Waiting", variant: "warning" };
-    case "device_connected":
-      return { label: "Connecting Device", variant: "info" };
-    case "doctor_joined":
-      return { label: "In Consultation", variant: "success" };
-    case "completed":
-      return { label: "Completed", variant: "neutral" };
-  }
-}
-
-function tabMatches(tab: SessionTab, stage: VirtualSessionStage): boolean {
+function tabMatches(tab: SessionTab, status: ApiShift["status"]): boolean {
   switch (tab) {
     case "all":
       return true;
-    case "waiting":
-      return stage === "checked_in" || stage === "device_connected";
-    case "in_consultation":
-      return stage === "doctor_joined";
+    case "upcoming":
+      return status === "assigned" || status === "upcoming";
+    case "in_progress":
+      return status === "in_progress";
     case "completed":
-      return stage === "completed";
+      return status === "completed";
   }
 }
 
-/** Virtual Shifts overview page (telehealth sessions) per the Figma redesign. */
+function isToday(iso: string): boolean {
+  const d = new Date(iso);
+  const now = new Date();
+  return (
+    d.getFullYear() === now.getFullYear() &&
+    d.getMonth() === now.getMonth() &&
+    d.getDate() === now.getDate()
+  );
+}
+
+/** Virtual Shifts overview page — real shifts (shift_type=virtual) from the backend. */
 export function VirtualShiftsPage() {
   const navigate = useNavigate();
-  const sessions = useVirtualSessionsStore((s) => s.sessions);
+  const { getShifts } = useHospitalShift();
+  const [shifts, setShifts] = useState<ApiShift[] | null>(null);
   const [tab, setTab] = useState<SessionTab>("all");
 
-  const stats = useMemo(
-    () => ({
-      waiting: sessions.filter((s) => s.stage === "checked_in").length,
-      inConsultation: sessions.filter((s) => s.stage === "doctor_joined").length,
-      completedToday: sessions.filter((s) => s.stage === "completed").length,
-    }),
-    [sessions],
-  );
+  useEffect(() => {
+    let cancelled = false;
+    getShifts({ page_size: 100 })
+      .then((res) => {
+        if (!cancelled) {
+          setShifts(res.shifts.filter((s) => s.shift_type === "virtual"));
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setShifts([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  const visible = sessions.filter((s) => tabMatches(tab, s.stage));
+  const stats = useMemo(() => {
+    const list = shifts ?? [];
+    return {
+      readyToJoin: list.filter((s) => getCallWindowInfo(s).state === "open").length,
+      inProgress: list.filter((s) => s.status === "in_progress").length,
+      completedToday: list.filter((s) => s.status === "completed" && isToday(s.scheduled_start))
+        .length,
+      upcoming: list.filter((s) => s.status === "assigned" || s.status === "upcoming").length,
+    };
+  }, [shifts]);
+
+  const visible = (shifts ?? []).filter((s) => tabMatches(tab, s.status));
 
   return (
     <div>
@@ -115,24 +125,20 @@ export function VirtualShiftsPage() {
       />
 
       {/* Live stats */}
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <MetricCard
-          label="Patients Waiting"
-          value={stats.waiting}
-          valueTone="warning"
-        />
-        <MetricCard
-          label="In Consultation"
-          value={stats.inConsultation}
-          valueTone="success"
-        />
-        <MetricCard label="Completed Today" value={stats.completedToday} />
-        <MetricCard
-          label="Avg. Wait Time"
-          value="—"
-          sub="available once sessions run"
-        />
-      </div>
+      {shifts === null ? (
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-[100px] w-full rounded-2xl" />
+          ))}
+        </div>
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <MetricCard label="Ready to Join" value={stats.readyToJoin} valueTone="success" />
+          <MetricCard label="In Progress" value={stats.inProgress} valueTone="success" />
+          <MetricCard label="Completed Today" value={stats.completedToday} />
+          <MetricCard label="Upcoming" value={stats.upcoming} valueTone="warning" />
+        </div>
+      )}
 
       {/* How it works */}
       <div className="mt-6 rounded-2xl border border-neutral-100 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
@@ -159,22 +165,28 @@ export function VirtualShiftsPage() {
       <UnderlineTabs<SessionTab>
         className="mt-8"
         options={[
-          { label: "All Sessions", value: "all" },
-          { label: "Waiting", value: "waiting" },
-          { label: "In Consultation", value: "in_consultation" },
+          { label: "All Shifts", value: "all" },
+          { label: "Upcoming", value: "upcoming" },
+          { label: "In Progress", value: "in_progress" },
           { label: "Completed", value: "completed" },
         ]}
         value={tab}
         onChange={setTab}
       />
 
-      {/* Session cards */}
+      {/* Shift cards */}
       <div className="mt-6 space-y-4">
-        {visible.length === 0 ? (
+        {shifts === null ? (
+          <div className="space-y-4">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Skeleton key={i} className="h-28 w-full rounded-2xl" />
+            ))}
+          </div>
+        ) : visible.length === 0 ? (
           <EmptyState
             icon={<EmptyStateIcon icon={Video} />}
-            title="No virtual sessions yet"
-            description="When patients check in at a telehealth kiosk, their live sessions will appear here."
+            title="No virtual shifts yet"
+            description="Virtual shifts you create will appear here, with a call session gated to open around the scheduled time."
             action={
               <button
                 onClick={() => navigate(`${PATHS.hospital.createShift}?type=virtual`)}
@@ -186,13 +198,19 @@ export function VirtualShiftsPage() {
             }
           />
         ) : (
-          visible.map((session) => {
-            const status = sessionStatus(session);
-            const reached = stageIndex(session.stage);
+          visible.map((shift) => {
+            const status = shiftStatusDisplay[shift.status];
+            const callWindow = getCallWindowInfo(shift);
+            const scheduledLabel = new Date(shift.scheduled_start).toLocaleString("en-US", {
+              month: "short",
+              day: "numeric",
+              hour: "numeric",
+              minute: "2-digit",
+            });
             return (
               <Link
-                key={session.id}
-                to={`${PATHS.hospital.virtualShifts}/${session.id}`}
+                key={shift.id}
+                to={`${PATHS.hospital.virtualShifts}/${shift.id}`}
                 className="block rounded-2xl border border-neutral-100 bg-white p-5 transition-shadow hover:shadow-soft dark:border-neutral-800 dark:bg-neutral-900"
               >
                 <div className="flex items-start gap-4">
@@ -201,48 +219,26 @@ export function VirtualShiftsPage() {
                   </span>
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-bold text-neutral-900 dark:text-neutral-50">
-                      {session.patientLabel} · {session.visitType}
+                      {shift.role_title}
+                      {shift.specialty ? ` · ${shift.specialty}` : ""}
                     </p>
                     <p className="mt-0.5 text-xs text-neutral-400 dark:text-neutral-500">
-                      {session.kiosk} · {session.doctor} · {session.startedAt}
+                      {shift.department ?? "Virtual Visit"} · {scheduledLabel}
                     </p>
                   </div>
-                  <Badge variant={status.variant}>{status.label}</Badge>
+                  <div className="flex flex-shrink-0 flex-col items-end gap-1.5">
+                    <Badge variant={status.variant}>{status.label}</Badge>
+                    {callWindow.state === "open" && (
+                      <Badge variant="success" className="uppercase tracking-wide">
+                        Ready to Join
+                      </Badge>
+                    )}
+                  </div>
                   <ChevronRight className="mt-0.5 h-5 w-5 flex-shrink-0 text-neutral-300 dark:text-neutral-600" />
                 </div>
-
-                {/* Stage progress */}
-                <div className="mt-5">
-                  <div className="flex items-center justify-between">
-                    {STAGES.map((stage, i) => (
-                      <span
-                        key={stage}
-                        className={cn(
-                          "flex items-center gap-1.5 text-xs font-semibold",
-                          i <= reached
-                            ? "text-secondary-700 dark:text-secondary-400"
-                            : "text-neutral-300 dark:text-neutral-600",
-                        )}
-                      >
-                        <span
-                          className={cn(
-                            "h-1.5 w-1.5 rounded-full",
-                            i <= reached ? "bg-secondary-500" : "bg-neutral-200 dark:bg-neutral-700",
-                          )}
-                        />
-                        {stageLabels[stage]}
-                      </span>
-                    ))}
-                  </div>
-                  <div className="mt-2 h-1 overflow-hidden rounded-full bg-neutral-100 dark:bg-neutral-800">
-                    <div
-                      className="h-full rounded-full bg-secondary-500 transition-all"
-                      style={{
-                        width: `${(reached / (STAGES.length - 1)) * 100}%`,
-                      }}
-                    />
-                  </div>
-                </div>
+                <p className="mt-3 text-xs text-neutral-400 dark:text-neutral-500">
+                  {callWindow.message}
+                </p>
               </Link>
             );
           })

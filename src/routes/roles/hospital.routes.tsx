@@ -16,17 +16,15 @@ import { MessagesPage } from "@/features/hospital/messages/components/MessagesPa
 import { NotificationsPage } from "@/features/hospital/notifications/components/NotificationsPage";
 import { HospitalProfilePage } from "@/features/hospital/profile/components/HospitalProfilePage";
 import { AnalyticsPage } from "@/features/hospital/analytics/components/AnalyticsPage";
-import { PatientList } from "@/shared/patients/components/PatientList";
 
 export const hospitalPageRoutes: RouteObject[] = [
   { path: "dashboard", element: <DashboardOverview /> },
-  { path: "patients", element: <PatientList /> },
   { path: "shifts", element: <ShiftSchedulePage /> },
   { path: "shifts/:shiftId", element: <ShiftApprovalPage /> },
   { path: "shifts/:shiftId/review", element: <ReviewApplicationsPage /> },
   { path: "create-shift", element: <CreateShiftPage /> },
   { path: "virtual-shifts", element: <VirtualShiftsPage /> },
-  { path: "virtual-shifts/:sessionId", element: <VirtualSessionPage /> },
+  { path: "virtual-shifts/:shiftId", element: <VirtualSessionPage /> },
   { path: "handover-reports", element: <HandoverReportsPage /> },
   { path: "handover-reports/:shiftId", element: <HandoverReportDetailPage /> },
   { path: "workers", element: <WorkersPage /> },
