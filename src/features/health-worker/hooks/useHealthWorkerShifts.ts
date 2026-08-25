@@ -146,7 +146,7 @@ export interface HospitalRatingDimensions {
 }
 
 export interface UseHealthWorkerShiftsResult {
-  getNearbyShifts: (lat?: number, lng?: number) => Promise<NearbyShiftCard[]>;
+  getNearbyShifts: () => Promise<NearbyShiftCard[]>;
   getMyApplications: () => Promise<MyApplicationEntry[]>;
   expressInterest: (shiftId: string) => Promise<void>;
   withdrawInterest: (shiftId: string) => Promise<void>;
@@ -203,33 +203,11 @@ export function useHealthWorkerShifts(): UseHealthWorkerShiftsResult {
   const [, setLastError] = useState<WorkerApiError | null>(null);
   const clinicianId = useAuthStore((s) => s.clinicianId);
 
-  const getNearbyShifts = useCallback(async (lat?: number, lng?: number) => {
+  const getNearbyShifts = useCallback(async () => {
     setLastError(null);
     try {
-      let coords = { lat, lng };
-      if (!coords.lat || !coords.lng) {
-        coords = await new Promise<{ lat: number; lng: number }>((resolve) => {
-          if (typeof window !== "undefined" && navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-              (pos) =>
-                resolve({
-                  lat: pos.coords.latitude,
-                  lng: pos.coords.longitude,
-                }),
-              () => resolve({ lat: 6.5244, lng: 3.3792 }),
-              { timeout: 3000 },
-            );
-          } else {
-            resolve({ lat: 6.5244, lng: 3.3792 });
-          }
-        });
-      }
-
       const res = await apiClient.get<NearbyShiftCard[]>(
         "/api/v1/worker/shifts/nearby",
-        {
-          params: { lat: coords.lat, lng: coords.lng },
-        },
       );
       return res.data;
     } catch (e) {
