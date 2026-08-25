@@ -475,9 +475,13 @@ export function HealthWorkerDashboard() {
       await workerApi.acceptOffer(selectedShiftId, consent);
       appToast.success("Shift accepted", "You're confirmed for this shift.");
       await loadDashboardData();
-      setActiveTab("schedule");
-      setScheduleTab("upcoming");
-      setView("main");
+      if (selectedShift) {
+        setView("shift-entry");
+      } else {
+        setActiveTab("schedule");
+        setScheduleTab("upcoming");
+        setView("main");
+      }
     } catch (err) {
       setAcceptError(err instanceof ApiError ? err.message : "Failed to accept this shift.");
     } finally {

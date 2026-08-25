@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
 import { EmptyState } from "@/shared/components/ui/EmptyState";
+import { useAuthStore } from "@/shared/auth/store/authStore";
 import type { AuthUser } from "@/shared/auth/store/authStore";
 import type { MyApplicationEntry, EarningsSummary } from "../../hooks/useHealthWorkerShifts";
 import { Metric, StatusBadge, formatKobo } from "../DashboardChrome";
@@ -35,6 +36,24 @@ export function HomeScreen({
   onOpenShift: (shiftId: string) => void;
 }) {
   const navigate = useNavigate();
+  const verifiedIdentity = useAuthStore((s) => s.verifiedIdentity);
+
+  const payoutSetupCompleted =
+    typeof window !== "undefined" &&
+    localStorage.getItem("payoutSetupCompleted") === "true";
+  const profileCompleted =
+    typeof window !== "undefined" &&
+    localStorage.getItem("profileCompleted") === "true";
+
+  const isProfileOrPayoutComplete = Boolean(
+    user?.is_verified ||
+      user?.is_profile_complete ||
+      user?.verification_status === "verified" ||
+      user?.verification_status === "approved" ||
+      profileCompleted ||
+      payoutSetupCompleted ||
+      Boolean(verifiedIdentity),
+  );
 
   const upcoming = applications
     .filter((e) => upcomingStatuses.has(e.shift_status))
@@ -46,21 +65,23 @@ export function HomeScreen({
   return (
     <>
       <main className="space-y-5 py-4">
-        <button
-          type="button"
-          onClick={() => navigate("/medical-staff/onboarding/profile")}
-          className="flex w-full items-start gap-3 rounded-lg border border-warning-200 bg-warning-50 p-3 text-left transition-colors hover:bg-warning-100 dark:border-warning-800/60 dark:bg-warning-950/40 dark:hover:bg-warning-900/40"
-        >
-          <ShieldCheck className="mt-0.5 h-4 w-4 flex-shrink-0 text-warning-600 dark:text-warning-400" />
-          <span>
-            <span className="block text-sm font-semibold text-warning-800 dark:text-warning-200">
-              Complete your professional profile
+        {!isProfileOrPayoutComplete && (
+          <button
+            type="button"
+            onClick={() => navigate("/medical-staff/onboarding/profile")}
+            className="flex w-full items-start gap-3 rounded-lg border border-warning-200 bg-warning-50 p-3 text-left transition-colors hover:bg-warning-100 dark:border-warning-800/60 dark:bg-warning-950/40 dark:hover:bg-warning-900/40"
+          >
+            <ShieldCheck className="mt-0.5 h-4 w-4 flex-shrink-0 text-warning-600 dark:text-warning-400" />
+            <span>
+              <span className="block text-sm font-semibold text-warning-800 dark:text-warning-200">
+                Complete your professional profile
+              </span>
+              <span className="block text-sm text-warning-900 dark:text-warning-300">
+                Verify your license, identity, and payout details to start receiving shifts.
+              </span>
             </span>
-            <span className="block text-sm text-warning-900 dark:text-warning-300">
-              Verify your license, identity, and payout details to start receiving shifts.
-            </span>
-          </span>
-        </button>
+          </button>
+        )}
 
         <section className="flex items-start justify-between">
           <div>
