@@ -65,6 +65,9 @@ function buildPayload(data: OnboardingFormData) {
       state:       data.state         || "Lagos",
       country:     "Nigeria",
       postal_code: data.postalCode    || "100001",
+      ...(data.latitude != null && data.longitude != null
+        ? { latitude: data.latitude, longitude: data.longitude }
+        : {}),
     },
   };
 }
