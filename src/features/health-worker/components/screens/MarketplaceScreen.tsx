@@ -147,6 +147,7 @@ export function MarketplaceScreen({
   onMyApplications,
   isLoading,
   loadError,
+  onRetryLocation,
 }: {
   shifts: NearbyShiftCard[];
   searchTerm: string;
@@ -155,6 +156,7 @@ export function MarketplaceScreen({
   onMyApplications: () => void;
   isLoading: boolean;
   loadError: string | null;
+  onRetryLocation?: () => void;
 }) {
   const filtered = shifts.filter((shift) => {
     const haystack = `${shift.hospital_name ?? ""} ${shift.role_title} ${shift.specialty ?? ""}`.toLowerCase();
@@ -206,7 +208,18 @@ export function MarketplaceScreen({
       </div>
 
       {loadError && (
-        <p className="rounded-xl bg-error-50 px-4 py-3 text-sm text-error-700 dark:bg-error-950 dark:text-error-300">{loadError}</p>
+        <div className="flex flex-col items-start gap-2 rounded-xl bg-error-50 px-4 py-3.5 text-sm text-error-700 dark:bg-error-950 dark:text-error-300">
+          <p>{loadError}</p>
+          {onRetryLocation && (
+            <button
+              type="button"
+              onClick={onRetryLocation}
+              className="rounded-lg bg-error-700 px-3 py-1.5 text-xs font-bold text-white shadow-sm hover:bg-error-800 transition-colors"
+            >
+              Share Location / Enable GPS
+            </button>
+          )}
+        </div>
       )}
 
       {isLoading && <p className="text-sm text-ink-500 dark:text-neutral-500">Loading shifts...</p>}

@@ -146,7 +146,11 @@ export interface HospitalRatingDimensions {
 }
 
 export interface UseHealthWorkerShiftsResult {
-  getNearbyShifts: () => Promise<NearbyShiftCard[]>;
+  getNearbyShifts: (params?: {
+    lat?: number;
+    lng?: number;
+    radius_km?: number;
+  }) => Promise<NearbyShiftCard[]>;
   getMyApplications: () => Promise<MyApplicationEntry[]>;
   expressInterest: (shiftId: string) => Promise<void>;
   withdrawInterest: (shiftId: string) => Promise<void>;
@@ -203,18 +207,53 @@ export function useHealthWorkerShifts(): UseHealthWorkerShiftsResult {
   const [, setLastError] = useState<WorkerApiError | null>(null);
   const clinicianId = useAuthStore((s) => s.clinicianId);
 
-  const getNearbyShifts = useCallback(async () => {
-    setLastError(null);
-    try {
-      const res = await apiClient.get<NearbyShiftCard[]>(
-        "/api/v1/worker/shifts/nearby",
-      );
-      return res.data;
-    } catch (e) {
-      setLastError(e as WorkerApiError);
-      throw e;
-    }
-  }, []);
+  const getNearbyShifts = useCallback(
+    async (params?: { lat?: number; lng?: number; radius_km?: number }) => {
+      setLastError(null);
+      try {
+        let lat = params?.lat;
+        let lng = params?.lng;
+
+        if (
+          (lat === undefined || lng === undefined) &&
+          typeof navigator !== "undefined" &&
+          navigator.geolocation
+        ) {
+          try {
+            const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
+              navigator.geolocation.getCurrentPosition(resolve, reject, {
+                enableHighAccuracy: true,
+                timeout: 4000,
+                maximumAge: 60000,
+              });
+            });
+            lat = pos.coords.latitude;
+            lng = pos.coords.longitude;
+          } catch {
+            // Geolocation permission denied or timed out; continue without coords
+          }
+        }
+
+        const queryParams = new URLSearchParams();
+        if (lat !== undefined && lng !== undefined) {
+          queryParams.set("lat", lat.toString());
+          queryParams.set("lng", lng.toString());
+        }
+        if (params?.radius_km !== undefined) {
+          queryParams.set("radius_km", params.radius_km.toString());
+        }
+
+        const queryString = queryParams.toString();
+        const url = `/api/v1/worker/shifts/nearby${queryString ? `?${queryString}` : ""}`;
+        const res = await apiClient.get<NearbyShiftCard[]>(url);
+        return res.data;
+      } catch (e) {
+        setLastError(e as WorkerApiError);
+        throw e;
+      }
+    },
+    [],
+  );
 
   const getMyApplications = useCallback(async () => {
     setLastError(null);
