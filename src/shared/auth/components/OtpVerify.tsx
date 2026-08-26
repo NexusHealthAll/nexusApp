@@ -140,11 +140,15 @@ export function OtpVerify() {
       // returns a token of its own that isn't a full session (no refresh
       // token, different claims shape), so registration deliberately does
       // NOT set a session here; the user logs in for real afterwards.
-      if (body.access_token && body.refresh_token && body.user) {
+      const sessionEstablished = Boolean(
+        body.access_token && body.refresh_token && body.user,
+      );
+
+      if (sessionEstablished) {
         useAuthStore.getState().setAuthSession({
-          accessToken: body.access_token,
-          refreshToken: body.refresh_token,
-          user: body.user,
+          accessToken: body.access_token!,
+          refreshToken: body.refresh_token!,
+          user: body.user!,
         });
       } else if (body.token) {
         // Backward compatibility with older token field
@@ -156,6 +160,20 @@ export function OtpVerify() {
 
       const userRole =
         body.user?.role ?? useAuthStore.getState().user?.role ?? null;
+
+      // Every branch below routes into a protected dashboard (or the
+      // dashboard-only fallback), which requires a live session — except the
+      // two "register" flows, which intentionally verify email without
+      // logging in (the user logs in for real afterwards). Navigating to a
+      // dashboard without a session just gets ProtectedRoute to bounce back
+      // to /auth/login, which looks like the OTP step silently restarting.
+      const isRegisterFlow = flowForOtpVerify?.action === "register";
+      if (!isRegisterFlow && !sessionEstablished) {
+        setError(
+          "We verified your code, but couldn't start your session. Please try again.",
+        );
+        return;
+      }
 
       if (!flowForOtpVerify) {
         // No stored flow context — most commonly the second, real login right
@@ -189,6 +207,20 @@ export function OtpVerify() {
       // Hospital routes
       if (role === "hospital") {
         if (action === "login") {
+          // The OTP endpoint is shared across roles — a code that verifies
+          // fine can still belong to a non-hospital account (e.g. a health
+          // worker who ended up on the hospital login path). Reject that
+          // here instead of navigating into /hospital/dashboard, where
+          // ProtectedRoute would silently bounce back to /auth/login and
+          // look like the OTP step restarting.
+          if (userRole !== "hospital_admin") {
+            useAuthStore.getState().clearAuthSession();
+            localStorage.removeItem("authToken");
+            localStorage.removeItem("pendingUser");
+            setError("Invalid credentials. Please try again.");
+            return;
+          }
+
           clearFlow();
           navigate("/hospital/dashboard");
           return;
