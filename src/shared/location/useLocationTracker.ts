@@ -51,7 +51,11 @@ export const useLocationTracker = () => {
         }
       },
       {
-        enableHighAccuracy: true,
+        // High accuracy forces a GPS fix, which many laptops lack — Chrome
+        // then fails outright with POSITION_UNAVAILABLE instead of falling
+        // back to Wi-Fi-based positioning. Network-based positioning is
+        // reliable across desktop and mobile, so use it here.
+        enableHighAccuracy: false,
         timeout: 5000,
         maximumAge: 0,
       },
