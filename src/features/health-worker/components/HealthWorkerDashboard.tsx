@@ -667,6 +667,7 @@ export function HealthWorkerDashboard() {
             onMyApplications={() => setView("my-applications")}
             isLoading={isLoading}
             loadError={nearbyError}
+            onRetryLocation={loadDashboardData}
           />
         );
       case "schedule":

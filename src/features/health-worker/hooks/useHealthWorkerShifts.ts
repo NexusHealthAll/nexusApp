@@ -146,7 +146,11 @@ export interface HospitalRatingDimensions {
 }
 
 export interface UseHealthWorkerShiftsResult {
-  getNearbyShifts: () => Promise<NearbyShiftCard[]>;
+  getNearbyShifts: (params?: {
+    lat?: number;
+    lng?: number;
+    radius_km?: number;
+  }) => Promise<NearbyShiftCard[]>;
   getMyApplications: () => Promise<MyApplicationEntry[]>;
   expressInterest: (shiftId: string) => Promise<void>;
   withdrawInterest: (shiftId: string) => Promise<void>;
@@ -203,18 +207,72 @@ export function useHealthWorkerShifts(): UseHealthWorkerShiftsResult {
   const [, setLastError] = useState<WorkerApiError | null>(null);
   const clinicianId = useAuthStore((s) => s.clinicianId);
 
-  const getNearbyShifts = useCallback(async () => {
-    setLastError(null);
-    try {
-      const res = await apiClient.get<NearbyShiftCard[]>(
-        "/api/v1/worker/shifts/nearby",
-      );
-      return res.data;
-    } catch (e) {
-      setLastError(e as WorkerApiError);
-      throw e;
-    }
-  }, []);
+  const getNearbyShifts = useCallback(
+    async (params?: { lat?: number; lng?: number; radius_km?: number }) => {
+      setLastError(null);
+      try {
+        let lat = params?.lat;
+        let lng = params?.lng;
+
+        if (
+          (lat === undefined || lng === undefined) &&
+          typeof navigator !== "undefined" &&
+          navigator.geolocation
+        ) {
+          try {
+            // First attempt: High accuracy with 3s timeout
+            const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
+              navigator.geolocation.getCurrentPosition(resolve, reject, {
+                enableHighAccuracy: true,
+                timeout: 3000,
+                maximumAge: 60000,
+              });
+            });
+            lat = pos.coords.latitude;
+            lng = pos.coords.longitude;
+          } catch {
+            try {
+              // Second attempt: Low accuracy (IP / network based) with 5s timeout
+              const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
+                navigator.geolocation.getCurrentPosition(resolve, reject, {
+                  enableHighAccuracy: false,
+                  timeout: 5000,
+                  maximumAge: 300000,
+                });
+              });
+              lat = pos.coords.latitude;
+              lng = pos.coords.longitude;
+            } catch {
+              // Fallback to default coordinates if geolocation fails or times out
+              lat = 6.5244;
+              lng = 3.3792;
+            }
+          }
+        } else if (lat === undefined || lng === undefined) {
+          lat = 6.5244;
+          lng = 3.3792;
+        }
+
+        const queryParams = new URLSearchParams();
+        if (lat !== undefined && lng !== undefined) {
+          queryParams.set("lat", lat.toString());
+          queryParams.set("lng", lng.toString());
+        }
+        if (params?.radius_km !== undefined) {
+          queryParams.set("radius_km", params.radius_km.toString());
+        }
+
+        const queryString = queryParams.toString();
+        const url = `/api/v1/worker/shifts/nearby${queryString ? `?${queryString}` : ""}`;
+        const res = await apiClient.get<NearbyShiftCard[]>(url);
+        return res.data;
+      } catch (e) {
+        setLastError(e as WorkerApiError);
+        throw e;
+      }
+    },
+    [],
+  );
 
   const getMyApplications = useCallback(async () => {
     setLastError(null);
