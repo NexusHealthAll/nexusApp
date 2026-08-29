@@ -264,8 +264,21 @@ export function useHealthWorkerShifts(): UseHealthWorkerShiftsResult {
 
         const queryString = queryParams.toString();
         const url = `/api/v1/worker/shifts/nearby${queryString ? `?${queryString}` : ""}`;
-        const res = await apiClient.get<NearbyShiftCard[]>(url);
-        return res.data;
+        const res = await apiClient.get<unknown>(url);
+        const data = res.data;
+        if (Array.isArray(data)) {
+          return data as NearbyShiftCard[];
+        }
+        if (data && typeof data === "object") {
+          const obj = data as Record<string, unknown>;
+          if (Array.isArray(obj.shifts)) {
+            return obj.shifts as NearbyShiftCard[];
+          }
+          if (Array.isArray(obj.data)) {
+            return obj.data as NearbyShiftCard[];
+          }
+        }
+        return [];
       } catch (e) {
         setLastError(e as WorkerApiError);
         throw e;
@@ -277,10 +290,23 @@ export function useHealthWorkerShifts(): UseHealthWorkerShiftsResult {
   const getMyApplications = useCallback(async () => {
     setLastError(null);
     try {
-      const res = await apiClient.get<MyApplicationEntry[]>(
+      const res = await apiClient.get<unknown>(
         "/api/v1/worker/shifts/my-applications",
       );
-      return res.data;
+      const data = res.data;
+      if (Array.isArray(data)) {
+        return data as MyApplicationEntry[];
+      }
+      if (data && typeof data === "object") {
+        const obj = data as Record<string, unknown>;
+        if (Array.isArray(obj.applications)) {
+          return obj.applications as MyApplicationEntry[];
+        }
+        if (Array.isArray(obj.data)) {
+          return obj.data as MyApplicationEntry[];
+        }
+      }
+      return [];
     } catch (e) {
       setLastError(e as WorkerApiError);
       throw e;
