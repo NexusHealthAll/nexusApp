@@ -220,18 +220,37 @@ export function useHealthWorkerShifts(): UseHealthWorkerShiftsResult {
           navigator.geolocation
         ) {
           try {
+            // First attempt: High accuracy with 3s timeout
             const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
               navigator.geolocation.getCurrentPosition(resolve, reject, {
                 enableHighAccuracy: true,
-                timeout: 4000,
+                timeout: 3000,
                 maximumAge: 60000,
               });
             });
             lat = pos.coords.latitude;
             lng = pos.coords.longitude;
           } catch {
-            // Geolocation permission denied or timed out; continue without coords
+            try {
+              // Second attempt: Low accuracy (IP / network based) with 5s timeout
+              const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
+                navigator.geolocation.getCurrentPosition(resolve, reject, {
+                  enableHighAccuracy: false,
+                  timeout: 5000,
+                  maximumAge: 300000,
+                });
+              });
+              lat = pos.coords.latitude;
+              lng = pos.coords.longitude;
+            } catch {
+              // Fallback to default coordinates if geolocation fails or times out
+              lat = 6.5244;
+              lng = 3.3792;
+            }
           }
+        } else if (lat === undefined || lng === undefined) {
+          lat = 6.5244;
+          lng = 3.3792;
         }
 
         const queryParams = new URLSearchParams();
