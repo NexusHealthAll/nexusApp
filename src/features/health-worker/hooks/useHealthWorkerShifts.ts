@@ -205,7 +205,9 @@ export interface UseHealthWorkerShiftsResult {
  */
 export function useHealthWorkerShifts(): UseHealthWorkerShiftsResult {
   const [, setLastError] = useState<WorkerApiError | null>(null);
-  const clinicianId = useAuthStore((s) => s.clinicianId);
+  const storeClinicianId = useAuthStore((s) => s.clinicianId);
+  const userId = useAuthStore((s) => s.user?.id);
+  const clinicianId = storeClinicianId || userId || "";
 
   const getNearbyShifts = useCallback(
     async (params?: { lat?: number; lng?: number; radius_km?: number }) => {
@@ -317,9 +319,10 @@ export function useHealthWorkerShifts(): UseHealthWorkerShiftsResult {
     async (shiftId: string) => {
       setLastError(null);
       try {
+        const body = clinicianId ? { clinician_id: clinicianId } : {};
         await apiClient.post(
           `/api/v1/shifts/${encodeURIComponent(shiftId)}/interest`,
-          { clinician_id: clinicianId },
+          body,
         );
       } catch (e) {
         setLastError(e as WorkerApiError);
@@ -348,9 +351,12 @@ export function useHealthWorkerShifts(): UseHealthWorkerShiftsResult {
     ) => {
       setLastError(null);
       try {
+        const body = clinicianId
+          ? { clinician_id: clinicianId, ...payload }
+          : { ...payload };
         await apiClient.post(
           `/api/v1/shifts/${encodeURIComponent(shiftId)}/apply`,
-          { clinician_id: clinicianId, ...payload },
+          body,
         );
       } catch (e) {
         setLastError(e as WorkerApiError);
