@@ -2,10 +2,7 @@ import type { ReactNode } from "react";
 import { MapPinOff, RefreshCw } from "lucide-react";
 import type { GeoPermissionState } from "@/shared/location/useLocationTracker";
 
-type BlockingState = Extract<
-  GeoPermissionState,
-  "denied" | "unavailable" | "unsupported"
->;
+type BlockingState = Extract<GeoPermissionState, "denied" | "unsupported">;
 
 interface LocationPermissionModalProps {
   state: BlockingState;
@@ -37,27 +34,6 @@ const COPY: Record<
         'Find "Location" in the site permissions list',
         'Change it to "Allow"',
         'Click "Try Again" below',
-      ],
-    },
-    showRetry: true,
-  },
-  unavailable: {
-    title: "Turn On Device Location",
-    body: (
-      <>
-        This site has permission to use your location, but your device's
-        Location Services appear to be turned off, so we can't get a fix. We'll
-        keep checking automatically — turn it back on to continue, or retry
-        manually below.
-      </>
-    ),
-    instructions: {
-      heading: "How to turn on Location Services",
-      steps: [
-        "Open your device or computer's system settings",
-        'Find "Location" or "Location Services"',
-        "Turn it on for your browser",
-        'Click "Try Again" below (or just wait — we auto-retry)',
       ],
     },
     showRetry: true,

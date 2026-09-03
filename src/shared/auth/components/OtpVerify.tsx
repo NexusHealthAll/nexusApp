@@ -9,6 +9,12 @@ import { ThemeToggle } from "@/shared/components/ui/ThemeToggle";
 import { useAuthStore, type AuthUser } from "@/shared/auth/store/authStore";
 import apiClient from "@/lib/apiClient";
 import { ApiError } from "@/lib/apiError";
+import { appToast } from "@/shared/components/feedback/toast";
+import {
+  HOSPITAL_APPROVAL_MESSAGE,
+  HOSPITAL_APPROVAL_TOAST_TITLE,
+  isHospitalPendingApprovalError,
+} from "@/shared/auth/utils/hospitalApprovalError";
 
 export function OtpVerify() {
   const navigate = useNavigate();
@@ -267,7 +273,17 @@ export function OtpVerify() {
           : "/medical-staff/dashboard",
       );
     } catch (err) {
-      if (err instanceof ApiError) {
+      const isHospitalLogin =
+        useAuthStore.getState().activeAuthFlow?.role === "hospital" ||
+        useAuthStore.getState().authFlowOrigin === "hospital-onboarding";
+
+      if (isHospitalPendingApprovalError(err, { isHospitalLogin })) {
+        appToast.warning(
+          HOSPITAL_APPROVAL_TOAST_TITLE,
+          HOSPITAL_APPROVAL_MESSAGE,
+        );
+        setError(HOSPITAL_APPROVAL_MESSAGE);
+      } else if (err instanceof ApiError) {
         setError(err.message || "Invalid verification code. Please try again.");
       } else {
         setError("Network error — please check your connection and try again.");

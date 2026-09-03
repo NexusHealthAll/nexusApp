@@ -1,7 +1,6 @@
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  ChevronDown,
   CheckCircle2,
   AlertCircle,
   Loader2,
@@ -22,92 +21,9 @@ const inputCls =
 
 const fieldError = "mt-1.5 text-[11px] text-red-500";
 
-// ─── Identity type options ────────────────────────────────────────────────────
-
-const IDENTITY_OPTIONS = [
-  { value: "BVN", label: "BVN — Bank Verification Number" },
-  { value: "NIN", label: "NIN — National Identification Number" },
-];
-
-// ─── Custom Dropdown ──────────────────────────────────────────────────────────
-
-interface IdentityDropdownProps {
-  value: string;
-  onChange: (val: string) => void;
-  disabled?: boolean;
-}
-
-function IdentityDropdown({ value, onChange, disabled }: IdentityDropdownProps) {
-  const [open, setOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  const selected = IDENTITY_OPTIONS.find((o) => o.value === value);
-
-  return (
-    <div className="relative" ref={containerRef}>
-      <button
-        type="button"
-        disabled={disabled}
-        onClick={() => !disabled && setOpen((o) => !o)}
-        className={[
-          "w-full flex items-center justify-between rounded-lg bg-[#DAE8F3] dark:bg-neutral-800 border px-3.5 py-2.5 text-sm outline-none transition-all duration-200",
-          open
-            ? "ring-2 ring-[#349C93]/40 border-[#349C93] bg-[#D0E5F2] dark:bg-neutral-700"
-            : "border-transparent",
-          disabled
-            ? "opacity-50 cursor-not-allowed"
-            : "hover:bg-[#D0E5F2] dark:hover:bg-neutral-700 cursor-pointer",
-        ].join(" ")}
-      >
-        <span className={selected ? "text-neutral-800 dark:text-neutral-100" : "text-neutral-400"}>
-          {selected ? selected.label : "Select identity type…"}
-        </span>
-        <ChevronDown
-          className={`h-4 w-4 text-neutral-400 shrink-0 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
-        />
-      </button>
-
-      {open && (
-        <div className="absolute z-50 mt-1.5 w-full rounded-xl bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 shadow-xl overflow-hidden">
-          <ul className="py-1">
-            {IDENTITY_OPTIONS.map((opt) => (
-              <li key={opt.value}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    onChange(opt.value);
-                    setOpen(false);
-                  }}
-                  className={[
-                    "w-full text-left px-4 py-3 text-[13px] transition-colors duration-100",
-                    opt.value === value
-                      ? "bg-[#E8F5F4] text-[#0F766E] dark:bg-teal-950 dark:text-teal-300 font-semibold"
-                      : "text-neutral-700 dark:text-neutral-200 hover:bg-[#F0F9F8] dark:hover:bg-neutral-700",
-                  ].join(" ")}
-                >
-                  <span className="font-bold mr-1">{opt.value}</span>
-                  <span className="text-neutral-500 dark:text-neutral-400 text-[12px]">
-                    — {opt.value === "BVN" ? "Bank Verification Number" : "National Identification Number"}
-                  </span>
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-    </div>
-  );
-}
+// Hospitals verify identity with a BVN only. Exactly 11 digits.
+const IDENTITY_TYPE = "BVN";
+const BVN_PATTERN = /^\d{11}$/;
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
@@ -120,11 +36,9 @@ export function IdentityVerificationStep() {
   const hospitalId = formData.hospitalId;
 
   // ── Card 1 state ─────────────────────────────────────────────────────────
-  const [identityType, setIdentityType] = useState("");
   const [identityNumber, setIdentityNumber] = useState("");
   const [initiateStatus, setInitiateStatus] = useState<InitiateStatus>("idle");
   const [initiateError, setInitiateError] = useState<string | null>(null);
-  const [identityTypeError, setIdentityTypeError] = useState<string | null>(null);
   const [identityNumberError, setIdentityNumberError] = useState<string | null>(null);
 
   // ── Card 2 state ─────────────────────────────────────────────────────────
@@ -138,28 +52,24 @@ export function IdentityVerificationStep() {
 
   // ── Initiate handler ─────────────────────────────────────────────────────
   async function handleInitiate() {
-    let valid = true;
-    if (!identityType) {
-      setIdentityTypeError("Please select an identity type");
-      valid = false;
-    } else {
-      setIdentityTypeError(null);
+    const number = identityNumber.trim();
+    if (!number) {
+      setIdentityNumberError("Please enter your BVN");
+      return;
     }
-    if (!identityNumber.trim()) {
-      setIdentityNumberError("Please enter your identity number");
-      valid = false;
-    } else {
-      setIdentityNumberError(null);
+    if (!BVN_PATTERN.test(number)) {
+      setIdentityNumberError("BVN must be exactly 11 digits");
+      return;
     }
-    if (!valid) return;
+    setIdentityNumberError(null);
 
     setInitiateError(null);
     setInitiateStatus("loading");
 
     try {
       await apiClient.post(`/api/v1/hospitals/${hospitalId}/identity/initiate`, {
-        number: identityNumber.trim(),
-        type: identityType,
+        number,
+        type: IDENTITY_TYPE,
       });
       setInitiateStatus("success");
     } catch (err) {
@@ -185,7 +95,7 @@ export function IdentityVerificationStep() {
     try {
       await apiClient.post(`/api/v1/hospitals/${hospitalId}/identity/validate`, {
         otp: codeToValidate,
-        type: identityType,
+        type: IDENTITY_TYPE,
       });
       setValidateStatus("success");
       // Draft is kept — VerificationStatusStep still needs it for the
@@ -213,7 +123,7 @@ export function IdentityVerificationStep() {
               Identity Verification
             </h1>
             <p className="text-[13px] text-neutral-500 leading-relaxed">
-              Verify your identity to complete hospital registration.
+              Verify your identity with your BVN to complete hospital registration.
             </p>
           </div>
         </div>
@@ -249,8 +159,8 @@ export function IdentityVerificationStep() {
                 </p>
                 <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
                   {card1Done
-                    ? `${identityType} verified successfully`
-                    : "Select your identity type and enter your number"}
+                    ? "BVN verified successfully"
+                    : "Enter your Bank Verification Number (BVN)"}
                 </p>
               </div>
             </div>
@@ -266,46 +176,41 @@ export function IdentityVerificationStep() {
           {!card1Done && (
             <div className="px-6 pb-6 border-t border-[#D6E8F5] dark:border-neutral-800">
               <div className="pt-5 space-y-4">
-                {/* Identity type dropdown */}
+                {/* Identity type — fixed to BVN */}
                 <div>
                   <label className="block text-[11px] font-semibold uppercase tracking-widest text-neutral-500 dark:text-neutral-400 mb-1.5">
-                    Identity Type <span className="text-red-500">*</span>
+                    Identity Type
                   </label>
-                  <IdentityDropdown
-                    value={identityType}
-                    onChange={(v) => {
-                      setIdentityType(v);
-                      setIdentityTypeError(null);
-                    }}
-                    disabled={initiateStatus === "loading"}
-                  />
-                  {identityTypeError && (
-                    <p className={fieldError}>{identityTypeError}</p>
-                  )}
+                  <div className="w-full flex items-center gap-2 rounded-lg bg-[#DAE8F3] dark:bg-neutral-800 border border-transparent px-3.5 py-2.5 text-sm">
+                    <ShieldCheck className="h-4 w-4 text-[#1A5888] dark:text-[#5AA6D6] shrink-0" />
+                    <span className="font-semibold text-neutral-800 dark:text-neutral-100">BVN</span>
+                    <span className="text-neutral-500 dark:text-neutral-400 text-[12px]">
+                      — Bank Verification Number
+                    </span>
+                  </div>
                 </div>
 
-                {/* Identity number input */}
+                {/* BVN number input */}
                 <div>
-                  <label className="block text-[11px] font-semibold uppercase tracking-widest text-neutral-500 dark:text-neutral-400 mb-1.5">
-                    {identityType ? `${identityType} Number` : "Identity Number"}{" "}
-                    <span className="text-red-500">*</span>
+                  <label
+                    htmlFor="identity-number"
+                    className="block text-[11px] font-semibold uppercase tracking-widest text-neutral-500 dark:text-neutral-400 mb-1.5"
+                  >
+                    BVN Number <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
                     id="identity-number"
+                    inputMode="numeric"
+                    maxLength={11}
                     value={identityNumber}
                     onChange={(e) => {
-                      setIdentityNumber(e.target.value);
+                      const val = e.target.value.replace(/\D/g, "").slice(0, 11);
+                      setIdentityNumber(val);
                       setIdentityNumberError(null);
                       if (initiateStatus === "error") setInitiateStatus("idle");
                     }}
-                    placeholder={
-                      identityType === "BVN"
-                        ? "e.g. 12345678901"
-                        : identityType === "NIN"
-                          ? "e.g. 12345678901"
-                          : "Enter your identity number"
-                    }
+                    placeholder="e.g. 12345678901"
                     disabled={initiateStatus === "loading"}
                     className={`${inputCls} ${initiateStatus === "loading" ? "opacity-60 cursor-not-allowed" : ""}`}
                     onKeyDown={(e) => {
@@ -394,7 +299,7 @@ export function IdentityVerificationStep() {
                     ? "Complete step 1 first"
                     : validateStatus === "success"
                       ? "OTP verified successfully"
-                      : `Enter the OTP sent to your ${identityType}`}
+                      : "Enter the OTP sent to your BVN"}
                 </p>
               </div>
             </div>
@@ -418,7 +323,7 @@ export function IdentityVerificationStep() {
                   <KeyRound className="h-4 w-4 text-[#1A5888] dark:text-[#5AA6D6] shrink-0 mt-0.5" />
                   <p className="text-[12px] text-[#1A5888] dark:text-[#5AA6D6] font-medium leading-relaxed">
                     An OTP has been sent to the phone number associated with your{" "}
-                    <strong>{identityType}</strong>. Please enter it below to confirm.
+                    <strong>BVN</strong>. Please enter it below to confirm.
                   </p>
                 </div>
 

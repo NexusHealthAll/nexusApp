@@ -1,9 +1,10 @@
 import { Loader2, MapPin } from "lucide-react";
 
 /**
- * Shown while permission/device location is still being resolved, so the
- * form (or the blocking modal) never flashes before we actually know the
- * outcome.
+ * Shown only for the brief moment the first geolocation attempt is still in
+ * flight (including while the browser's permission prompt is open), so the
+ * form or the blocking modal never flashes before we know the outcome. It
+ * clears within ~5s regardless (getCurrentPosition times out and reports back).
  */
 export function LocationCheckingScreen() {
   return (
@@ -15,7 +16,7 @@ export function LocationCheckingScreen() {
         </div>
         <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-100">Checking location access…</p>
         <p className="mt-1 text-[12px] text-neutral-500">
-          Confirming your browser and device location settings.
+          Checking your browser's location permission.
         </p>
       </div>
     </div>

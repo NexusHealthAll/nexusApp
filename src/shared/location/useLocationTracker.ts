@@ -5,14 +5,13 @@ export type GeoPermissionState =
   | "prompt" // browser hasn't asked the user yet
   | "granted"
   | "denied"
-  | "unavailable" // site permission is granted but the device/OS location toggle is off
   | "unsupported"; // no Geolocation API in this browser
 
-// How often to retry while blocked, so an OS-level location toggle flipped
-// back on is picked up without the user having to do anything — the
-// Permissions API's "change" event only tracks the browser's site
-// permission, it does NOT fire when the device/OS location service itself
-// is switched off/on, so polling is the only way to detect that case.
+// How often to quietly re-try a position fix while we don't have one yet.
+// This is a background convenience only — it never gates the UI. A fix that
+// fails with POSITION_UNAVAILABLE / TIMEOUT (common on desktops with no GPS
+// even when the browser permission is granted and OS location is on) simply
+// leaves us without coordinates; the user can still type an address.
 const RECOVERY_POLL_MS = 3000;
 
 export const useLocationTracker = () => {
@@ -25,11 +24,16 @@ export const useLocationTracker = () => {
   >(null);
   const [permissionState, setPermissionState] =
     useState<GeoPermissionState>("unknown");
+  // True once the very first getCurrentPosition attempt has come back (success
+  // OR failure). Used purely to dismiss the brief "checking location…" splash —
+  // never to block the form.
+  const [hasAttempted, setHasAttempted] = useState(false);
 
   const requestLocation = useCallback(() => {
     if (!navigator.geolocation) {
       setPermissionState("unsupported");
       setError({ message: "Geolocation is not supported by your browser." });
+      setHasAttempted(true);
       return;
     }
 
@@ -41,14 +45,19 @@ export const useLocationTracker = () => {
         });
         setError(null);
         setPermissionState("granted");
+        setHasAttempted(true);
       },
       (err) => {
-        setError(err);
+        setHasAttempted(true);
+        // The ONLY blocking condition: the user has actively blocked location
+        // for this site in the browser. Everything else (POSITION_UNAVAILABLE,
+        // TIMEOUT) is treated as "no fix right now" — we keep the recorded
+        // error for display but do not change permissionState, so the form
+        // still renders and address-based geocoding takes over.
         if (err.code === err.PERMISSION_DENIED) {
           setPermissionState("denied");
-        } else if (err.code === err.POSITION_UNAVAILABLE) {
-          setPermissionState("unavailable");
         }
+        setError(err);
       },
       {
         // High accuracy forces a GPS fix, which many laptops lack — Chrome
@@ -68,6 +77,7 @@ export const useLocationTracker = () => {
     if (!navigator.geolocation) {
       setPermissionState("unsupported");
       setError({ message: "Geolocation is not supported by your browser." });
+      setHasAttempted(true);
       return;
     }
 
@@ -85,6 +95,8 @@ export const useLocationTracker = () => {
         .query({ name: "geolocation" })
         .then((result) => {
           permissionStatus = result;
+          // Only adopt a browser permission verdict — "granted" / "denied" /
+          // "prompt". Never let anything else here override us.
           setPermissionState(result.state as GeoPermissionState);
           result.addEventListener("change", handlePermissionChange);
         })
@@ -102,13 +114,16 @@ export const useLocationTracker = () => {
     };
   }, [requestLocation]);
 
-  // Keep polling until we reach a definitive outcome. Covers: (a) something
-  // the Permissions API can't observe on its own, like the device location
-  // toggle being off, and (b) a plain GPS timeout on the very first fix,
-  // which otherwise would leave permissionState stuck on "unknown"/"prompt"
-  // forever with nothing left to retry it.
+  // Keep quietly retrying until we actually have a position. Stops once we do,
+  // or once the browser has definitively denied/unsupported location (no point
+  // retrying those). A transient POSITION_UNAVAILABLE / TIMEOUT keeps us
+  // retrying in the background without ever blocking the UI.
   useEffect(() => {
-    if (permissionState === "granted" || permissionState === "unsupported")
+    if (
+      position.latitude != null ||
+      permissionState === "denied" ||
+      permissionState === "unsupported"
+    )
       return;
 
     const interval = setInterval(() => {
@@ -116,12 +131,13 @@ export const useLocationTracker = () => {
     }, RECOVERY_POLL_MS);
 
     return () => clearInterval(interval);
-  }, [permissionState]);
+  }, [position.latitude, permissionState]);
 
   return {
     ...position,
     error,
     permissionState,
+    hasAttempted,
     retry: requestLocation,
   };
 };
