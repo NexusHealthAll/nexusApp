@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Info, Loader2, AlertCircle, ChevronDown } from "lucide-react";
+import { Info, Loader2, AlertCircle, ChevronDown, CheckCircle2 } from "lucide-react";
 import { Select } from "@/shared/components/ui/Select";
 import { HospitalOnboardingLayout } from "./HospitalOnboardingLayout";
 import { LocationPermissionModal } from "./LocationPermissionModal";
@@ -13,6 +13,21 @@ import { useLocationTracker } from "@/shared/location/useLocationTracker";
 
 // Address input pauses this long before re-querying nearby places.
 const ADDRESS_DEBOUNCE_MS = 500;
+
+// Country names accepted as the final segment of a well-formed street address.
+const RECOGNISED_COUNTRIES = new Set(["nigeria", "ng", "nga"]);
+
+// A street address "looks complete" when it has at least 3 comma-separated
+// parts (street, state/city, country) and ends with a recognised country —
+// e.g. "10 Badagry Close, Lagos, Nigeria".
+function addressLooksComplete(raw: string): boolean {
+  const parts = raw
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  if (parts.length < 3) return false;
+  return RECOGNISED_COUNTRIES.has(parts[parts.length - 1].toLowerCase());
+}
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
@@ -85,7 +100,12 @@ interface LandmarkDropdownProps {
   items: GeoItem[];
   loading: boolean;
   value: string;
-  onChange: (val: string) => void;
+  /**
+   * `item` is passed only when the value came from picking a listed place —
+   * it carries that place's city/state. It is `undefined` for a custom-typed
+   * landmark, so callers know not to sync city/state in that case.
+   */
+  onChange: (val: string, item?: GeoItem) => void;
 }
 
 function LandmarkDropdown({
@@ -197,7 +217,7 @@ function LandmarkDropdown({
                 <button
                   type="button"
                   onClick={() => {
-                    onChange(item.title);
+                    onChange(item.title, item);
                     setOpen(false);
                   }}
                   className={[
@@ -241,6 +261,7 @@ export function LocationGeofencingStep() {
     longitude,
     error: geoError,
     permissionState,
+    hasAttempted: locationAttempted,
     retry: retryLocation,
   } = useLocationTracker();
   const navigate = useNavigate();
@@ -260,6 +281,7 @@ export function LocationGeofencingStep() {
   >({});
   const [submitting, setSubmitting] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
+  const [addrFocused, setAddrFocused] = useState(false);
 
   const [geoItems, setGeoItems] = useState<GeoItem[]>([]);
   const [geoLoading, setGeoLoading] = useState(false);
@@ -338,6 +360,9 @@ export function LocationGeofencingStep() {
       });
   }, []);
 
+  // One-shot reverse geocode, only if/when a GPS fix actually arrives. Its
+  // sole job now is pre-filling city/state from coordinates — it is NOT a
+  // prerequisite for anything else on this screen.
   useEffect(() => {
     if (latitude == null || longitude == null) return;
     if (geocodeFetched.current) return;
@@ -345,8 +370,10 @@ export function LocationGeofencingStep() {
     fetchNearbyPlaces();
   }, [latitude, longitude, fetchNearbyPlaces]);
 
+  // Forward geocode on address keystrokes. Depends only on the typed string —
+  // never gated on a GPS fix, so it works even when geolocation produced no
+  // coordinates (the common case on desktops).
   useEffect(() => {
-    if (!geocodeFetched.current) return;
     if (!local.streetAddress.trim()) return;
 
     const timer = setTimeout(() => {
@@ -360,6 +387,32 @@ export function LocationGeofencingStep() {
   function handle(field: keyof typeof local, value: string) {
     setLocal((p) => ({ ...p, [field]: value }));
     if (errors[field]) setErrors((e) => ({ ...e, [field]: undefined }));
+  }
+
+  // Landmark dropdown: on a *listed* place (item present), overwrite City and
+  // State with that place's values. A custom-typed landmark (no item) only
+  // updates the landmark field itself.
+  function handleLandmarkChange(value: string, item?: GeoItem) {
+    setLocal((p) => {
+      const next = { ...p, addressLine2: value };
+      if (item) {
+        if (item.address.city) next.city = item.address.city;
+        const matchedState = NIGERIA_STATES.find(
+          (s) => s.toLowerCase() === (item.address.state ?? "").toLowerCase(),
+        );
+        if (matchedState) next.state = matchedState;
+      }
+      return next;
+    });
+    setErrors((e) => {
+      if (!e.addressLine2 && !(item && (e.city || e.state))) return e;
+      const cleared = { ...e, addressLine2: undefined };
+      if (item) {
+        if (item.address.city) cleared.city = undefined;
+        if (item.address.state) cleared.state = undefined;
+      }
+      return cleared;
+    });
   }
 
   function validate(): boolean {
@@ -411,6 +464,8 @@ export function LocationGeofencingStep() {
     }
   }
 
+  const streetAddressComplete = addressLooksComplete(local.streetAddress);
+
   const mapLat = geocodedPosition?.lat ?? latitude ?? 6.5244;
   const mapLng = geocodedPosition?.lng ?? longitude ?? 3.3792;
   const bboxDelta = 0.01;
@@ -419,23 +474,26 @@ export function LocationGeofencingStep() {
     `${mapLng - bboxDelta}%2C${mapLat - bboxDelta}%2C${mapLng + bboxDelta}%2C${mapLat + bboxDelta}` +
     `&layer=mapnik&marker=${mapLat}%2C${mapLng}`;
 
-  // Still resolving the initial check — don't show the form or the modal
-  // until we actually know whether location is usable.
-  if (permissionState === "unknown" || permissionState === "prompt") {
-    return <LocationCheckingScreen />;
-  }
-
-  if (
-    permissionState === "denied" ||
-    permissionState === "unavailable" ||
-    permissionState === "unsupported"
-  ) {
+  // The ONLY blocking conditions are the two the user actually controls:
+  //   1. the browser site-permission for location ("denied")
+  //   2. the browser having no Geolocation API at all ("unsupported")
+  // A failed GPS fix (POSITION_UNAVAILABLE / TIMEOUT) is NOT treated as an
+  // error here — the map just centres on a default and the typed address
+  // drives geocoding instead.
+  if (permissionState === "denied" || permissionState === "unsupported") {
     return (
       <LocationPermissionModal
         state={permissionState}
         onRetry={retryLocation}
       />
     );
+  }
+
+  // Brief splash only while the first position attempt is still in flight
+  // (including the time the browser's permission prompt is open). This always
+  // clears within ~5s because getCurrentPosition times out and reports back.
+  if (!locationAttempted) {
+    return <LocationCheckingScreen />;
   }
 
   return (
@@ -477,7 +535,10 @@ export function LocationGeofencingStep() {
 
             {/* Street Address */}
             <div className="mb-3">
-              <label className="block text-[10px] font-semibold uppercase tracking-widest text-neutral-500 mb-1.5">
+              <label
+                htmlFor="street-address"
+                className="block text-[10px] font-semibold uppercase tracking-widest text-neutral-500 mb-1.5"
+              >
                 Street Address <span className="text-red-500">*</span>
               </label>
               <input
@@ -485,9 +546,53 @@ export function LocationGeofencingStep() {
                 id="street-address"
                 value={local.streetAddress}
                 onChange={(e) => handle("streetAddress", e.target.value)}
-                placeholder="14 Broad Street, Victoria Island"
+                onFocus={() => setAddrFocused(true)}
+                onBlur={() => setAddrFocused(false)}
+                placeholder="10 Badagry Close, Lagos, Nigeria"
+                aria-describedby="street-address-tip"
                 className={inputCls}
               />
+
+              {/* Custom focus tooltip — reminds the user to include the
+                  country and the expected format; confirms once it looks right. */}
+              {addrFocused && (
+                <div id="street-address-tip" role="tooltip" className="relative mt-2">
+                  <span
+                    className={`absolute -top-1.5 left-4 h-3 w-3 rotate-45 border-l border-t ${
+                      streetAddressComplete
+                        ? "border-[#349C93]/40 bg-[#F0FBF9] dark:bg-teal-950"
+                        : "border-[#C8DFEF] dark:border-neutral-700 bg-[#EBF4FF] dark:bg-neutral-900"
+                    }`}
+                  />
+                  <div
+                    className={`relative flex items-start gap-2 rounded-lg border px-3 py-2 text-[11px] leading-relaxed ${
+                      streetAddressComplete
+                        ? "border-[#349C93]/40 bg-[#F0FBF9] dark:bg-teal-950 text-[#0F766E] dark:text-teal-300"
+                        : "border-[#C8DFEF] dark:border-neutral-700 bg-[#EBF4FF] dark:bg-neutral-900 text-[#1A5888] dark:text-[#5AA6D6]"
+                    }`}
+                  >
+                    {streetAddressComplete ? (
+                      <CheckCircle2 className="h-3.5 w-3.5 shrink-0 mt-[1px]" />
+                    ) : (
+                      <Info className="h-3.5 w-3.5 shrink-0 mt-[1px]" />
+                    )}
+                    <span>
+                      {streetAddressComplete ? (
+                        "Format looks good."
+                      ) : (
+                        <>
+                          Include the state and the country, in this format:{" "}
+                          <strong className="font-semibold">
+                            10 Badagry Close, Lagos, Nigeria
+                          </strong>
+                          .
+                        </>
+                      )}
+                    </span>
+                  </div>
+                </div>
+              )}
+
               {errors.streetAddress && (
                 <p className={fieldError}>{errors.streetAddress}</p>
               )}
@@ -502,7 +607,7 @@ export function LocationGeofencingStep() {
                 items={geoItems}
                 loading={geoLoading}
                 value={local.addressLine2}
-                onChange={(val) => handle("addressLine2", val)}
+                onChange={handleLandmarkChange}
               />
               {errors.addressLine2 && (
                 <p className={fieldError}>{errors.addressLine2}</p>

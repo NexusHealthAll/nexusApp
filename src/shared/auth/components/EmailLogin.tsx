@@ -8,6 +8,12 @@ import { Mail, Check, AlertCircle, CheckCircle2 } from "lucide-react";
 import { useAuthStore } from "@/shared/auth/store/authStore";
 import apiClient from "@/lib/apiClient";
 import { ApiError } from "@/lib/apiError";
+import { appToast } from "@/shared/components/feedback/toast";
+import {
+  HOSPITAL_APPROVAL_MESSAGE,
+  HOSPITAL_APPROVAL_TOAST_TITLE,
+  isHospitalPendingApprovalError,
+} from "@/shared/auth/utils/hospitalApprovalError";
 
 import { ThemeToggle } from "@/shared/components/ui/ThemeToggle";
 
@@ -87,7 +93,17 @@ export function EmailLogin() {
       localStorage.setItem("pendingEmail", email);
       navigate("/auth/verify-otp");
     } catch (err) {
-      if (err instanceof ApiError) {
+      const isHospitalLogin =
+        roleFromStore === "hospital" ||
+        useAuthStore.getState().authFlowOrigin === "hospital-onboarding";
+
+      if (isHospitalPendingApprovalError(err, { isHospitalLogin })) {
+        appToast.warning(
+          HOSPITAL_APPROVAL_TOAST_TITLE,
+          HOSPITAL_APPROVAL_MESSAGE,
+        );
+        setError(HOSPITAL_APPROVAL_MESSAGE);
+      } else if (err instanceof ApiError) {
         setError(
           err.message ||
             `Failed to send OTP (${err.status}). Please try again.`,

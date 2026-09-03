@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   CheckCircle2,
@@ -12,10 +13,16 @@ import { HospitalOnboardingLayout } from "./HospitalOnboardingLayout";
 import { useOnboarding } from "../context/OnboardingContext";
 import { authUtils } from "@/shared/auth/utils/authUtils";
 import { useAuthStore } from "@/shared/auth/store/authStore";
+import { Modal } from "@/shared/components/ui/Modal";
 
 export function VerificationStatusStep() {
   const navigate = useNavigate();
   const { formData, reset } = useOnboarding();
+
+  // Informational notice, shown as soon as this final page loads: the hospital
+  // cannot sign in or reach the dashboard until an admin verifies the
+  // registration. Free to dismiss — it doesn't block the "Continue" action.
+  const [showApprovalNotice, setShowApprovalNotice] = useState(true);
 
   // Derive display values from context
   const facilityName = formData.hospitalName || "—";
@@ -229,6 +236,34 @@ export function VerificationStatusStep() {
           </button>
         </div>
       </div>
+
+      {/* ── "Verification required before login" notice ── */}
+      <Modal
+        isOpen={showApprovalNotice}
+        onClose={() => setShowApprovalNotice(false)}
+        size="sm"
+        title="Verification required"
+      >
+        <div className="space-y-5">
+          <div className="flex items-start gap-3 rounded-xl border border-[#C8DFEF] bg-[#EBF4FF] p-4 dark:border-neutral-700 dark:bg-neutral-800">
+            <ShieldCheck className="mt-0.5 h-5 w-5 flex-shrink-0 text-[#1A5888] dark:text-[#5AA6D6]" />
+            <p className="text-[13px] leading-relaxed text-neutral-700 dark:text-neutral-300">
+              Your hospital can&apos;t sign in or access the dashboard until an
+              administrator verifies this registration. We&apos;ll email you as
+              soon as the review is complete — you can then log in with your
+              admin email.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setShowApprovalNotice(false)}
+            className="w-full rounded-lg bg-[#0F766E] py-2.5 text-[13px] font-semibold text-white transition-colors duration-150 hover:bg-[#0D9488]"
+          >
+            Got it
+          </button>
+        </div>
+      </Modal>
     </HospitalOnboardingLayout>
   );
 }
