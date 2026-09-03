@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft, CheckCircle2, Plus, Upload, X } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
@@ -11,6 +11,7 @@ import { appToast } from "@/shared/components/feedback/toast";
 import { cn } from "@/shared/utils/cn";
 import { PATHS } from "@/routes/paths";
 import { useHospitalProfile } from "@/features/hospital/hooks/useHospitalProfile";
+import { HospitalProfileService } from "@/features/hospital/services/hospitalProfileService";
 import { useHospitalApprovalStatus } from "@/features/hospital/hooks/useHospitalApprovalStatus";
 import { useWalletFunding } from "@/features/hospital/hooks/useWalletFunding";
 import { useHospitalShift } from "@/features/hospital/shifts/hooks/useHospitalShift";
@@ -116,9 +117,10 @@ export function CreateShiftPage() {
   const [searchParams] = useSearchParams();
   const isVirtualLocked = searchParams.get("type") === "virtual";
   const { profile } = useHospitalProfile();
+  const [hospitalAddress, setHospitalAddress] = useState<string | null>(null);
   const { isLoading: isApprovalLoading, isApproved, status } =
     useHospitalApprovalStatus();
-  const { isLoading: isWalletLoading, isFunded } = useWalletFunding();
+  const { isLoading: isWalletLoading, isFunded, hasSubAccount } = useWalletFunding();
   const { createShift, previewShift } = useHospitalShift();
   const { draft, setDraft, clearDraft } = useShiftDraftStore();
 
@@ -133,6 +135,20 @@ export function CreateShiftPage() {
   const [isPreviewing, setIsPreviewing] = useState(false);
   const [isBroadcasting, setIsBroadcasting] = useState(false);
   const [broadcastDone, setBroadcastDone] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    HospitalProfileService.getHospitalDetails()
+      .then((details) => {
+        if (!cancelled) setHospitalAddress(details?.address ?? null);
+      })
+      .catch(() => {
+        if (!cancelled) setHospitalAddress(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const update = (patch: Partial<ShiftFormData>) =>
     setFormData((prev) => ({ ...prev, ...patch }));
@@ -287,12 +303,28 @@ export function CreateShiftPage() {
         <WizardSteps steps={STEPS} current={step} className="mt-8" />
 
         {(gateBlocked || walletBlocked) && (
-          <div className="mt-6 rounded-xl border border-warning-200 bg-warning-50 px-4 py-3 text-sm text-warning-800 dark:border-warning-800 dark:bg-warning-950 dark:text-warning-300">
-            {gateBlocked
-              ? status === "rejected"
-                ? "Your hospital registration was not approved — contact support before creating shifts."
-                : "Your hospital registration is pending admin review. You can prepare a shift, but broadcasting is disabled until approval."
-              : "Fund your hospital wallet before broadcasting a shift."}
+          <div className="mt-6 flex items-center justify-between gap-3 rounded-xl border border-warning-200 bg-warning-50 px-4 py-3 text-sm text-warning-800 dark:border-warning-800 dark:bg-warning-950 dark:text-warning-300">
+            <span>
+              {gateBlocked
+                ? status === "rejected"
+                  ? "Your hospital registration was not approved — contact support before creating shifts."
+                  : "Your hospital registration is pending admin review. You can prepare a shift, but broadcasting is disabled until approval."
+                : hasSubAccount
+                  ? "Your hospital wallet has no funds yet — fund it before broadcasting a shift."
+                  : "Your hospital has no wallet yet — create one before broadcasting a shift."}
+            </span>
+            {walletBlocked && !gateBlocked && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="flex-shrink-0 whitespace-nowrap border-warning-400 bg-white text-xs font-semibold text-warning-800 hover:bg-warning-100 dark:border-warning-700 dark:bg-transparent dark:text-warning-300 dark:hover:bg-warning-900"
+                onClick={() =>
+                  navigate(PATHS.hospital.payments, { state: { openWalletModal: true } })
+                }
+              >
+                {hasSubAccount ? "Fund Wallet" : "Create Wallet"}
+              </Button>
+            )}
           </div>
         )}
 
@@ -390,7 +422,7 @@ export function CreateShiftPage() {
                 </div>
                 <Input
                   label="Location"
-                  value={profile?.name ?? ""}
+                  value={hospitalAddress ?? profile?.name ?? ""}
                   readOnly
                   className="bg-neutral-50 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400"
                 />

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ArrowUpRight, Download, Landmark, PiggyBank, ReceiptText, RefreshCw } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Badge, type BadgeVariant } from "@/shared/components/ui/Badge";
 import { Button } from "@/shared/components/ui/Button";
 import { EmptyState, EmptyStateIcon } from "@/shared/components/ui/EmptyState";
@@ -58,6 +58,7 @@ const dateOptions = [
 /** Payments page per the Figma redesign, backed by the wallet endpoints. */
 export function PaymentsPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [overview, setOverview] = useState<PaymentsOverview | null>(null);
   const [tab, setTab] = useState<PaymentTab>("all");
   const [search, setSearch] = useState("");
@@ -89,6 +90,15 @@ export function PaymentsPage() {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    const state = location.state as { openWalletModal?: boolean } | null;
+    if (overview !== null && state?.openWalletModal) {
+      setIsWalletModalOpen(true);
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [overview]);
 
   const refreshPayoutStatus = async (id: string) => {
     setRefreshingId(id);

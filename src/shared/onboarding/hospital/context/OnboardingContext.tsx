@@ -22,6 +22,8 @@ export interface OnboardingFormData {
   state: string;            // → address.state
   postalCode: string;       // → address.postal_code
   radius: string;
+  latitude: number | null;  // → address.latitude, from geocoding the typed address
+  longitude: number | null; // → address.longitude, from geocoding the typed address
 
   // ── Step 3: Identity Verification ──
   hospitalId: string;       // returned from register API, used in identity endpoints
@@ -40,6 +42,8 @@ const INITIAL: OnboardingFormData = {
   state: "",
   postalCode: "",
   radius: "500",
+  latitude: null,
+  longitude: null,
   hospitalId: "",
 };
 

@@ -197,6 +197,7 @@ export function PayoutSetup() {
       });
 
       const bankName = banks.find((b) => b.code === formData.bankCode)?.name;
+      localStorage.setItem("payoutSetupCompleted", "true");
       navigate("/medical-staff/onboarding/pending", {
         state: {
           bankName,

@@ -4,6 +4,7 @@ import { WalletService, type WalletSummary } from "@/features/hospital/services/
 interface WalletFundingState {
   isLoading: boolean;
   isFunded: boolean;
+  hasSubAccount: boolean;
   wallet: WalletSummary | null;
   error: string | null;
   refresh: () => void;
@@ -43,6 +44,7 @@ export function useWalletFunding(): WalletFundingState {
   return {
     isLoading,
     isFunded: (wallet?.balanceKobo ?? 0) > 0,
+    hasSubAccount: Boolean(wallet?.hasSubAccount),
     wallet,
     error,
     refresh: () => setRefreshKey((key) => key + 1),

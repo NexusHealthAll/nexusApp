@@ -6,17 +6,20 @@ import { cn } from "@/shared/utils/cn";
 import { formatCurrency } from "../DashboardChrome";
 import type { NearbyShiftCard } from "../../hooks/useHealthWorkerShifts";
 
-export function shiftPayoutKobo(shift: NearbyShiftCard): number {
+export function shiftPayoutKobo(shift?: NearbyShiftCard | null): number {
+  if (!shift) return 0;
   if (shift.pay_type === "fixed_rate") return shift.fixed_rate_kobo ?? 0;
-  return Math.round((shift.rate_kobo_per_hour ?? 0) * shift.duration_hours);
+  return Math.round((shift.rate_kobo_per_hour ?? 0) * (shift.duration_hours ?? 0));
 }
 
-export function shiftPayoutLabel(shift: NearbyShiftCard): string {
+export function shiftPayoutLabel(shift?: NearbyShiftCard | null): string {
   return formatCurrency(Math.round(shiftPayoutKobo(shift) / 100));
 }
 
-function formatShiftTiming(iso: string): string {
+function formatShiftTiming(iso?: string | null): string {
+  if (!iso) return "Scheduled";
   const date = new Date(iso);
+  if (isNaN(date.getTime())) return "Scheduled";
   const now = new Date();
   const tomorrow = new Date(now);
   tomorrow.setDate(now.getDate() + 1);
@@ -27,28 +30,40 @@ function formatShiftTiming(iso: string): string {
   return `${date.toLocaleDateString("en-NG", { month: "short", day: "numeric" })}, ${time}`;
 }
 
-const priorityTagStyle: Record<NearbyShiftCard["priority"], string> = {
+const priorityTagStyle: Record<string, string> = {
   stat: "bg-error-800 text-white",
   urgent: "bg-error-100 text-error-800 dark:bg-error-950 dark:text-error-300",
   normal: "bg-success-100 text-success-800 dark:bg-success-950 dark:text-success-300",
   scheduled: "bg-success-700 text-white",
 };
 
-const priorityTagLabel: Record<NearbyShiftCard["priority"], string> = {
+const priorityTagLabel: Record<string, string> = {
   stat: "STAT",
   urgent: "Urgent",
   normal: "Open",
   scheduled: "Scheduled",
 };
 
+function getPriorityStyle(priority?: string | null): string {
+  return (priority && priorityTagStyle[priority]) || priorityTagStyle.normal;
+}
+
+function getPriorityLabel(priority?: string | null): string {
+  return (priority && priorityTagLabel[priority]) || "Open";
+}
+
 function priorityCaption(shift: NearbyShiftCard): string {
   return shift.priority === "stat" ? "Immediate Start" : formatShiftTiming(shift.scheduled_start);
 }
 
 function ShiftCard({ shift, onOpen }: { shift: NearbyShiftCard; onOpen: () => void }) {
+  if (!shift) return null;
+  const shiftId = shift.shift_id || (shift as unknown as Record<string, unknown>).id || "shift-card";
+
   return (
     <button
       type="button"
+      key={String(shiftId)}
       onClick={onOpen}
       className="w-full rounded-xl bg-white p-5 text-left shadow-sm ring-1 ring-neutral-900/5 dark:bg-neutral-900 dark:ring-neutral-800 dark:border dark:border-neutral-800 transition-colors"
     >
@@ -58,10 +73,10 @@ function ShiftCard({ shift, onOpen }: { shift: NearbyShiftCard; onOpen: () => vo
             <span
               className={cn(
                 "rounded-sm px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide",
-                priorityTagStyle[shift.priority],
+                getPriorityStyle(shift.priority),
               )}
             >
-              {priorityTagLabel[shift.priority]}
+              {getPriorityLabel(shift.priority)}
             </span>
             <span
               className={cn(
@@ -72,7 +87,7 @@ function ShiftCard({ shift, onOpen }: { shift: NearbyShiftCard; onOpen: () => vo
               {priorityCaption(shift)}
             </span>
           </div>
-          <h3 className="mt-1 text-lg font-extrabold text-ink-900 dark:text-neutral-100">{shift.role_title}</h3>
+          <h3 className="mt-1 text-lg font-extrabold text-ink-900 dark:text-neutral-100">{shift.role_title || "Role"}</h3>
           <p className="text-sm font-medium text-ink-700 dark:text-neutral-300">
             {shift.hospital_name ?? "Hospital"}
             {shift.specialty ? ` • ${shift.specialty}` : ""}
@@ -96,7 +111,7 @@ function ShiftCard({ shift, onOpen }: { shift: NearbyShiftCard; onOpen: () => vo
           )}
           <span className="flex shrink-0 items-center gap-1">
             <Clock className="h-3 w-3" />
-            {shift.duration_hours}h
+            {shift.duration_hours ?? 0}h
           </span>
           {shift.shift_type === "virtual" ? (
             <span className="shrink-0 rounded-full bg-brand-700 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white dark:bg-brand-600">
@@ -147,23 +162,30 @@ export function MarketplaceScreen({
   onMyApplications,
   isLoading,
   loadError,
+  onRetryLocation,
 }: {
-  shifts: NearbyShiftCard[];
-  searchTerm: string;
+  shifts?: NearbyShiftCard[] | null;
+  searchTerm?: string | null;
   onSearchChange: (value: string) => void;
   onOpenShift: (shift: NearbyShiftCard) => void;
   onMyApplications: () => void;
   isLoading: boolean;
   loadError: string | null;
+  onRetryLocation?: () => void;
 }) {
-  const filtered = shifts.filter((shift) => {
-    const haystack = `${shift.hospital_name ?? ""} ${shift.role_title} ${shift.specialty ?? ""}`.toLowerCase();
-    return haystack.includes(searchTerm.toLowerCase());
+  const safeShifts = Array.isArray(shifts) ? shifts : [];
+  const query = (searchTerm ?? "").toLowerCase();
+
+  const filtered = safeShifts.filter((shift) => {
+    if (!shift) return false;
+    const haystack = `${shift.hospital_name ?? ""} ${shift.role_title ?? ""} ${shift.specialty ?? ""}`.toLowerCase();
+    return haystack.includes(query);
   });
 
   const cards: ReactNode[] = [];
   filtered.forEach((shift, index) => {
-    cards.push(<ShiftCard key={shift.shift_id} shift={shift} onOpen={() => onOpenShift(shift)} />);
+    const shiftId = shift.shift_id || (shift as unknown as Record<string, unknown>).id || index;
+    cards.push(<ShiftCard key={String(shiftId)} shift={shift} onOpen={() => onOpenShift(shift)} />);
     if (index === 1 && filtered.length > 2) {
       cards.push(<FeaturedFacilityCard key="featured-facility" />);
     }
@@ -183,7 +205,7 @@ export function MarketplaceScreen({
       </div>
 
       <SearchInput
-        value={searchTerm}
+        value={searchTerm ?? ""}
         onChange={(event) => onSearchChange(event.target.value)}
         placeholder="Search role or facility..."
         className="rounded-lg border-transparent bg-brand-input py-3.5 text-ink-900 placeholder:text-ink-700/60 dark:bg-neutral-800 dark:text-neutral-50 dark:placeholder:text-neutral-500"
@@ -206,7 +228,18 @@ export function MarketplaceScreen({
       </div>
 
       {loadError && (
-        <p className="rounded-xl bg-error-50 px-4 py-3 text-sm text-error-700 dark:bg-error-950 dark:text-error-300">{loadError}</p>
+        <div className="flex flex-col items-start gap-2 rounded-xl bg-error-50 px-4 py-3.5 text-sm text-error-700 dark:bg-error-950 dark:text-error-300">
+          <p>{loadError}</p>
+          {onRetryLocation && (
+            <button
+              type="button"
+              onClick={onRetryLocation}
+              className="rounded-lg bg-error-700 px-3 py-1.5 text-xs font-bold text-white shadow-sm hover:bg-error-800 transition-colors"
+            >
+              Share Location / Enable GPS
+            </button>
+          )}
+        </div>
       )}
 
       {isLoading && <p className="text-sm text-ink-500 dark:text-neutral-500">Loading shifts...</p>}

@@ -430,10 +430,18 @@ export function LocationGeofencingStep() {
   async function handleContinue() {
     if (!validate()) return;
 
+    if (!geocodedPosition) {
+      setApiError(
+        "We couldn't verify this address's exact coordinates yet. Please wait a moment for the map to update, or adjust the address above, before continuing.",
+      );
+      return;
+    }
+
     setApiError(null);
     setSubmitting(true);
-    setFields(local);
-    const merged = { ...formData, ...local };
+    const coords = { latitude: geocodedPosition.lat, longitude: geocodedPosition.lng };
+    setFields({ ...local, ...coords });
+    const merged = { ...formData, ...local, ...coords };
 
     try {
       const result = await hospitalOnboardingService.register(merged);

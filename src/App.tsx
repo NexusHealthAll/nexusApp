@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, useRoutes } from "react-router-dom";
 import { appRoutes } from "@/routes";
 import { AppToaster } from "@/shared/components/feedback/AppToaster";
+import { ErrorBoundary } from "@/shared/components/feedback/ErrorBoundary";
 import { usePwaServiceWorker } from "@/features/health-worker/hooks/usePwaServiceWorker";
 import { ThemeProvider } from "@/shared/theme/ThemeContext";
 
@@ -20,10 +21,12 @@ function App() {
 
   return (
     <ThemeProvider>
-      <Router>
-        <AppRoutes />
-        <AppToaster />
-      </Router>
+      <ErrorBoundary>
+        <Router>
+          <AppRoutes />
+          <AppToaster />
+        </Router>
+      </ErrorBoundary>
     </ThemeProvider>
   );
 }

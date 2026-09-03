@@ -117,7 +117,7 @@ const CANCELLABLE_STATUSES: ApiShiftStatus[] = ["open", "assigned", "upcoming"];
 export function ShiftSchedulePage() {
   const navigate = useNavigate();
   const { getShifts, getShiftApplications, cancelShift } = useHospitalShift();
-  const { isLoading: isWalletLoading, isFunded } = useWalletFunding();
+  const { isLoading: isWalletLoading, isFunded, hasSubAccount } = useWalletFunding();
   const { isLoading: isApprovalLoading, isApproved } = useHospitalApprovalStatus();
 
   const [rows, setRows] = useState<ShiftRow[]>([]);
@@ -349,7 +349,7 @@ export function ShiftSchedulePage() {
 
       {!isApprovalLoading && isApproved && !isWalletLoading && !isFunded && (
         <div className="mb-6">
-          <WalletFundingBanner />
+          <WalletFundingBanner hasSubAccount={hasSubAccount} />
         </div>
       )}
 
