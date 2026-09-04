@@ -483,7 +483,14 @@ export function HealthWorkerDashboard() {
         setView("main");
       }
     } catch (err) {
-      setAcceptError(err instanceof ApiError ? err.message : "Failed to accept this shift.");
+      const msg = err instanceof ApiError ? err.message : "Failed to accept this shift.";
+      if (err instanceof ApiError && (err.status === 404 || msg.includes("No pending offer"))) {
+        appToast.error("Offer Unavailable", "No pending offer exists for this shift or it has expired.");
+        await loadDashboardData();
+        setView("main");
+      } else {
+        setAcceptError(msg);
+      }
     } finally {
       setIsAccepting(false);
     }
@@ -494,7 +501,17 @@ export function HealthWorkerDashboard() {
     try {
       const shift = await getShiftDetails(shiftId);
       setSelectedShift(shift);
-      setView("shift-entry");
+      const isShiftInProgress =
+        shift.status === "in_progress" ||
+        (shift as any).shift_status === "in_progress" ||
+        String(shift.status).toLowerCase() === "inprogress";
+
+      if (isShiftInProgress) {
+        setActiveShift(shift);
+        setView("active-shift");
+      } else {
+        setView("shift-entry");
+      }
     } catch {
       appToast.error("Couldn't load this shift. Please try again.");
     }

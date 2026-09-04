@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Camera, Clock, MapPin } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
 import { Card, CardContent } from "@/shared/components/ui/Card";
@@ -35,6 +35,34 @@ export function ShiftEntryScreen({
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const initialLat = (shift as any).latitude ?? (shift as any).hospital_latitude ?? 6.5244;
+  const initialLng = (shift as any).longitude ?? (shift as any).hospital_longitude ?? 3.3792;
+  const [coords, setCoords] = useState<{ lat: number; lng: number }>({
+    lat: initialLat,
+    lng: initialLng,
+  });
+
+  useEffect(() => {
+    if (typeof navigator !== "undefined" && navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          setCoords({
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude,
+          });
+        },
+        () => {},
+        { timeout: 5000 },
+      );
+    }
+  }, []);
+
+  const minLon = (coords.lng - 0.008).toFixed(4);
+  const minLat = (coords.lat - 0.008).toFixed(4);
+  const maxLon = (coords.lng + 0.008).toFixed(4);
+  const maxLat = (coords.lat + 0.008).toFixed(4);
+  const mapEmbedUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${minLon}%2C${minLat}%2C${maxLon}%2C${maxLat}&layer=mapnik&marker=${coords.lat}%2C${coords.lng}`;
 
   const handleClockIn = async () => {
     setError("");
@@ -211,7 +239,7 @@ export function ShiftEntryScreen({
             <div className="relative h-64 overflow-hidden rounded-3xl border border-neutral-200 shadow-sm dark:border-neutral-800">
               <iframe
                 title="Facility map"
-                src={`https://www.openstreetmap.org/export/embed.html?bbox=3.3712%2C6.5164%2C3.3872%2C6.5324&layer=mapnik&marker=6.5244%2C3.3792`}
+                src={mapEmbedUrl}
                 className="h-full w-full border-0"
                 loading="lazy"
               />
