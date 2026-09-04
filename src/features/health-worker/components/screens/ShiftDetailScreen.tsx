@@ -68,9 +68,14 @@ export function ShiftDetailScreen({
     );
   }
 
+  const isCompleted =
+    shift.status === "completed" ||
+    (shift as any).shift_status === "completed" ||
+    String(shift.status).toLowerCase() === "completed";
+
   return (
     <>
-      <Header title="Shift Details" onBack={onBack} />
+      <Header title={isCompleted ? "Shift Summary" : "Shift Details"} onBack={onBack} />
       <main className="space-y-4 px-5 py-4">
         <section className="rounded-3xl bg-white p-4 shadow-sm dark:bg-neutral-900">
           <div className="h-28 rounded-2xl bg-gradient-to-br from-brand-50 to-brand-100 dark:from-brand-950 dark:to-brand-900" />
@@ -80,6 +85,7 @@ export function ShiftDetailScreen({
               <p className="text-xs text-neutral-500 dark:text-neutral-500">{shift.department ?? shift.specialty ?? ""}</p>
               <div className="mt-2 flex flex-wrap gap-2">
                 <StatusBadge>{shift.role_title}</StatusBadge>
+                {isCompleted && <StatusBadge tone="green">Completed</StatusBadge>}
                 {shift.priority === "stat" && <StatusBadge tone="red">STAT Need</StatusBadge>}
                 {shift.priority === "urgent" && <StatusBadge tone="amber">Urgent</StatusBadge>}
               </div>
@@ -88,7 +94,7 @@ export function ShiftDetailScreen({
         </section>
 
         <section className="rounded-2xl bg-brand-700 p-4 text-white">
-          <p className="text-xs text-brand-100">Estimated Pay</p>
+          <p className="text-xs text-brand-100">{isCompleted ? "Total Earned" : "Estimated Pay"}</p>
           <p className="text-3xl font-bold">{shiftRateLabel(shift)}</p>
           <p className="text-xs text-brand-100">
             {shift.shift_type === "virtual" ? "Virtual shift" : "In-person"}
@@ -132,24 +138,34 @@ export function ShiftDetailScreen({
             <div className="flex h-36 items-center justify-center rounded-xl bg-brand-100/60 dark:bg-neutral-800">
               <Navigation className="h-10 w-10 text-brand-700 dark:text-brand-300" />
             </div>
-            <p className="mt-3 text-sm font-bold">On-site — exact address shown after assignment</p>
+            <p className="mt-3 text-sm font-bold">
+              {isCompleted ? "Completed On-site Shift" : "On-site — exact address shown after assignment"}
+            </p>
           </section>
         )}
 
-        <div className="grid grid-cols-[1fr_2fr] gap-3 pb-4">
-          <Button type="button" variant="outline" onClick={onBack}>
-            Back
-          </Button>
-          <Button
-            type="button"
-            onClick={onInterested}
-            isLoading={isSubmitting}
-            disabled={isSubmitting}
-            className="bg-brand-700"
-          >
-            <ShieldCheck className="mr-2 h-4 w-4" />
-            I'm Interested
-          </Button>
+        <div className="pb-4">
+          {isCompleted ? (
+            <Button type="button" variant="outline" onClick={onBack} className="w-full">
+              Back to Schedule
+            </Button>
+          ) : (
+            <div className="grid grid-cols-[1fr_2fr] gap-3">
+              <Button type="button" variant="outline" onClick={onBack}>
+                Back
+              </Button>
+              <Button
+                type="button"
+                onClick={onInterested}
+                isLoading={isSubmitting}
+                disabled={isSubmitting}
+                className="bg-brand-700"
+              >
+                <ShieldCheck className="mr-2 h-4 w-4" />
+                I'm Interested
+              </Button>
+            </div>
+          )}
         </div>
       </main>
     </>
