@@ -39,7 +39,8 @@ export type MyApplicationStatus =
   | "submitted"
   | "withdrawn"
   | "accepted"
-  | "rejected";
+  | "rejected"
+  | "offered";
 
 export interface MyApplicationEntry {
   shift_id: string;
@@ -205,9 +206,7 @@ export interface UseHealthWorkerShiftsResult {
  */
 export function useHealthWorkerShifts(): UseHealthWorkerShiftsResult {
   const [, setLastError] = useState<WorkerApiError | null>(null);
-  const storeClinicianId = useAuthStore((s) => s.clinicianId);
-  const userId = useAuthStore((s) => s.user?.id);
-  const clinicianId = storeClinicianId || userId || "";
+  const clinicianId = useAuthStore((s) => s.clinicianId);
 
   const getNearbyShifts = useCallback(
     async (params?: { lat?: number; lng?: number; radius_km?: number }) => {

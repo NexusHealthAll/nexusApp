@@ -10,6 +10,7 @@ import { useHealthWorkerShifts } from "../../hooks/useHealthWorkerShifts";
 
 const statusTone: Record<string, "blue" | "green" | "red" | "amber"> = {
   open: "amber",
+  offered: "green",
   assigned: "blue",
   upcoming: "blue",
   in_progress: "green",
@@ -66,8 +67,7 @@ export function MyApplicationsScreen({
       <main className="space-y-4 px-5 py-4">
         <p className="text-sm text-neutral-500 dark:text-neutral-500">
           Review your submitted interest and applications. Hospitals usually respond within 24
-          hours. "Respond to Offer" only works once a hospital has actually sent one for that
-          shift — otherwise it'll tell you there's nothing pending yet.
+          hours. When a hospital selects you for a shift, click "Respond to Offer" to review and confirm.
         </p>
 
         {loadError && (
@@ -86,60 +86,94 @@ export function MyApplicationsScreen({
         )}
 
         <div className="space-y-3">
-          {entries.map((entry) => (
-            <Card key={`${entry.kind}-${entry.shift_id}-${entry.created_at}`}>
-              <CardContent className="space-y-3 p-4">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="text-[10px] font-bold uppercase text-neutral-400 dark:text-neutral-500">
-                      {entry.kind === "interest" ? "Interest" : "Application"}
-                    </p>
-                    <h3 className="font-bold">{entry.role_title}</h3>
+          {entries.map((entry) => {
+            const hasOffer = entry.application_status === "offered";
+
+            return (
+              <Card key={`${entry.kind}-${entry.shift_id}-${entry.created_at}`}>
+                <CardContent className="space-y-3 p-4">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="text-[10px] font-bold uppercase text-neutral-400 dark:text-neutral-500">
+                        {entry.kind === "interest" ? "Interest" : "Application"}
+                      </p>
+                      <h3 className="font-bold">{entry.role_title}</h3>
+                    </div>
+                    <StatusBadge tone={statusTone[statusLabel(entry)] ?? "blue"}>
+                      {statusLabel(entry)}
+                    </StatusBadge>
                   </div>
-                  <StatusBadge tone={statusTone[statusLabel(entry)] ?? "blue"}>
-                    {statusLabel(entry)}
-                  </StatusBadge>
-                </div>
-                <p className="text-xs text-neutral-500 dark:text-neutral-500">
-                  {new Date(entry.scheduled_start).toLocaleString("en-NG", {
-                    month: "short",
-                    day: "numeric",
-                    hour: "numeric",
-                    minute: "2-digit",
-                  })}
-                </p>
-                {entry.kind === "interest" ? (
-                  <div className="grid grid-cols-2 gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="border-error-200 text-error-600 hover:bg-error-50 dark:border-error-800 dark:text-error-400 dark:hover:bg-error-950"
-                      isLoading={withdrawingId === entry.shift_id}
-                      disabled={
-                        withdrawingId === entry.shift_id ||
-                        !["open"].includes(entry.shift_status)
-                      }
-                      onClick={() => handleWithdraw(entry)}
-                    >
-                      Withdraw
-                    </Button>
-                    <Button
-                      type="button"
-                      className="bg-brand-700"
-                      onClick={() => onRespondToOffer(entry.shift_id)}
-                    >
-                      Respond to Offer
-                    </Button>
-                  </div>
-                ) : (
-                  <p className="text-xs text-neutral-400 dark:text-neutral-500">
-                    Formal applications can't be withdrawn yet — contact the hospital directly if
-                    needed.
+                  <p className="text-xs text-neutral-500 dark:text-neutral-500">
+                    {new Date(entry.scheduled_start).toLocaleString("en-NG", {
+                      month: "short",
+                      day: "numeric",
+                      hour: "numeric",
+                      minute: "2-digit",
+                    })}
                   </p>
-                )}
-              </CardContent>
-            </Card>
-          ))}
+                  {hasOffer ? (
+                    <div className="grid grid-cols-2 gap-2 pt-1">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="border-error-200 text-error-600 hover:bg-error-50 dark:border-error-800 dark:text-error-400 dark:hover:bg-error-950"
+                        isLoading={withdrawingId === entry.shift_id}
+                        disabled={
+                          withdrawingId === entry.shift_id ||
+                          !["open"].includes(entry.shift_status)
+                        }
+                        onClick={() => handleWithdraw(entry)}
+                      >
+                        Withdraw
+                      </Button>
+                      <Button
+                        type="button"
+                        className="bg-brand-700 font-medium"
+                        onClick={() => onRespondToOffer(entry.shift_id)}
+                      >
+                        Respond to Offer
+                      </Button>
+                    </div>
+                  ) : entry.kind === "interest" ? (
+                    <div className="flex items-center justify-between gap-2 pt-1">
+                      <span className="text-xs font-medium text-amber-600 dark:text-amber-400">
+                        Pending Hospital Selection
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="border-error-200 text-error-600 hover:bg-error-50 dark:border-error-800 dark:text-error-400 dark:hover:bg-error-950"
+                          isLoading={withdrawingId === entry.shift_id}
+                          disabled={
+                            withdrawingId === entry.shift_id ||
+                            !["open"].includes(entry.shift_status)
+                          }
+                          onClick={() => handleWithdraw(entry)}
+                        >
+                          Withdraw
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="text-xs font-medium text-brand-700 dark:text-brand-400 hover:bg-brand-50 dark:hover:bg-brand-950"
+                          onClick={() => onRespondToOffer(entry.shift_id)}
+                        >
+                          Respond to Offer
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-neutral-400 dark:text-neutral-500">
+                      Formal application {entry.application_status ?? "submitted"} — hospital will respond once reviewed.
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       </main>
     </>

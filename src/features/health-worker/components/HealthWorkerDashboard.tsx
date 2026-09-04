@@ -483,7 +483,14 @@ export function HealthWorkerDashboard() {
         setView("main");
       }
     } catch (err) {
-      setAcceptError(err instanceof ApiError ? err.message : "Failed to accept this shift.");
+      const msg = err instanceof ApiError ? err.message : "Failed to accept this shift.";
+      if (err instanceof ApiError && (err.status === 404 || msg.includes("No pending offer"))) {
+        appToast.error("Offer Unavailable", "No pending offer exists for this shift or it has expired.");
+        await loadDashboardData();
+        setView("main");
+      } else {
+        setAcceptError(msg);
+      }
     } finally {
       setIsAccepting(false);
     }
