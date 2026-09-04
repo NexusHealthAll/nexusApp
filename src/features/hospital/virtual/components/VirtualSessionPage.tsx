@@ -22,7 +22,7 @@ import { useHospitalShift } from "@/features/hospital/shifts/hooks/useHospitalSh
 import { shiftStatusDisplay } from "@/features/hospital/shifts/shiftStatusDisplay";
 import type { ApiShift } from "@/features/hospital/shifts/types";
 import { getCallWindowInfo, type CallWindowState } from "../callWindow";
-import { VirtualCallService } from "../virtualCallService";
+import { VirtualCallService, type ConsultSession } from "../virtualCallService";
 
 interface WorkerPublicDetail {
   first_name: string;
@@ -33,6 +33,29 @@ interface WorkerPublicDetail {
 
 type ConnectionState = "idle" | "connecting" | "connected" | "ended" | "error";
 
+interface LiveKitTrack {
+  kind: string;
+  attach: () => HTMLElement;
+}
+
+interface LiveKitPublication {
+  kind: string;
+  track?: LiveKitTrack;
+}
+
+interface LiveKitParticipant {
+  setCameraEnabled: (enabled: boolean) => Promise<void>;
+  setMicrophoneEnabled: (enabled: boolean) => Promise<void>;
+}
+
+interface LiveKitRoom {
+  remoteParticipants: Map<unknown, unknown>;
+  localParticipant: LiveKitParticipant;
+  connect: (url: string, token: string) => Promise<void>;
+  disconnect: () => void;
+  on: (event: string, handler: (...args: never[]) => void) => LiveKitRoom;
+}
+
 const CALL_BUTTON_LABEL: Record<CallWindowState, string> = {
   too_early: "Call Not Open Yet",
   open: "Connect Device & Join Call",
@@ -42,7 +65,7 @@ const CALL_BUTTON_LABEL: Record<CallWindowState, string> = {
 };
 
 function attachRemoteTrack(
-  track: any,
+  track: LiveKitTrack,
   container: HTMLDivElement | null,
 ) {
   if (!container) return;
@@ -69,10 +92,17 @@ export function VirtualSessionPage() {
   const [remoteJoined, setRemoteJoined] = useState(false);
   const [cameraOk, setCameraOk] = useState<boolean | null>(null);
   const [micOk, setMicOk] = useState<boolean | null>(null);
+  const [consultation, setConsultation] = useState<ConsultSession | null>(null);
 
-  const roomRef = useRef<any>(null);
+  const roomRef = useRef<LiveKitRoom | null>(null);
   const localVideoRef = useRef<HTMLDivElement | null>(null);
   const remoteVideoRef = useRef<HTMLDivElement | null>(null);
+  const consultationRef = useRef<ConsultSession | null>(null);
+  const endedByHospitalRef = useRef(false);
+
+  useEffect(() => {
+    consultationRef.current = consultation;
+  }, [consultation]);
 
   // Load the real shift; recheck the call window every 30s so the button
   // flips from disabled -> enabled without a manual refresh.
@@ -112,12 +142,28 @@ export function VirtualSessionPage() {
     return () => clearInterval(interval);
   }, []);
 
-  // Disconnect on unmount so we never leak an open LiveKit connection.
+  // Report departure and disconnect on unmount so the backend has a final
+  // participant state even when the browser closes the page.
   useEffect(() => {
     return () => {
+      if (shiftId && consultationRef.current && !endedByHospitalRef.current) {
+        void VirtualCallService.leaveSession(shiftId).catch(() => {});
+      }
       roomRef.current?.disconnect();
     };
-  }, []);
+  }, [shiftId]);
+
+  useEffect(() => {
+    if (!shiftId || !consultationRef.current || connectionState !== "connected")
+      return;
+    const refresh = () =>
+      VirtualCallService.getSession(shiftId)
+        .then(setConsultation)
+        .catch(() => {});
+    refresh();
+    const interval = setInterval(refresh, 10_000);
+    return () => clearInterval(interval);
+  }, [connectionState, shiftId]);
 
   const handleConnect = useCallback(async () => {
     if (!shiftId) return;
@@ -126,34 +172,45 @@ export function VirtualSessionPage() {
     try {
       const { url, token } = await VirtualCallService.getCallToken(shiftId);
 
-      const room = new Room();
+      const room = new Room() as LiveKitRoom;
       roomRef.current = room;
 
-      room.on(RoomEvent.TrackSubscribed, (track: any) =>
+      room.on(RoomEvent.TrackSubscribed, (track: LiveKitTrack) =>
         attachRemoteTrack(track, remoteVideoRef.current),
       );
       room.on(RoomEvent.ParticipantConnected, () => setRemoteJoined(true));
       room.on(RoomEvent.ParticipantDisconnected, () => {
         if (room.remoteParticipants.size === 0) setRemoteJoined(false);
       });
-      room.on(RoomEvent.LocalTrackPublished, (publication: any) => {
-        if (publication.track && publication.track.kind === Track.Kind.Video) {
-          const el = publication.track.attach();
-          el.className = "h-full w-full object-cover";
-          localVideoRef.current?.appendChild(el);
-        }
-      });
-      room.on(RoomEvent.LocalTrackUnpublished, (publication: any) => {
-        if (publication.kind === Track.Kind.Video && localVideoRef.current) {
-          localVideoRef.current.innerHTML = "";
-        }
-      });
+      room.on(
+        RoomEvent.LocalTrackPublished,
+        (publication: LiveKitPublication) => {
+          if (
+            publication.track &&
+            publication.track.kind === Track.Kind.Video
+          ) {
+            const el = publication.track.attach();
+            el.className = "h-full w-full object-cover";
+            localVideoRef.current?.appendChild(el);
+          }
+        },
+      );
+      room.on(
+        RoomEvent.LocalTrackUnpublished,
+        (publication: LiveKitPublication) => {
+          if (publication.kind === Track.Kind.Video && localVideoRef.current) {
+            localVideoRef.current.innerHTML = "";
+          }
+        },
+      );
       room.on(RoomEvent.Disconnected, () => {
         setConnectionState((prev) => (prev === "error" ? prev : "ended"));
         setRemoteJoined(false);
       });
 
       await room.connect(url, token);
+      const session = await VirtualCallService.getSession(shiftId);
+      setConsultation(session);
       setRemoteJoined(room.remoteParticipants.size > 0);
 
       try {
@@ -171,6 +228,7 @@ export function VirtualSessionPage() {
 
       setConnectionState("connected");
     } catch (err) {
+      console.log(err);
       setConnectError(
         err instanceof ApiError
           ? err.message
@@ -206,13 +264,30 @@ export function VirtualSessionPage() {
     }
   }, [cameraOk]);
 
-  const handleEnd = useCallback(() => {
+  const handleEnd = useCallback(async () => {
+    if (!shiftId) return;
+    try {
+      await VirtualCallService.endSession(shiftId);
+    } catch (err) {
+      setConnectError(
+        err instanceof ApiError
+          ? err.message
+          : "Couldn't end the consultation.",
+      );
+      return;
+    }
+    endedByHospitalRef.current = true;
     roomRef.current?.disconnect();
     roomRef.current = null;
+    setConsultation((current) =>
+      current
+        ? { ...current, status: "ended", ended_at: new Date().toISOString() }
+        : current,
+    );
     setConnectionState("ended");
     if (localVideoRef.current) localVideoRef.current.innerHTML = "";
     if (remoteVideoRef.current) remoteVideoRef.current.innerHTML = "";
-  }, []);
+  }, [shiftId]);
 
   if (loadError) {
     return (
