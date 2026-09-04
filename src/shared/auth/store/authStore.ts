@@ -87,20 +87,7 @@ export const useAuthStore = create<AuthStoreState>((set) => ({
   setActiveAuthFlow: (flow) => set({ activeAuthFlow: flow }),
   clearActiveAuthFlow: () => set({ activeAuthFlow: null }),
 
-  clinicianId:
-    localStorage.getItem("clinicianId") ||
-    (() => {
-      try {
-        const raw = localStorage.getItem("userData");
-        if (raw) {
-          const user = JSON.parse(raw) as AuthUser;
-          return user.id ?? "";
-        }
-      } catch {
-        // ignore
-      }
-      return "";
-    })(),
+  clinicianId: localStorage.getItem("clinicianId") ?? "",
   setClinicianId: (clinicianId) => {
     localStorage.setItem("clinicianId", clinicianId);
     set({ clinicianId });
@@ -150,13 +137,7 @@ export const useAuthStore = create<AuthStoreState>((set) => ({
     localStorage.setItem("refreshToken", refreshToken);
     localStorage.setItem("userData", JSON.stringify(user));
 
-    const effectiveClinicianId =
-      localStorage.getItem("clinicianId") || user?.id || "";
-    if (effectiveClinicianId) {
-      localStorage.setItem("clinicianId", effectiveClinicianId);
-    }
-
-    set({ accessToken, refreshToken, user, clinicianId: effectiveClinicianId });
+    set({ accessToken, refreshToken, user });
   },
 
   clearAuthSession: () => {
