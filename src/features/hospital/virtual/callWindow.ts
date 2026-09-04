@@ -1,6 +1,14 @@
-import type { ApiShiftStatus, ApiShiftType } from "@/features/hospital/shifts/types";
+import type {
+  ApiShiftStatus,
+  ApiShiftType,
+} from "@/features/hospital/shifts/types";
 
-export type CallWindowState = "too_early" | "open" | "elapsed" | "completed" | "unavailable";
+export type CallWindowState =
+  | "too_early"
+  | "open"
+  | "elapsed"
+  | "completed"
+  | "unavailable";
 
 export interface CallWindowInfo {
   state: CallWindowState;
@@ -12,7 +20,10 @@ export interface CallWindowInfo {
 const CALL_WINDOW_MINUTES = 60;
 
 function formatTime(date: Date): string {
-  return date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+  return date.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+  });
 }
 
 /**
@@ -22,21 +33,35 @@ function formatTime(date: Date): string {
  * nexus-backend, which enforces the same rule server-side.
  */
 export function getCallWindowInfo(
-  shift: { shift_type: ApiShiftType; status: ApiShiftStatus; scheduled_start: string },
+  shift: {
+    shift_type: ApiShiftType;
+    status: ApiShiftStatus;
+    scheduled_start: string;
+    scheduled_end: string;
+  },
   now: Date = new Date(),
 ): CallWindowInfo {
   if (shift.shift_type !== "virtual") {
-    return { state: "unavailable", message: "This is an in-person shift — no call session." };
+    return {
+      state: "unavailable",
+      message: "This is an in-person shift — no call session.",
+    };
   }
 
   if (shift.status === "completed") {
-    return { state: "completed", message: "This consultation has already taken place." };
+    return {
+      state: "completed",
+      message: "This consultation has already taken place.",
+    };
   }
   if (shift.status === "cancelled") {
     return { state: "unavailable", message: "This shift was cancelled." };
   }
   if (shift.status === "no_show") {
-    return { state: "unavailable", message: "The clinician did not show up for this shift." };
+    return {
+      state: "unavailable",
+      message: "The clinician did not show up for this shift.",
+    };
   }
   if (shift.status === "open") {
     return {
@@ -46,8 +71,9 @@ export function getCallWindowInfo(
   }
 
   const start = new Date(shift.scheduled_start);
+  const end = new Date(shift.scheduled_end);
   const opensAt = new Date(start.getTime() - CALL_WINDOW_MINUTES * 60_000);
-  const closesAt = new Date(start.getTime() + CALL_WINDOW_MINUTES * 60_000);
+  const closesAt = new Date(end.getTime() + CALL_WINDOW_MINUTES * 60_000);
 
   if (now < opensAt) {
     return {
@@ -58,7 +84,7 @@ export function getCallWindowInfo(
   if (now > closesAt) {
     return {
       state: "elapsed",
-      message: `The call window closed at ${formatTime(closesAt)} — 1 hour after the scheduled start.`,
+      message: `The call window closed at ${formatTime(closesAt)} — 1 hour after the scheduled end.`,
     };
   }
   return { state: "open", message: "Ready to connect." };
