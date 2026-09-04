@@ -501,7 +501,17 @@ export function HealthWorkerDashboard() {
     try {
       const shift = await getShiftDetails(shiftId);
       setSelectedShift(shift);
-      setView("shift-entry");
+      const isShiftInProgress =
+        shift.status === "in_progress" ||
+        (shift as any).shift_status === "in_progress" ||
+        String(shift.status).toLowerCase() === "inprogress";
+
+      if (isShiftInProgress) {
+        setActiveShift(shift);
+        setView("active-shift");
+      } else {
+        setView("shift-entry");
+      }
     } catch {
       appToast.error("Couldn't load this shift. Please try again.");
     }
