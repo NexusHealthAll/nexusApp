@@ -46,6 +46,7 @@ interface LiveKitPublication {
 interface LiveKitParticipant {
   setCameraEnabled: (enabled: boolean) => Promise<void>;
   setMicrophoneEnabled: (enabled: boolean) => Promise<void>;
+  getTrackPublication: (source: string) => LiveKitPublication | undefined;
 }
 
 interface LiveKitRoom {
@@ -76,6 +77,22 @@ function attachRemoteTrack(
   container.appendChild(el);
 }
 
+// Attaches (or re-attaches) the local camera track into the self-view tile.
+// Clears any previous element first so this is safe to call repeatedly.
+function attachLocalVideo(
+  track: LiveKitTrack,
+  container: HTMLDivElement | null,
+) {
+  if (!container) return false;
+  const el = track.attach() as HTMLVideoElement;
+  el.muted = true;
+  el.playsInline = true;
+  el.className = "h-full w-full object-cover";
+  container.innerHTML = "";
+  container.appendChild(el);
+  return true;
+}
+
 export function VirtualSessionPage() {
   const { shiftId } = useParams<{ shiftId: string }>();
   const navigate = useNavigate();
@@ -90,6 +107,7 @@ export function VirtualSessionPage() {
     useState<ConnectionState>("idle");
   const [connectError, setConnectError] = useState("");
   const [remoteJoined, setRemoteJoined] = useState(false);
+  const [localVideoAttached, setLocalVideoAttached] = useState(false);
   const [cameraOk, setCameraOk] = useState<boolean | null>(null);
   const [micOk, setMicOk] = useState<boolean | null>(null);
   const [consultation, setConsultation] = useState<ConsultSession | null>(null);
@@ -165,6 +183,23 @@ export function VirtualSessionPage() {
     return () => clearInterval(interval);
   }, [connectionState, shiftId]);
 
+  // The local camera track is published inside handleConnect() while the state
+  // is still "connecting", so the self-view tile (and localVideoRef) hasn't
+  // mounted yet and the LocalTrackPublished event fires into a null ref. Once
+  // the connected view is on screen, attach the already-published camera track
+  // so the hospital sees its own feed instead of the placeholder icon.
+  useEffect(() => {
+    if (connectionState !== "connected") return;
+    const room = roomRef.current;
+    if (!room || !localVideoRef.current) return;
+    if (localVideoAttached && localVideoRef.current.childElementCount > 0) return;
+    const pub = room.localParticipant.getTrackPublication(Track.Source.Camera);
+    if (pub?.track && pub.track.kind === Track.Kind.Video) {
+      const ok = attachLocalVideo(pub.track, localVideoRef.current);
+      if (ok) setLocalVideoAttached(true);
+    }
+  }, [connectionState, cameraOk, localVideoAttached]);
+
   const handleConnect = useCallback(async () => {
     if (!shiftId) return;
     setConnectError("");
@@ -189,9 +224,11 @@ export function VirtualSessionPage() {
             publication.track &&
             publication.track.kind === Track.Kind.Video
           ) {
-            const el = publication.track.attach();
-            el.className = "h-full w-full object-cover";
-            localVideoRef.current?.appendChild(el);
+            const ok = attachLocalVideo(
+              publication.track,
+              localVideoRef.current,
+            );
+            if (ok) setLocalVideoAttached(true);
           }
         },
       );
@@ -200,6 +237,7 @@ export function VirtualSessionPage() {
         (publication: LiveKitPublication) => {
           if (publication.kind === Track.Kind.Video && localVideoRef.current) {
             localVideoRef.current.innerHTML = "";
+            setLocalVideoAttached(false);
           }
         },
       );
@@ -285,6 +323,7 @@ export function VirtualSessionPage() {
         : current,
     );
     setConnectionState("ended");
+    setLocalVideoAttached(false);
     if (localVideoRef.current) localVideoRef.current.innerHTML = "";
     if (remoteVideoRef.current) remoteVideoRef.current.innerHTML = "";
   }, [shiftId]);
@@ -460,9 +499,12 @@ export function VirtualSessionPage() {
               <div
                 ref={localVideoRef}
                 className="absolute inset-0 flex items-center justify-center"
-              >
-                <Video className="h-14 w-14 text-white/15" />
-              </div>
+              />
+              {!localVideoAttached && (
+                <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                  <Video className="h-14 w-14 text-white/15" />
+                </div>
+              )}
               <span className="absolute bottom-4 left-4 text-[10px] font-semibold uppercase tracking-widest text-white/30">
                 Kiosk device — live feed
               </span>
