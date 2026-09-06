@@ -1,18 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Room, RoomEvent, Track } from "livekit-client";
-import {
-  ArrowLeft,
-  Check,
-  Mic,
-  MicOff,
-  PhoneOff,
-  Settings,
-  Star,
-  Video,
-  VideoOff,
-  X,
-} from "lucide-react";
+import { ArrowLeft, Check, Star, Video, VideoOff, X } from "lucide-react";
 import { cn } from "@/shared/utils/cn";
 import { PATHS } from "@/routes/paths";
 import { AvatarInitials } from "@/shared/components/ui/AvatarInitials";
@@ -23,53 +11,16 @@ import { ApiError } from "@/lib/apiError";
 import { useHospitalShift } from "@/features/hospital/shifts/hooks/useHospitalShift";
 import { shiftStatusDisplay } from "@/features/hospital/shifts/shiftStatusDisplay";
 import type { ApiShift } from "@/features/hospital/shifts/types";
+import { PreJoinScreen } from "@/features/virtual-call/components/PreJoinScreen";
+import { CallStage } from "@/features/virtual-call/components/CallStage";
+import { useVirtualCallRoom } from "@/features/virtual-call/useVirtualCallRoom";
 import { getCallWindowInfo, type CallWindowState } from "../callWindow";
-import { VirtualCallService, type ConsultSession } from "../virtualCallService";
-import { DeviceField, PreJoinScreen, type JoinOptions } from "./PreJoinScreen";
-import {
-  LS_AUDIO_DEVICE,
-  LS_VIDEO_DEVICE,
-  writeStoredDevice,
-} from "../mediaDevices";
 
 interface WorkerPublicDetail {
   first_name: string;
   last_name: string;
   rating: number;
   role_title: string;
-}
-
-type ConnectionState =
-  | "idle"
-  | "prejoin"
-  | "connecting"
-  | "connected"
-  | "ended"
-  | "error";
-
-interface LiveKitTrack {
-  kind: string;
-  attach: () => HTMLElement;
-}
-
-interface LiveKitPublication {
-  kind: string;
-  track?: LiveKitTrack;
-}
-
-interface LiveKitParticipant {
-  setCameraEnabled: (enabled: boolean) => Promise<void>;
-  setMicrophoneEnabled: (enabled: boolean) => Promise<void>;
-  getTrackPublication: (source: string) => LiveKitPublication | undefined;
-}
-
-interface LiveKitRoom {
-  remoteParticipants: Map<unknown, unknown>;
-  localParticipant: LiveKitParticipant;
-  connect: (url: string, token: string) => Promise<void>;
-  disconnect: () => void;
-  switchActiveDevice: (kind: MediaDeviceKind, deviceId: string) => Promise<void>;
-  on: (event: string, handler: (...args: never[]) => void) => LiveKitRoom;
 }
 
 const CALL_BUTTON_LABEL: Record<CallWindowState, string> = {
@@ -79,69 +30,6 @@ const CALL_BUTTON_LABEL: Record<CallWindowState, string> = {
   completed: "Consultation Completed",
   unavailable: "Call Unavailable",
 };
-
-function attachRemoteTrack(
-  track: LiveKitTrack,
-  container: HTMLDivElement | null,
-) {
-  if (!container) return;
-  const el = track.attach();
-  if (track.kind === Track.Kind.Video) {
-    el.className = "h-full w-full object-cover";
-  }
-  container.appendChild(el);
-}
-
-// Attaches (or re-attaches) the local camera track into the self-view tile.
-// Clears any previous element first so this is safe to call repeatedly. The
-// feed is mirrored so it reads as a "looking in a mirror" self-view.
-function attachLocalVideo(
-  track: LiveKitTrack,
-  container: HTMLDivElement | null,
-) {
-  if (!container) return false;
-  const el = track.attach() as HTMLVideoElement;
-  el.muted = true;
-  el.playsInline = true;
-  el.className = "h-full w-full -scale-x-100 object-cover";
-  container.innerHTML = "";
-  container.appendChild(el);
-  return true;
-}
-
-interface ControlToggleProps {
-  on: boolean;
-  onClick: () => void;
-  OnIcon: typeof Mic;
-  OffIcon: typeof Mic;
-  label: string;
-}
-
-function ControlToggle({
-  on,
-  onClick,
-  OnIcon,
-  OffIcon,
-  label,
-}: ControlToggleProps) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={!on}
-      aria-label={label}
-      title={label}
-      className={cn(
-        "flex h-11 w-11 items-center justify-center rounded-full transition-colors",
-        on
-          ? "bg-white/15 text-white hover:bg-white/25"
-          : "bg-error-500 text-white hover:bg-error-600",
-      )}
-    >
-      {on ? <OnIcon className="h-5 w-5" /> : <OffIcon className="h-5 w-5" />}
-    </button>
-  );
-}
 
 export function VirtualSessionPage() {
   const { shiftId } = useParams<{ shiftId: string }>();
@@ -153,38 +41,7 @@ export function VirtualSessionPage() {
   const [physician, setPhysician] = useState<WorkerPublicDetail | null>(null);
   const [now, setNow] = useState(() => new Date());
 
-  const [connectionState, setConnectionState] =
-    useState<ConnectionState>("idle");
-  const [connectError, setConnectError] = useState("");
-  const [remoteJoined, setRemoteJoined] = useState(false);
-  const [localVideoAttached, setLocalVideoAttached] = useState(false);
-  const [cameraOk, setCameraOk] = useState<boolean | null>(null);
-  const [micOk, setMicOk] = useState<boolean | null>(null);
-  const [consultation, setConsultation] = useState<ConsultSession | null>(null);
-
-  // Whether a clinician is already connected, polled while in the green room.
-  const [prejoinPresent, setPrejoinPresent] = useState(false);
-  const [prejoinPresentName, setPrejoinPresentName] = useState<string | null>(
-    null,
-  );
-
-  // In-call device settings popover.
-  const [settingsOpen, setSettingsOpen] = useState(false);
-  const [inCallCameras, setInCallCameras] = useState<MediaDeviceInfo[]>([]);
-  const [inCallMics, setInCallMics] = useState<MediaDeviceInfo[]>([]);
-  const [activeVideoId, setActiveVideoId] = useState<string | undefined>();
-  const [activeAudioId, setActiveAudioId] = useState<string | undefined>();
-
-  const roomRef = useRef<LiveKitRoom | null>(null);
-  const localVideoRef = useRef<HTMLDivElement | null>(null);
-  const remoteVideoRef = useRef<HTMLDivElement | null>(null);
-  const consultationRef = useRef<ConsultSession | null>(null);
-  const endedByHospitalRef = useRef(false);
-  const deviceIdsRef = useRef<{ video?: string; audio?: string }>({});
-
-  useEffect(() => {
-    consultationRef.current = consultation;
-  }, [consultation]);
+  const call = useVirtualCallRoom(shiftId, "hospital virtual shift page");
 
   // Load the real shift; recheck the call window every 30s so the button
   // flips from disabled -> enabled without a manual refresh.
@@ -224,268 +81,6 @@ export function VirtualSessionPage() {
     return () => clearInterval(interval);
   }, []);
 
-  // Report departure and disconnect on unmount so the backend has a final
-  // participant state even when the browser closes the page.
-  useEffect(() => {
-    return () => {
-      if (shiftId && consultationRef.current && !endedByHospitalRef.current) {
-        void VirtualCallService.leaveSession(shiftId).catch(() => {});
-      }
-      roomRef.current?.disconnect();
-    };
-  }, [shiftId]);
-
-  useEffect(() => {
-    if (!shiftId || !consultationRef.current || connectionState !== "connected")
-      return;
-    const refresh = () =>
-      VirtualCallService.getSession(shiftId)
-        .then(setConsultation)
-        .catch(() => {});
-    refresh();
-    const interval = setInterval(refresh, 10_000);
-    return () => clearInterval(interval);
-  }, [connectionState, shiftId]);
-
-  // The local camera track is published inside handleJoin() while the state is
-  // still "connecting", so the self-view tile (and localVideoRef) hasn't
-  // mounted yet and the LocalTrackPublished event fires into a null ref. Once
-  // the connected view is on screen, attach the already-published camera track
-  // so the hospital sees its own feed instead of the placeholder icon.
-  useEffect(() => {
-    if (connectionState !== "connected") return;
-    const room = roomRef.current;
-    if (!room || !localVideoRef.current) return;
-    if (localVideoAttached && localVideoRef.current.childElementCount > 0) return;
-    const pub = room.localParticipant.getTrackPublication(Track.Source.Camera);
-    if (pub?.track && pub.track.kind === Track.Kind.Video) {
-      const ok = attachLocalVideo(pub.track, localVideoRef.current);
-      if (ok) setLocalVideoAttached(true);
-    }
-  }, [connectionState, cameraOk, localVideoAttached]);
-
-  // While the green room is open (or a join is in flight / just failed), poll
-  // the session so the hospital can see whether the clinician is already there.
-  useEffect(() => {
-    if (!shiftId) return;
-    const watching =
-      connectionState === "prejoin" ||
-      connectionState === "connecting" ||
-      connectionState === "error";
-    if (!watching) return;
-    let cancelled = false;
-    const poll = () =>
-      VirtualCallService.getSession(shiftId)
-        .then((session) => {
-          if (cancelled) return;
-          const other = session.participants.find((p) => p.connected);
-          setPrejoinPresent(Boolean(other));
-          setPrejoinPresentName(other?.display_name ?? null);
-        })
-        .catch(() => {
-          if (!cancelled) {
-            setPrejoinPresent(false);
-            setPrejoinPresentName(null);
-          }
-        });
-    poll();
-    const interval = setInterval(poll, 5_000);
-    return () => {
-      cancelled = true;
-      clearInterval(interval);
-    };
-  }, [connectionState, shiftId]);
-
-  // Populate the in-call device pickers when the settings popover opens.
-  useEffect(() => {
-    if (!settingsOpen) return;
-    setActiveVideoId(deviceIdsRef.current.video);
-    setActiveAudioId(deviceIdsRef.current.audio);
-    navigator.mediaDevices
-      .enumerateDevices()
-      .then((devices) => {
-        setInCallCameras(devices.filter((d) => d.kind === "videoinput"));
-        setInCallMics(devices.filter((d) => d.kind === "audioinput"));
-      })
-      .catch(() => {});
-  }, [settingsOpen]);
-
-  const openPreJoin = useCallback(() => {
-    setConnectError("");
-    setConnectionState("prejoin");
-  }, []);
-
-  const cancelPreJoin = useCallback(() => {
-    setConnectError("");
-    setConnectionState("idle");
-  }, []);
-
-  const handleJoin = useCallback(
-    async (opts: JoinOptions) => {
-      if (!shiftId) return;
-      setConnectError("");
-      setConnectionState("connecting");
-      deviceIdsRef.current = {
-        video: opts.videoDeviceId,
-        audio: opts.audioDeviceId,
-      };
-      try {
-        const { url, token } = await VirtualCallService.getCallToken(shiftId);
-
-        const room = new Room({
-          adaptiveStream: true,
-          dynacast: true,
-          ...(opts.videoDeviceId
-            ? { videoCaptureDefaults: { deviceId: opts.videoDeviceId } }
-            : {}),
-          ...(opts.audioDeviceId
-            ? { audioCaptureDefaults: { deviceId: opts.audioDeviceId } }
-            : {}),
-        }) as LiveKitRoom;
-        roomRef.current = room;
-
-        room.on(RoomEvent.TrackSubscribed, (track: LiveKitTrack) =>
-          attachRemoteTrack(track, remoteVideoRef.current),
-        );
-        room.on(RoomEvent.ParticipantConnected, () => setRemoteJoined(true));
-        room.on(RoomEvent.ParticipantDisconnected, () => {
-          if (room.remoteParticipants.size === 0) setRemoteJoined(false);
-        });
-        room.on(
-          RoomEvent.LocalTrackPublished,
-          (publication: LiveKitPublication) => {
-            if (
-              publication.track &&
-              publication.track.kind === Track.Kind.Video
-            ) {
-              const ok = attachLocalVideo(
-                publication.track,
-                localVideoRef.current,
-              );
-              if (ok) setLocalVideoAttached(true);
-            }
-          },
-        );
-        room.on(
-          RoomEvent.LocalTrackUnpublished,
-          (publication: LiveKitPublication) => {
-            if (publication.kind === Track.Kind.Video && localVideoRef.current) {
-              localVideoRef.current.innerHTML = "";
-              setLocalVideoAttached(false);
-            }
-          },
-        );
-        room.on(RoomEvent.Disconnected, () => {
-          setConnectionState((prev) => (prev === "error" ? prev : "ended"));
-          setRemoteJoined(false);
-        });
-
-        await room.connect(url, token);
-        const session = await VirtualCallService.getSession(shiftId);
-        setConsultation(session);
-        setRemoteJoined(room.remoteParticipants.size > 0);
-
-        try {
-          await room.localParticipant.setCameraEnabled(opts.camEnabled);
-          setCameraOk(opts.camEnabled);
-        } catch {
-          setCameraOk(false);
-        }
-        try {
-          await room.localParticipant.setMicrophoneEnabled(opts.micEnabled);
-          setMicOk(opts.micEnabled);
-        } catch {
-          setMicOk(false);
-        }
-
-        setConnectionState("connected");
-      } catch (err) {
-        console.log(err);
-        setConnectError(
-          err instanceof ApiError
-            ? err.message
-            : "Couldn't connect to the call — check your connection and try again.",
-        );
-        setConnectionState("error");
-        roomRef.current?.disconnect();
-        roomRef.current = null;
-      }
-    },
-    [shiftId],
-  );
-
-  const toggleMic = useCallback(async () => {
-    const room = roomRef.current;
-    if (!room) return;
-    const next = !micOk;
-    try {
-      await room.localParticipant.setMicrophoneEnabled(next);
-      setMicOk(next);
-    } catch {
-      setMicOk(false);
-    }
-  }, [micOk]);
-
-  const toggleCam = useCallback(async () => {
-    const room = roomRef.current;
-    if (!room) return;
-    const next = !cameraOk;
-    try {
-      await room.localParticipant.setCameraEnabled(next);
-      setCameraOk(next);
-    } catch {
-      setCameraOk(false);
-    }
-  }, [cameraOk]);
-
-  const switchDevice = useCallback(
-    async (kind: "videoinput" | "audioinput", deviceId: string) => {
-      if (!deviceId || !roomRef.current) return;
-      try {
-        await roomRef.current.switchActiveDevice(kind, deviceId);
-        if (kind === "videoinput") {
-          deviceIdsRef.current.video = deviceId;
-          setActiveVideoId(deviceId);
-          writeStoredDevice(LS_VIDEO_DEVICE, deviceId);
-        } else {
-          deviceIdsRef.current.audio = deviceId;
-          setActiveAudioId(deviceId);
-          writeStoredDevice(LS_AUDIO_DEVICE, deviceId);
-        }
-      } catch (err) {
-        console.log(err);
-      }
-    },
-    [],
-  );
-
-  const handleEnd = useCallback(async () => {
-    if (!shiftId) return;
-    try {
-      await VirtualCallService.endSession(shiftId);
-    } catch (err) {
-      setConnectError(
-        err instanceof ApiError
-          ? err.message
-          : "Couldn't end the consultation.",
-      );
-      return;
-    }
-    endedByHospitalRef.current = true;
-    roomRef.current?.disconnect();
-    roomRef.current = null;
-    setConsultation((current) =>
-      current
-        ? { ...current, status: "ended", ended_at: new Date().toISOString() }
-        : current,
-    );
-    setConnectionState("ended");
-    setSettingsOpen(false);
-    setLocalVideoAttached(false);
-    if (localVideoRef.current) localVideoRef.current.innerHTML = "";
-    if (remoteVideoRef.current) remoteVideoRef.current.innerHTML = "";
-  }, [shiftId]);
-
   if (loadError) {
     return (
       <div className="flex flex-col items-center justify-center gap-4 py-24 text-center">
@@ -513,13 +108,13 @@ export function VirtualSessionPage() {
   }
 
   const callWindow = getCallWindowInfo(shift, now);
-  const isConnected = connectionState === "connected";
-  const isConnecting = connectionState === "connecting";
+  const isConnected = call.state === "connected";
+  const isConnecting = call.state === "connecting";
   const isPreJoin =
-    connectionState === "prejoin" ||
-    connectionState === "connecting" ||
-    connectionState === "error";
-  const canConnect = callWindow.state === "open" && connectionState === "idle";
+    call.state === "prejoin" ||
+    call.state === "connecting" ||
+    call.state === "error";
+  const canConnect = callWindow.state === "open" && call.state === "idle";
   const physicianName = physician
     ? `Dr. ${physician.first_name} ${physician.last_name}`
     : null;
@@ -530,7 +125,7 @@ export function VirtualSessionPage() {
         className:
           "border border-success-400/40 bg-success-500/10 text-success-700 dark:text-success-400",
       }
-    : shift.status === "completed" || connectionState === "ended"
+    : shift.status === "completed" || call.state === "ended"
       ? {
           label: "Completed",
           className:
@@ -576,12 +171,12 @@ export function VirtualSessionPage() {
         <div className="flex-1 bg-[#0d1424]">
           <PreJoinScreen
             selfName="You"
-            remotePresent={prejoinPresent}
-            remotePresentName={prejoinPresentName ?? physicianName}
+            remotePresent={call.present}
+            remotePresentName={call.presentName ?? physicianName}
             joining={isConnecting}
-            error={connectError || undefined}
-            onJoin={handleJoin}
-            onCancel={cancelPreJoin}
+            error={call.error || undefined}
+            onJoin={call.join}
+            onCancel={call.cancelPreJoin}
           />
         </div>
       ) : (
@@ -607,156 +202,44 @@ export function VirtualSessionPage() {
           </div>
 
           {/* Video area */}
-          <div className="relative mt-6 flex aspect-video items-center justify-center overflow-hidden rounded-2xl bg-[#202124]">
-            {isConnected ? (
-              <>
-                {/* Self-view — main stage */}
-                <div
-                  ref={localVideoRef}
-                  className="absolute inset-0 flex items-center justify-center"
-                />
-                {!localVideoAttached && (
-                  <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-2">
-                    <VideoOff className="h-12 w-12 text-white/20" />
-                    <span className="text-xs font-medium text-white/40">
-                      Your camera is off
-                    </span>
-                  </div>
-                )}
-
-                <span className="absolute left-4 top-4 flex items-center gap-1.5 rounded-full border border-white/20 bg-black/60 px-3 py-1 text-xs font-semibold text-white">
-                  <span className="h-1.5 w-1.5 rounded-full bg-success-400" />
-                  Connected
-                </span>
-                <span className="absolute bottom-4 left-4 rounded-md bg-black/50 px-2 py-1 text-[10px] font-semibold uppercase tracking-widest text-white/70">
-                  You · Kiosk device
-                </span>
-
-                {/* Remote physician — corner tile */}
-                <div className="absolute right-4 top-4 h-24 w-40 overflow-hidden rounded-xl border border-white/10 bg-[#3c4043] shadow-lg sm:h-32 sm:w-52">
-                  <div ref={remoteVideoRef} className="absolute inset-0" />
-                  {!remoteJoined && (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5">
-                      <AvatarInitials
-                        name={physicianName ?? "Dr"}
-                        className="bg-secondary-600/40 font-bold text-secondary-200"
-                      />
-                      <span className="px-2 text-center text-[10px] font-medium text-white/50">
-                        Waiting for clinician…
-                      </span>
-                    </div>
-                  )}
-                  {remoteJoined && (
-                    <span className="absolute bottom-1 left-1 rounded bg-black/50 px-1.5 py-0.5 text-[10px] font-medium text-white">
-                      {physicianName ?? "Clinician"}
-                    </span>
-                  )}
-                </div>
-
-                {/* Floating control bar */}
-                <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-2 rounded-full border border-white/10 bg-black/60 px-3 py-2 backdrop-blur">
-                  <ControlToggle
-                    on={Boolean(micOk)}
-                    onClick={toggleMic}
-                    OnIcon={Mic}
-                    OffIcon={MicOff}
-                    label={micOk ? "Mute microphone" : "Unmute microphone"}
-                  />
-                  <ControlToggle
-                    on={Boolean(cameraOk)}
-                    onClick={toggleCam}
-                    OnIcon={Video}
-                    OffIcon={VideoOff}
-                    label={cameraOk ? "Turn off camera" : "Turn on camera"}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setSettingsOpen((v) => !v)}
-                    aria-label="Device settings"
-                    title="Device settings"
-                    className={cn(
-                      "flex h-11 w-11 items-center justify-center rounded-full transition-colors",
-                      settingsOpen
-                        ? "bg-white/25 text-white"
-                        : "bg-white/15 text-white hover:bg-white/25",
-                    )}
-                  >
-                    <Settings className="h-5 w-5" />
-                  </button>
-                  <span className="mx-1 h-6 w-px bg-white/15" />
-                  <button
-                    type="button"
-                    onClick={handleEnd}
-                    className="flex items-center gap-1.5 rounded-full bg-error-500 px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-error-600"
-                  >
-                    <PhoneOff className="h-4 w-4" />
-                    End
-                  </button>
-                </div>
-
-                {/* Device settings popover */}
-                {settingsOpen && (
-                  <>
-                    <button
-                      type="button"
-                      aria-label="Close settings"
-                      onClick={() => setSettingsOpen(false)}
-                      className="fixed inset-0 z-40 cursor-default"
-                    />
-                    <div className="absolute bottom-20 left-1/2 z-50 w-72 -translate-x-1/2 rounded-xl border border-white/10 bg-[#2a2a2e] p-4 shadow-2xl">
-                      <p className="mb-3 text-[11px] font-bold uppercase tracking-wider text-white/50">
-                        Devices
-                      </p>
-                      <div className="space-y-3">
-                        <DeviceField
-                          label="Camera"
-                          icon={<Video className="h-3.5 w-3.5" />}
-                          devices={inCallCameras}
-                          value={activeVideoId}
-                          onChange={(id) => switchDevice("videoinput", id)}
-                        />
-                        <DeviceField
-                          label="Microphone"
-                          icon={<Mic className="h-3.5 w-3.5" />}
-                          devices={inCallMics}
-                          value={activeAudioId}
-                          onChange={(id) => switchDevice("audioinput", id)}
-                        />
-                      </div>
-                    </div>
-                  </>
-                )}
-              </>
-            ) : (
-              <div className="flex flex-col items-center px-6 text-center">
-                <VideoOff className="h-10 w-10 text-white/25" />
-                <p className="mt-4 max-w-sm text-sm text-white/60">
-                  {connectionState === "ended"
-                    ? "This consultation has ended."
-                    : callWindow.message}
+          {isConnected ? (
+            <CallStage
+              call={call}
+              className="mt-6"
+              selfLabel="You · Kiosk device"
+              remoteLabel={physicianName ?? "Clinician"}
+              remoteFallbackName={physicianName}
+              remoteRole="clinician"
+              onHangup={call.end}
+              hangupLabel="End"
+            />
+          ) : (
+            <div className="relative mt-6 flex aspect-video flex-col items-center justify-center overflow-hidden rounded-2xl bg-[#202124] px-6 text-center">
+              <VideoOff className="h-10 w-10 text-white/25" />
+              <p className="mt-4 max-w-sm text-sm text-white/60">
+                {call.state === "ended"
+                  ? "This consultation has ended."
+                  : callWindow.message}
+              </p>
+              {call.error && (
+                <p className="mt-2 max-w-sm text-sm text-error-400">
+                  {call.error}
                 </p>
-                {connectError && (
-                  <p className="mt-2 max-w-sm text-sm text-error-400">
-                    {connectError}
-                  </p>
-                )}
-                {connectionState !== "ended" && (
-                  <Tooltip
-                    content={!canConnect ? callWindow.message : undefined}
+              )}
+              {call.state !== "ended" && (
+                <Tooltip content={!canConnect ? callWindow.message : undefined}>
+                  <Button
+                    onClick={call.openPreJoin}
+                    disabled={!canConnect}
+                    className="mt-6 flex items-center gap-2"
                   >
-                    <Button
-                      onClick={openPreJoin}
-                      disabled={!canConnect}
-                      className="mt-6 flex items-center gap-2"
-                    >
-                      <Video className="h-4 w-4" />
-                      {CALL_BUTTON_LABEL[callWindow.state]}
-                    </Button>
-                  </Tooltip>
-                )}
-              </div>
-            )}
-          </div>
+                    <Video className="h-4 w-4" />
+                    {CALL_BUTTON_LABEL[callWindow.state]}
+                  </Button>
+                </Tooltip>
+              )}
+            </div>
+          )}
 
           {/* Bottom grid */}
           <div className="mt-6 grid gap-4 lg:grid-cols-2">
@@ -830,20 +313,20 @@ export function VirtualSessionPage() {
                   </h2>
                   <div className="mt-4 grid grid-cols-2 gap-3">
                     <span className="flex items-center justify-center gap-2 rounded-lg border border-neutral-100 bg-neutral-50 px-3 py-2.5 text-sm font-medium text-neutral-700 dark:border-white/10 dark:bg-black/30 dark:text-white/80">
-                      {cameraOk ? (
+                      {call.cameraOn ? (
                         <Check className="h-4 w-4 text-success-500" />
                       ) : (
                         <X className="h-4 w-4 text-error-500" />
                       )}
-                      {cameraOk ? "Camera OK" : "Camera Off"}
+                      {call.cameraOn ? "Camera OK" : "Camera Off"}
                     </span>
                     <span className="flex items-center justify-center gap-2 rounded-lg border border-neutral-100 bg-neutral-50 px-3 py-2.5 text-sm font-medium text-neutral-700 dark:border-white/10 dark:bg-black/30 dark:text-white/80">
-                      {micOk ? (
+                      {call.micOn ? (
                         <Check className="h-4 w-4 text-success-500" />
                       ) : (
                         <X className="h-4 w-4 text-error-500" />
                       )}
-                      {micOk ? "Microphone OK" : "Microphone Muted"}
+                      {call.micOn ? "Microphone OK" : "Microphone Muted"}
                     </span>
                   </div>
                 </div>

@@ -6,10 +6,20 @@ import {
   BriefcaseMedical,
   Calendar,
   Home,
+  Mic,
+  MicOff,
+  PhoneOff,
   User,
+  Video,
+  VideoOff,
   Wallet,
 } from "lucide-react";
 import { cn } from "@/shared/utils/cn";
+import { PreJoinScreen } from "@/features/virtual-call/components/PreJoinScreen";
+import {
+  useVirtualCallRoom,
+  type VirtualCallRoom,
+} from "@/features/virtual-call/useVirtualCallRoom";
 import { appToast } from "@/shared/components/feedback/toast";
 import apiClient from "@/lib/apiClient";
 import { ApiError } from "@/lib/apiError";
@@ -20,6 +30,7 @@ import type { ApiShift } from "@/features/hospital/shifts/types";
 import { ThemeToggle } from "@/shared/components/ui/ThemeToggle";
 import {
   useHealthWorkerShifts,
+  type ClockinMethod,
   type EarningsSummary,
   type HandoverResponse,
   type MyApplicationEntry,
@@ -41,6 +52,7 @@ import { ScheduleScreen, type ScheduleTab } from "./screens/ScheduleScreen";
 import { ConfirmShiftScreen } from "./screens/ConfirmShiftScreen";
 import { ShiftEntryScreen } from "./screens/ShiftEntryScreen";
 import { ActiveShiftScreen } from "./screens/ActiveShiftScreen";
+import { VirtualCallScreen } from "./screens/VirtualCallScreen";
 import { WaitingRoomScreen } from "./screens/WaitingRoomScreen";
 import { PatientIntakeScreen } from "./screens/PatientIntakeScreen";
 import { PatientDetailScreen } from "./screens/PatientDetailScreen";
@@ -62,6 +74,7 @@ type FlowView =
   | "confirm-shift"
   | "shift-entry"
   | "active-shift"
+  | "virtual-call"
   | "waiting-room"
   | "patient-intake"
   | "patient-detail"
@@ -81,6 +94,7 @@ function Shell({
   onNotifications,
   showTabs = true,
   showTopBar = false,
+  callBar = null,
 }: {
   children: ReactNode;
   activeTab: MainTab;
@@ -89,6 +103,8 @@ function Shell({
   onNotifications: () => void;
   showTabs?: boolean;
   showTopBar?: boolean;
+  /** Persistent virtual-call status bar, floated above the content. */
+  callBar?: ReactNode;
 }) {
   const tabs = [
     { id: "home" as const, label: "Home", icon: Home },
@@ -165,6 +181,8 @@ function Shell({
           </div>
         </div>
 
+        {callBar}
+
         {showTabs && (
           <nav className="fixed bottom-0 left-1/2 z-40 flex w-full max-w-[430px] -translate-x-1/2 items-center gap-1 rounded-t-2xl bg-[#f5faff]/80 px-2 py-2 shadow-[0_-8px_24px_0_rgba(15,29,37,0.06)] backdrop-blur-md dark:bg-neutral-900/90 dark:border-t dark:border-neutral-800 md:hidden">
             {tabs.map((tab) => {
@@ -192,6 +210,101 @@ function Shell({
 
         <UpdateAvailableToast />
       </div>
+    </div>
+  );
+}
+
+/**
+ * Persistent virtual-visit call bar for the health worker, floated bottom-centre
+ * across the active-shift flow. Handles joining before connection, quick
+ * mute/camera toggles while connected, and leaving (which keeps the room up for
+ * the hospital). The full Meet-style stage lives inside ConsultationScreen.
+ */
+function WorkerCallStrip({
+  call,
+  onOpen,
+}: {
+  call: VirtualCallRoom;
+  onOpen: () => void;
+}) {
+  if (call.state === "prejoin" || call.state === "connecting") return null;
+
+  const connected = call.state === "connected";
+
+  return (
+    <div className="fixed bottom-24 left-1/2 z-40 flex -translate-x-1/2 items-center gap-2 rounded-full border border-white/10 bg-neutral-900/90 px-3 py-2 text-white shadow-2xl backdrop-blur md:bottom-6">
+      <button
+        type="button"
+        onClick={connected ? onOpen : undefined}
+        disabled={!connected}
+        className={cn(
+          "flex items-center gap-1.5 rounded-full px-1 text-xs font-semibold",
+          connected && "hover:text-white/80",
+        )}
+      >
+        <span
+          className={cn(
+            "h-1.5 w-1.5 rounded-full",
+            connected ? "animate-pulse bg-success-400" : "bg-white/40",
+          )}
+        />
+        {connected ? "In consultation call" : "Consultation call"}
+      </button>
+
+      {connected ? (
+        <>
+          <button
+            type="button"
+            onClick={call.toggleMic}
+            aria-label={call.micOn ? "Mute microphone" : "Unmute microphone"}
+            className={cn(
+              "flex h-9 w-9 items-center justify-center rounded-full transition-colors",
+              call.micOn
+                ? "bg-white/15 hover:bg-white/25"
+                : "bg-error-500 hover:bg-error-600",
+            )}
+          >
+            {call.micOn ? (
+              <Mic className="h-4 w-4" />
+            ) : (
+              <MicOff className="h-4 w-4" />
+            )}
+          </button>
+          <button
+            type="button"
+            onClick={call.toggleCamera}
+            aria-label={call.cameraOn ? "Turn off camera" : "Turn on camera"}
+            className={cn(
+              "flex h-9 w-9 items-center justify-center rounded-full transition-colors",
+              call.cameraOn
+                ? "bg-white/15 hover:bg-white/25"
+                : "bg-error-500 hover:bg-error-600",
+            )}
+          >
+            {call.cameraOn ? (
+              <Video className="h-4 w-4" />
+            ) : (
+              <VideoOff className="h-4 w-4" />
+            )}
+          </button>
+          <button
+            type="button"
+            onClick={call.leave}
+            className="flex items-center gap-1.5 rounded-full bg-error-500 px-3 py-1.5 text-xs font-bold transition-colors hover:bg-error-600"
+          >
+            <PhoneOff className="h-3.5 w-3.5" />
+            Leave
+          </button>
+        </>
+      ) : (
+        <button
+          type="button"
+          onClick={call.openPreJoin}
+          className="rounded-full bg-brand-600 px-3.5 py-1.5 text-xs font-bold transition-colors hover:bg-brand-700"
+        >
+          {call.state === "ended" ? "Rejoin" : "Join call"}
+        </button>
+      )}
     </div>
   );
 }
@@ -227,6 +340,14 @@ export function HealthWorkerDashboard() {
   const [isAccepting, setIsAccepting] = useState(false);
 
   const [activeShift, setActiveShift] = useState<ApiShift | null>(null);
+  const call = useVirtualCallRoom(activeShift?.id, "health worker consultation");
+  // Attendance for the shift in progress — recorded on clock-in (physical &
+  // virtual alike). For virtual shifts the LiveKit webhook also records it on
+  // connect; `call.consultation.clock_in_recorded` is the source of truth there.
+  const [clockIn, setClockIn] = useState<{
+    at: string;
+    method: ClockinMethod;
+  } | null>(null);
   const [shiftSeconds, setShiftSeconds] = useState(0);
   const [handover, setHandover] = useState<HandoverResponse | null>(null);
   const [isSubmittingHandover, setIsSubmittingHandover] = useState(false);
@@ -387,6 +508,27 @@ export function HealthWorkerDashboard() {
     };
   }, [view]);
 
+  // Land on the dedicated call screen the moment the consultation connects.
+  const prevCallStateRef = useRef(call.state);
+  useEffect(() => {
+    if (prevCallStateRef.current !== "connected" && call.state === "connected") {
+      setView("virtual-call");
+    }
+    prevCallStateRef.current = call.state;
+  }, [call.state]);
+
+  // Reconcile attendance from the room: the LiveKit webhook records the
+  // virtual clock-in on connect, so trust `clock_in_recorded` if our explicit
+  // call was skipped or failed.
+  const consultClockedIn = call.consultation?.clock_in_recorded ?? false;
+  useEffect(() => {
+    if (!consultClockedIn || clockIn) return;
+    const at =
+      call.consultation?.participants.find((p) => p.clocked_in_at)
+        ?.clocked_in_at ?? new Date().toISOString();
+    setClockIn({ at, method: "virtual" });
+  }, [consultClockedIn, clockIn, call.consultation]);
+
   async function toggleMic() {
     try {
       if (isMicOn) {
@@ -519,14 +661,43 @@ export function HealthWorkerDashboard() {
 
   async function handleClockIn(payload: { method: "gps" | "virtual" | "manual"; latitude?: number; longitude?: number }) {
     if (!selectedShiftId || !selectedShift) return;
-    await workerApi.clockIn(selectedShiftId, payload);
+    const isVirtual = selectedShift.shift_type === "virtual";
+    try {
+      const res = await workerApi.clockIn(selectedShiftId, payload);
+      setClockIn({ at: res.clockin_at, method: payload.method });
+    } catch (err) {
+      // Physical shifts must clock in before the shift starts — surface it.
+      // Virtual shifts also get an automatic clock-in when the clinician
+      // connects to the room, so don't strand the worker on a failure here.
+      if (!isVirtual) throw err;
+      setClockIn(null);
+      appToast.info(
+        "Clock-in pending",
+        "It'll be confirmed when you join the call.",
+      );
+    }
     setActiveShift(selectedShift);
     setShiftSeconds(0);
     setPatients([]);
     setHandover(null);
     setView("active-shift");
     setScheduleTab("active");
-    appToast.success("Clocked in", "Have a great shift.");
+    if (!isVirtual) appToast.success("Clocked in", "Have a great shift.");
+    // Virtual shift: go straight into the device-check / green room.
+    if (isVirtual) call.openPreJoin();
+  }
+
+  async function handleRecordVirtualClockIn() {
+    if (!activeShift) return;
+    try {
+      const res = await workerApi.clockIn(activeShift.id, { method: "virtual" });
+      setClockIn({ at: res.clockin_at, method: "virtual" });
+      appToast.success("Clock-in recorded");
+    } catch (err) {
+      appToast.error(
+        err instanceof ApiError ? err.message : "Couldn't record clock-in.",
+      );
+    }
   }
 
   async function handleRequestApproval(payload: { latitude?: number; longitude?: number; photo_base64: string; photo_mime_type?: string }) {
@@ -630,6 +801,7 @@ export function HealthWorkerDashboard() {
       await workerApi.clockOut(selectedShiftId);
       appToast.success("Clocked out", "Nice work today.");
       setActiveShift(null);
+      setClockIn(null);
       setHandover(null);
       setPatients([]);
       setActiveTab("earnings");
@@ -733,6 +905,39 @@ export function HealthWorkerDashboard() {
     }
   }
 
+  const workerName =
+    [user?.first_name, user?.last_name].filter(Boolean).join(" ") || "You";
+  const isVirtualShift = activeShift?.shift_type === "virtual";
+  const callBar = isVirtualShift ? (
+    <WorkerCallStrip call={call} onOpen={() => setView("virtual-call")} />
+  ) : null;
+
+  // Green room — gates the whole active-shift flow while the worker previews
+  // devices / connects to the shift's consultation room.
+  if (
+    isVirtualShift &&
+    (call.state === "prejoin" ||
+      call.state === "connecting" ||
+      call.state === "error")
+  ) {
+    return (
+      <div className="min-h-screen bg-[#0d1424]">
+        <PreJoinScreen
+          selfName={workerName}
+          remoteRoleLabel="Hospital"
+          remotePresent={call.present}
+          remotePresentName={
+            call.presentName ?? activeShift?.hospital_name ?? null
+          }
+          joining={call.state === "connecting"}
+          error={call.error || undefined}
+          onJoin={call.join}
+          onCancel={call.cancelPreJoin}
+        />
+      </div>
+    );
+  }
+
   if (view === "notifications") {
     return (
       <Shell activeTab={activeTab} onTabChange={goTab} user={user} onNotifications={() => setView("notifications")}>
@@ -826,13 +1031,30 @@ export function HealthWorkerDashboard() {
     );
   }
 
-  if (view === "active-shift" && activeShift) {
+  if (view === "virtual-call" && activeShift) {
     return (
       <Shell activeTab={activeTab} onTabChange={goTab} user={user} onNotifications={() => setView("notifications")}>
+        <VirtualCallScreen
+          shift={activeShift}
+          call={call}
+          patientsCount={patients.length}
+          clockIn={clockIn}
+          onRecordClockIn={handleRecordVirtualClockIn}
+          onBackToShift={() => setView("active-shift")}
+          onWaitingRoom={() => setView("waiting-room")}
+        />
+      </Shell>
+    );
+  }
+
+  if (view === "active-shift" && activeShift) {
+    return (
+      <Shell activeTab={activeTab} onTabChange={goTab} user={user} onNotifications={() => setView("notifications")} callBar={callBar}>
         <ActiveShiftScreen
           shift={activeShift}
           seconds={shiftSeconds}
           patients={patients}
+          clockIn={clockIn}
           onPatientSelect={(patient) => {
             setSelectedPatient(patient);
             setView("patient-detail");
@@ -858,7 +1080,7 @@ export function HealthWorkerDashboard() {
 
   if (view === "waiting-room") {
     return (
-      <Shell activeTab={activeTab} onTabChange={goTab} user={user} onNotifications={() => setView("notifications")}>
+      <Shell activeTab={activeTab} onTabChange={goTab} user={user} onNotifications={() => setView("notifications")} callBar={callBar}>
         <WaitingRoomScreen
           patients={patients}
           onBack={() => setView("active-shift")}
@@ -871,7 +1093,7 @@ export function HealthWorkerDashboard() {
 
   if (view === "patient-detail" && selectedPatient) {
     return (
-      <Shell activeTab={activeTab} onTabChange={goTab} user={user} onNotifications={() => setView("notifications")}>
+      <Shell activeTab={activeTab} onTabChange={goTab} user={user} onNotifications={() => setView("notifications")} callBar={callBar}>
         <PatientDetailScreen
           patient={selectedPatient}
           onBack={() => setView("active-shift")}
@@ -895,6 +1117,8 @@ export function HealthWorkerDashboard() {
           isMicOn={isMicOn}
           isCamOn={isCamOn}
           videoTrack={videoTrackRef.current}
+          call={isVirtualShift ? call : undefined}
+          hospitalName={activeShift.hospital_name ?? null}
         />
       </Shell>
     );
@@ -902,7 +1126,7 @@ export function HealthWorkerDashboard() {
 
   if (view === "clinical-review" && selectedPatient) {
     return (
-      <Shell activeTab={activeTab} onTabChange={goTab} user={user} onNotifications={() => setView("notifications")}>
+      <Shell activeTab={activeTab} onTabChange={goTab} user={user} onNotifications={() => setView("notifications")} callBar={callBar}>
         <ClinicalReviewScreen
           patient={selectedPatient}
           onBack={() => setView("consultation")}

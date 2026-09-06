@@ -26,10 +26,12 @@ export interface JoinOptions {
 interface PreJoinScreenProps {
   /** Label for the local participant, shown when the camera preview is off. */
   selfName: string;
-  /** True while a clinician is already connected to the room. */
+  /** True while the other side is already connected to the room. */
   remotePresent: boolean;
   /** Display name of whoever is already in the call, if known. */
   remotePresentName: string | null;
+  /** What the other side is called, e.g. "Clinician" (default) or "Hospital". */
+  remoteRoleLabel?: string;
   /** True while the parent is establishing the LiveKit connection. */
   joining: boolean;
   /** Connection error surfaced from the parent's join attempt. */
@@ -96,6 +98,7 @@ export function PreJoinScreen({
   selfName,
   remotePresent,
   remotePresentName,
+  remoteRoleLabel = "Clinician",
   joining,
   error,
   onJoin,
@@ -407,7 +410,9 @@ export function PreJoinScreen({
                 remotePresent ? "animate-pulse bg-success-400" : "bg-white/30",
               )}
             />
-            {remotePresent ? "Clinician in the call" : "No one else here yet"}
+            {remotePresent
+              ? `${remoteRoleLabel} in the call`
+              : "No one else here yet"}
           </span>
           {remotePresent && (
             <p className="text-sm text-white/70">
