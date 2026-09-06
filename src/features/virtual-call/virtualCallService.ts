@@ -46,10 +46,13 @@ interface VirtualCallTokenResponse {
 }
 
 export const VirtualCallService = {
-  async getCallToken(shiftId: string): Promise<VirtualCallToken> {
+  async getCallToken(
+    shiftId: string,
+    deviceLabel = "hospital virtual shift page",
+  ): Promise<VirtualCallToken> {
     const res = await apiClient.post<VirtualCallTokenResponse>(
       `/api/v1/shifts/${encodeURIComponent(shiftId)}/consult/token`,
-      { mode: "participant", device_label: "hospital virtual shift page" },
+      { mode: "participant", device_label: deviceLabel },
     );
     return {
       url: res.data.url,
