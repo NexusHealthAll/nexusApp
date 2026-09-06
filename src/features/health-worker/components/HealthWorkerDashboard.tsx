@@ -51,6 +51,7 @@ import { ScheduleScreen, type ScheduleTab } from "./screens/ScheduleScreen";
 import { ConfirmShiftScreen } from "./screens/ConfirmShiftScreen";
 import { ShiftEntryScreen } from "./screens/ShiftEntryScreen";
 import { ActiveShiftScreen } from "./screens/ActiveShiftScreen";
+import { VirtualCallScreen } from "./screens/VirtualCallScreen";
 import { WaitingRoomScreen } from "./screens/WaitingRoomScreen";
 import { PatientIntakeScreen } from "./screens/PatientIntakeScreen";
 import { PatientDetailScreen } from "./screens/PatientDetailScreen";
@@ -72,6 +73,7 @@ type FlowView =
   | "confirm-shift"
   | "shift-entry"
   | "active-shift"
+  | "virtual-call"
   | "waiting-room"
   | "patient-intake"
   | "patient-detail"
@@ -217,14 +219,28 @@ function Shell({
  * mute/camera toggles while connected, and leaving (which keeps the room up for
  * the hospital). The full Meet-style stage lives inside ConsultationScreen.
  */
-function WorkerCallStrip({ call }: { call: VirtualCallRoom }) {
+function WorkerCallStrip({
+  call,
+  onOpen,
+}: {
+  call: VirtualCallRoom;
+  onOpen: () => void;
+}) {
   if (call.state === "prejoin" || call.state === "connecting") return null;
 
   const connected = call.state === "connected";
 
   return (
     <div className="fixed bottom-24 left-1/2 z-40 flex -translate-x-1/2 items-center gap-2 rounded-full border border-white/10 bg-neutral-900/90 px-3 py-2 text-white shadow-2xl backdrop-blur md:bottom-6">
-      <span className="flex items-center gap-1.5 pl-1 pr-1 text-xs font-semibold">
+      <button
+        type="button"
+        onClick={connected ? onOpen : undefined}
+        disabled={!connected}
+        className={cn(
+          "flex items-center gap-1.5 rounded-full px-1 text-xs font-semibold",
+          connected && "hover:text-white/80",
+        )}
+      >
         <span
           className={cn(
             "h-1.5 w-1.5 rounded-full",
@@ -232,7 +248,7 @@ function WorkerCallStrip({ call }: { call: VirtualCallRoom }) {
           )}
         />
         {connected ? "In consultation call" : "Consultation call"}
-      </span>
+      </button>
 
       {connected ? (
         <>
@@ -484,6 +500,15 @@ export function HealthWorkerDashboard() {
     };
   }, [view]);
 
+  // Land on the dedicated call screen the moment the consultation connects.
+  const prevCallStateRef = useRef(call.state);
+  useEffect(() => {
+    if (prevCallStateRef.current !== "connected" && call.state === "connected") {
+      setView("virtual-call");
+    }
+    prevCallStateRef.current = call.state;
+  }, [call.state]);
+
   async function toggleMic() {
     try {
       if (isMicOn) {
@@ -624,6 +649,8 @@ export function HealthWorkerDashboard() {
     setView("active-shift");
     setScheduleTab("active");
     appToast.success("Clocked in", "Have a great shift.");
+    // Virtual shift: go straight into the device-check / green room.
+    if (selectedShift.shift_type === "virtual") call.openPreJoin();
   }
 
   async function handleRequestApproval(payload: { latitude?: number; longitude?: number; photo_base64: string; photo_mime_type?: string }) {
@@ -833,7 +860,9 @@ export function HealthWorkerDashboard() {
   const workerName =
     [user?.first_name, user?.last_name].filter(Boolean).join(" ") || "You";
   const isVirtualShift = activeShift?.shift_type === "virtual";
-  const callBar = isVirtualShift ? <WorkerCallStrip call={call} /> : null;
+  const callBar = isVirtualShift ? (
+    <WorkerCallStrip call={call} onOpen={() => setView("virtual-call")} />
+  ) : null;
 
   // Green room — gates the whole active-shift flow while the worker previews
   // devices / connects to the shift's consultation room.
@@ -949,6 +978,20 @@ export function HealthWorkerDashboard() {
           onBack={() => setView("main")}
           onClockIn={handleClockIn}
           onRequestApproval={handleRequestApproval}
+        />
+      </Shell>
+    );
+  }
+
+  if (view === "virtual-call" && activeShift) {
+    return (
+      <Shell activeTab={activeTab} onTabChange={goTab} user={user} onNotifications={() => setView("notifications")}>
+        <VirtualCallScreen
+          shift={activeShift}
+          call={call}
+          patientsCount={patients.length}
+          onBackToShift={() => setView("active-shift")}
+          onWaitingRoom={() => setView("waiting-room")}
         />
       </Shell>
     );

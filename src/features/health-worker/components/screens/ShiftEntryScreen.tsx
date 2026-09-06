@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import { Camera, Clock, MapPin } from "lucide-react";
+import { Camera, Clock, MapPin, Video } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
+import { cn } from "@/shared/utils/cn";
 import { Card, CardContent } from "@/shared/components/ui/Card";
 import { ApiError } from "@/lib/apiError";
 import type { ApiShift } from "@/features/hospital/shifts/types";
@@ -236,26 +237,42 @@ export function ShiftEntryScreen({
 
         {(stage === "ready" || stage === "locating" || stage === "error") && (
           <>
-            <div className="relative h-64 overflow-hidden rounded-3xl border border-neutral-200 shadow-sm dark:border-neutral-800">
-              <iframe
-                title="Facility map"
-                src={mapEmbedUrl}
-                className="h-full w-full border-0"
-                loading="lazy"
-              />
-              <div className="absolute bottom-3 left-3 flex items-center gap-2 rounded-xl bg-white/90 px-3 py-1.5 text-xs font-semibold text-neutral-800 shadow backdrop-blur dark:bg-neutral-900/90 dark:text-neutral-200">
-                <MapPin className="h-4 w-4 text-brand-600 dark:text-brand-400" />
-                <span>{shift.hospital_name ?? "General Hospital Ikeja"}</span>
+            {shift.shift_type === "virtual" ? (
+              <p className="rounded-2xl border border-brand-200 bg-brand-50/60 px-4 py-3 text-center text-sm text-brand-800 dark:border-brand-900 dark:bg-brand-950/30 dark:text-brand-200">
+                Starts your virtual shift and takes you straight into the
+                consultation call.
+              </p>
+            ) : (
+              <div className="relative h-64 overflow-hidden rounded-3xl border border-neutral-200 shadow-sm dark:border-neutral-800">
+                <iframe
+                  title="Facility map"
+                  src={mapEmbedUrl}
+                  className="h-full w-full border-0"
+                  loading="lazy"
+                />
+                <div className="absolute bottom-3 left-3 flex items-center gap-2 rounded-xl bg-white/90 px-3 py-1.5 text-xs font-semibold text-neutral-800 shadow backdrop-blur dark:bg-neutral-900/90 dark:text-neutral-200">
+                  <MapPin className="h-4 w-4 text-brand-600 dark:text-brand-400" />
+                  <span>{shift.hospital_name ?? "General Hospital Ikeja"}</span>
+                </div>
               </div>
-            </div>
+            )}
             <Button
               type="button"
               onClick={handleClockIn}
               isLoading={stage === "locating" || isSubmitting}
-              className="h-28 w-full rounded-3xl bg-error-600 text-xl hover:bg-error-700"
+              className={cn(
+                "h-28 w-full rounded-3xl text-xl",
+                shift.shift_type === "virtual"
+                  ? "bg-brand-600 hover:bg-brand-700"
+                  : "bg-error-600 hover:bg-error-700",
+              )}
             >
-              <Clock className="mr-3 h-8 w-8" />
-              {shift.shift_type === "virtual" ? "Start Virtual Shift" : "Clock In"}
+              {shift.shift_type === "virtual" ? (
+                <Video className="mr-3 h-8 w-8" />
+              ) : (
+                <Clock className="mr-3 h-8 w-8" />
+              )}
+              {shift.shift_type === "virtual" ? "Join Call" : "Clock In"}
             </Button>
           </>
         )}
