@@ -1,5 +1,6 @@
-import { Users, UserRound, VideoOff } from "lucide-react";
+import { Check, Clock3, Users, UserRound, VideoOff } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
+import { cn } from "@/shared/utils/cn";
 import type { ApiShift } from "@/features/hospital/shifts/types";
 import { CallStage } from "@/features/virtual-call/components/CallStage";
 import type { VirtualCallRoom } from "@/features/virtual-call/useVirtualCallRoom";
@@ -15,17 +16,28 @@ export function VirtualCallScreen({
   shift,
   call,
   patientsCount,
+  clockIn,
+  onRecordClockIn,
   onBackToShift,
   onWaitingRoom,
 }: {
   shift: ApiShift;
   call: VirtualCallRoom;
   patientsCount: number;
+  clockIn?: { at: string; method: string } | null;
+  onRecordClockIn: () => void;
   onBackToShift: () => void;
   onWaitingRoom: () => void;
 }) {
   const hospitalName = shift.hospital_name ?? "Hospital";
   const connected = call.state === "connected";
+  const clockedIn = Boolean(clockIn) || Boolean(call.consultation?.clock_in_recorded);
+  const clockInTime = clockIn
+    ? new Date(clockIn.at).toLocaleTimeString("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+      })
+    : null;
 
   return (
     <>
@@ -35,6 +47,38 @@ export function VirtualCallScreen({
         onBack={onBackToShift}
       />
       <main className="space-y-5 px-5 py-4">
+        {/* Attendance for this shift */}
+        <div
+          className={cn(
+            "flex items-center justify-between gap-3 rounded-2xl border px-4 py-3 text-sm",
+            clockedIn
+              ? "border-success-200 bg-success-50/70 text-success-800 dark:border-success-900 dark:bg-success-950/30 dark:text-success-300"
+              : "border-warning-200 bg-warning-50/70 text-warning-800 dark:border-warning-900 dark:bg-warning-950/30 dark:text-warning-300",
+          )}
+        >
+          <span className="flex items-center gap-2 font-semibold">
+            {clockedIn ? (
+              <Check className="h-4 w-4" />
+            ) : (
+              <Clock3 className="h-4 w-4" />
+            )}
+            {clockedIn
+              ? `Clocked in for this shift${clockInTime ? ` · ${clockInTime}` : ""}`
+              : connected
+                ? "Confirming clock-in…"
+                : "Not clocked in yet"}
+          </span>
+          {!clockedIn && (
+            <button
+              type="button"
+              onClick={onRecordClockIn}
+              className="shrink-0 rounded-lg bg-warning-600 px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-warning-700"
+            >
+              Record clock-in
+            </button>
+          )}
+        </div>
+
         {connected ? (
           <CallStage
             call={call}

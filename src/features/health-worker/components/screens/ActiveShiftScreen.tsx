@@ -7,10 +7,18 @@ import type { ApiShift } from "@/features/hospital/shifts/types";
 import type { PatientRecord } from "../../types";
 import { Header, StatusBadge } from "../DashboardChrome";
 
+const CLOCKIN_METHOD_LABEL: Record<string, string> = {
+  gps: "GPS",
+  qr_code: "QR code",
+  manual: "Manual",
+  virtual: "Virtual",
+};
+
 export function ActiveShiftScreen({
   shift,
   seconds,
   patients,
+  clockIn,
   onPatientSelect,
   onNewPatient,
   onClockOut,
@@ -18,11 +26,18 @@ export function ActiveShiftScreen({
   shift: ApiShift;
   seconds: number;
   patients: PatientRecord[];
+  clockIn?: { at: string; method: string } | null;
   onPatientSelect: (patient: PatientRecord) => void;
   onNewPatient: () => void;
   onClockOut: () => void;
 }) {
   const time = new Date(seconds * 1000).toISOString().substring(11, 19);
+  const clockInLabel = clockIn
+    ? `Clocked in ${new Date(clockIn.at).toLocaleTimeString("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+      })} · ${CLOCKIN_METHOD_LABEL[clockIn.method] ?? clockIn.method}`
+    : null;
 
   return (
     <>
@@ -40,6 +55,12 @@ export function ActiveShiftScreen({
             <p>{shift.hospital_name ?? "Hospital"}</p>
             <p>Duration: {shift.duration_hours}h</p>
           </div>
+          <p className="mt-3 border-t border-white/15 pt-3 text-xs font-semibold text-brand-50">
+            {clockInLabel ??
+              (shift.shift_type === "virtual"
+                ? "Clock-in pending — confirmed when you join the call"
+                : "Clocked in")}
+          </p>
         </section>
 
         <section>

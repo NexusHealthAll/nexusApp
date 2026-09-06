@@ -30,6 +30,7 @@ import type { ApiShift } from "@/features/hospital/shifts/types";
 import { ThemeToggle } from "@/shared/components/ui/ThemeToggle";
 import {
   useHealthWorkerShifts,
+  type ClockinMethod,
   type EarningsSummary,
   type HandoverResponse,
   type MyApplicationEntry,
@@ -340,6 +341,13 @@ export function HealthWorkerDashboard() {
 
   const [activeShift, setActiveShift] = useState<ApiShift | null>(null);
   const call = useVirtualCallRoom(activeShift?.id, "health worker consultation");
+  // Attendance for the shift in progress — recorded on clock-in (physical &
+  // virtual alike). For virtual shifts the LiveKit webhook also records it on
+  // connect; `call.consultation.clock_in_recorded` is the source of truth there.
+  const [clockIn, setClockIn] = useState<{
+    at: string;
+    method: ClockinMethod;
+  } | null>(null);
   const [shiftSeconds, setShiftSeconds] = useState(0);
   const [handover, setHandover] = useState<HandoverResponse | null>(null);
   const [isSubmittingHandover, setIsSubmittingHandover] = useState(false);
@@ -509,6 +517,18 @@ export function HealthWorkerDashboard() {
     prevCallStateRef.current = call.state;
   }, [call.state]);
 
+  // Reconcile attendance from the room: the LiveKit webhook records the
+  // virtual clock-in on connect, so trust `clock_in_recorded` if our explicit
+  // call was skipped or failed.
+  const consultClockedIn = call.consultation?.clock_in_recorded ?? false;
+  useEffect(() => {
+    if (!consultClockedIn || clockIn) return;
+    const at =
+      call.consultation?.participants.find((p) => p.clocked_in_at)
+        ?.clocked_in_at ?? new Date().toISOString();
+    setClockIn({ at, method: "virtual" });
+  }, [consultClockedIn, clockIn, call.consultation]);
+
   async function toggleMic() {
     try {
       if (isMicOn) {
@@ -641,16 +661,43 @@ export function HealthWorkerDashboard() {
 
   async function handleClockIn(payload: { method: "gps" | "virtual" | "manual"; latitude?: number; longitude?: number }) {
     if (!selectedShiftId || !selectedShift) return;
-    await workerApi.clockIn(selectedShiftId, payload);
+    const isVirtual = selectedShift.shift_type === "virtual";
+    try {
+      const res = await workerApi.clockIn(selectedShiftId, payload);
+      setClockIn({ at: res.clockin_at, method: payload.method });
+    } catch (err) {
+      // Physical shifts must clock in before the shift starts — surface it.
+      // Virtual shifts also get an automatic clock-in when the clinician
+      // connects to the room, so don't strand the worker on a failure here.
+      if (!isVirtual) throw err;
+      setClockIn(null);
+      appToast.info(
+        "Clock-in pending",
+        "It'll be confirmed when you join the call.",
+      );
+    }
     setActiveShift(selectedShift);
     setShiftSeconds(0);
     setPatients([]);
     setHandover(null);
     setView("active-shift");
     setScheduleTab("active");
-    appToast.success("Clocked in", "Have a great shift.");
+    if (!isVirtual) appToast.success("Clocked in", "Have a great shift.");
     // Virtual shift: go straight into the device-check / green room.
-    if (selectedShift.shift_type === "virtual") call.openPreJoin();
+    if (isVirtual) call.openPreJoin();
+  }
+
+  async function handleRecordVirtualClockIn() {
+    if (!activeShift) return;
+    try {
+      const res = await workerApi.clockIn(activeShift.id, { method: "virtual" });
+      setClockIn({ at: res.clockin_at, method: "virtual" });
+      appToast.success("Clock-in recorded");
+    } catch (err) {
+      appToast.error(
+        err instanceof ApiError ? err.message : "Couldn't record clock-in.",
+      );
+    }
   }
 
   async function handleRequestApproval(payload: { latitude?: number; longitude?: number; photo_base64: string; photo_mime_type?: string }) {
@@ -754,6 +801,7 @@ export function HealthWorkerDashboard() {
       await workerApi.clockOut(selectedShiftId);
       appToast.success("Clocked out", "Nice work today.");
       setActiveShift(null);
+      setClockIn(null);
       setHandover(null);
       setPatients([]);
       setActiveTab("earnings");
@@ -990,6 +1038,8 @@ export function HealthWorkerDashboard() {
           shift={activeShift}
           call={call}
           patientsCount={patients.length}
+          clockIn={clockIn}
+          onRecordClockIn={handleRecordVirtualClockIn}
           onBackToShift={() => setView("active-shift")}
           onWaitingRoom={() => setView("waiting-room")}
         />
@@ -1004,6 +1054,7 @@ export function HealthWorkerDashboard() {
           shift={activeShift}
           seconds={shiftSeconds}
           patients={patients}
+          clockIn={clockIn}
           onPatientSelect={(patient) => {
             setSelectedPatient(patient);
             setView("patient-detail");
