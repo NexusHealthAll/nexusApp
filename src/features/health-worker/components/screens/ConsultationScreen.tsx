@@ -21,6 +21,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui
 import { Button } from "@/shared/components/ui/Button";
 import { cn } from "@/shared/utils/cn";
 import type { ApiShift } from "@/features/hospital/shifts/types";
+import { CallStage } from "@/features/virtual-call/components/CallStage";
+import type { VirtualCallRoom } from "@/features/virtual-call/useVirtualCallRoom";
 import type { PatientRecord } from "../../types";
 import { Header, StatusBadge } from "../DashboardChrome";
 
@@ -56,6 +58,8 @@ export function ConsultationScreen({
   isMicOn,
   isCamOn,
   videoTrack,
+  call,
+  hospitalName,
 }: {
   shift: ApiShift;
   patient: PatientRecord;
@@ -67,6 +71,9 @@ export function ConsultationScreen({
   isMicOn?: boolean;
   isCamOn?: boolean;
   videoTrack?: MediaStreamTrack | null;
+  /** Live virtual-visit room, when this is a virtual shift. */
+  call?: VirtualCallRoom;
+  hospitalName?: string | null;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const prediction = patient.prediction;
@@ -218,46 +225,76 @@ export function ConsultationScreen({
       <Header title={patient.name} subtitle={`${patient.age}y • ${patient.gender}`} onBack={onBack} />
       <main className="space-y-5 px-5 py-4">
         {/* Video Session Container */}
-        <section className="relative overflow-hidden rounded-3xl bg-neutral-900 text-white border border-neutral-800 shadow-inner">
-          <div className="relative flex h-80 items-center justify-center bg-neutral-950">
-            {isCamOn && videoTrack ? (
-              <video
-                ref={videoRef}
-                autoPlay
-                playsInline
-                muted
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <div className="flex flex-col items-center justify-center gap-3 text-neutral-400">
-                <div className="rounded-full bg-neutral-800 p-6">
-                  <User className="h-16 w-16 text-neutral-400" />
+        {call && call.state === "connected" ? (
+          <CallStage
+            call={call}
+            selfLabel="You"
+            remoteLabel={hospitalName ?? "Hospital"}
+            remoteFallbackName={hospitalName ?? "Hospital"}
+            remoteRole="the hospital"
+            onHangup={call.leave}
+            hangupLabel="Leave"
+          />
+        ) : call ? (
+          <section className="flex flex-col items-center gap-3 rounded-3xl border border-neutral-800 bg-neutral-900 px-6 py-12 text-center text-white">
+            <div className="rounded-full bg-neutral-800 p-5">
+              <VideoOff className="h-10 w-10 text-neutral-400" />
+            </div>
+            <p className="text-sm text-neutral-300">
+              {call.state === "ended"
+                ? "You've left the consultation call."
+                : "You're not connected to the consultation call yet."}
+            </p>
+            <Button
+              type="button"
+              onClick={call.openPreJoin}
+              className="bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold px-4 py-2"
+            >
+              {call.state === "ended" ? "Rejoin call" : "Join the call"}
+            </Button>
+          </section>
+        ) : (
+          <section className="relative overflow-hidden rounded-3xl bg-neutral-900 text-white border border-neutral-800 shadow-inner">
+            <div className="relative flex h-80 items-center justify-center bg-neutral-950">
+              {isCamOn && videoTrack ? (
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  playsInline
+                  muted
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <div className="flex flex-col items-center justify-center gap-3 text-neutral-400">
+                  <div className="rounded-full bg-neutral-800 p-6">
+                    <User className="h-16 w-16 text-neutral-400" />
+                  </div>
+                  <p className="text-xs font-medium text-neutral-400">Camera is turned off</p>
                 </div>
-                <p className="text-xs font-medium text-neutral-400">Camera is turned off</p>
-              </div>
-            )}
-          </div>
-          <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-3">
-            <button
-              type="button"
-              onClick={onToggleMic}
-              title={isMicOn ? "Mute Microphone" : "Unmute Microphone"}
-              className={cn("rounded-full p-3 transition-colors", isMicOn ? "bg-neutral-800 hover:bg-neutral-700 text-white" : "bg-error-600 hover:bg-error-700 text-white")}
-            >
-              {isMicOn ? <Mic className="h-5 w-5" /> : <MicOff className="h-5 w-5" />}
-            </button>
-            <button
-              type="button"
-              onClick={onToggleCam}
-              title={isCamOn ? "Turn Off Camera" : "Turn On Camera"}
-              className={cn("rounded-full p-3 transition-colors", isCamOn ? "bg-brand-600 hover:bg-brand-700 text-white" : "bg-neutral-800 hover:bg-neutral-700 text-white")}
-            >
-              {isCamOn ? <Video className="h-5 w-5" /> : <VideoOff className="h-5 w-5" />}
-            </button>
-          </div>
-        </section>
+              )}
+            </div>
+            <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-3">
+              <button
+                type="button"
+                onClick={onToggleMic}
+                title={isMicOn ? "Mute Microphone" : "Unmute Microphone"}
+                className={cn("rounded-full p-3 transition-colors", isMicOn ? "bg-neutral-800 hover:bg-neutral-700 text-white" : "bg-error-600 hover:bg-error-700 text-white")}
+              >
+                {isMicOn ? <Mic className="h-5 w-5" /> : <MicOff className="h-5 w-5" />}
+              </button>
+              <button
+                type="button"
+                onClick={onToggleCam}
+                title={isCamOn ? "Turn Off Camera" : "Turn On Camera"}
+                className={cn("rounded-full p-3 transition-colors", isCamOn ? "bg-brand-600 hover:bg-brand-700 text-white" : "bg-neutral-800 hover:bg-neutral-700 text-white")}
+              >
+                {isCamOn ? <Video className="h-5 w-5" /> : <VideoOff className="h-5 w-5" />}
+              </button>
+            </div>
+          </section>
+        )}
 
-        {shift.shift_type === "virtual" && (
+        {shift.shift_type === "virtual" && !(call && call.state === "connected") && (
           <div className="rounded-2xl border border-brand-200 bg-brand-50/60 p-4 shadow-sm dark:border-brand-900 dark:bg-brand-950/30">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -272,13 +309,15 @@ export function ConsultationScreen({
               <Button
                 type="button"
                 onClick={() => {
-                  if (!isCamOn) {
+                  if (call) {
+                    call.openPreJoin();
+                  } else if (!isCamOn) {
                     onToggleCam?.();
                   }
                 }}
                 className="bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold px-4 py-2"
               >
-                {isCamOn ? "Live Video Active" : "Start In-App Video"}
+                {call ? "Join the call" : isCamOn ? "Live Video Active" : "Start In-App Video"}
               </Button>
             </div>
             {shift.virtual_link && !shift.virtual_link.includes("nexuscare.com") && (
