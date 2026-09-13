@@ -18,8 +18,8 @@ function formatDuration(totalSeconds: number) {
  * to the backend for Whisper transcription (self-hosted in ml-service — see
  * ml-service/voice.py), and grows a running transcript the clinician
  * references while filling in Chief Complaint / History / Assessment / Plan
- * by hand. There is no AI-generated summary here — see the project's voice
- * notes discussion for why that's a deliberate scope decision, not a gap.
+ * by hand. There is no AI-generated summary here — a deliberate scope
+ * decision, not a gap; see nexus-backend's docs/CONSULTATION_NOTES.md.
  */
 export function ConsultationRecorder() {
   const { patientId } = useParams<{ patientId: string }>();
