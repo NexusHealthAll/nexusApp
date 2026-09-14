@@ -1,9 +1,10 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/Card";
 import { Button } from "@/shared/components/ui/Button";
 import { Badge, type BadgeVariant } from "@/shared/components/ui/Badge";
 import { EmptyState, EmptyStateIcon } from "@/shared/components/ui/EmptyState";
-import { Plus, RefreshCcw, Users } from "lucide-react";
+import { Mic, Plus, RefreshCcw, Users } from "lucide-react";
 import { formatDate } from "@/shared/utils/date";
 import { usePatients } from "../hooks/usePatients";
 import { AddPatientModal } from "./AddPatientModal";
@@ -47,6 +48,7 @@ function PredictionCell({ prediction }: { prediction: PatientDetailResponse["pre
 export function PatientList() {
   const { patients, isLoading, isIngesting, error, ingestPatient, refresh } = usePatients();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const navigate = useNavigate();
 
   return (
     <div className="space-y-6">
@@ -117,6 +119,9 @@ export function PatientList() {
                     <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
                       Intake
                     </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
+                      Consultation
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-neutral-200 dark:divide-neutral-800">
@@ -162,6 +167,16 @@ export function PatientList() {
                       </td>
                       <td className="px-6 py-4 text-sm text-neutral-900 dark:text-neutral-50">
                         {formatDate(patient.created_at)}
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => navigate(`${patient.id}/consultation-note`)}
+                        >
+                          <Mic className="mr-2 h-3.5 w-3.5" />
+                          Record
+                        </Button>
                       </td>
                     </tr>
                   ))}
