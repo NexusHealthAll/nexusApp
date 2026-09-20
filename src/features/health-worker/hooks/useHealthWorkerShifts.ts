@@ -89,6 +89,14 @@ export interface SubmitHandoverRequest {
   pending_tasks?: unknown[];
   instructions: string;
   equipment_status?: string;
+  /** Cloudinary `secure_url`s for post-shift photos (optional, defaults to []). */
+  image_urls?: string[];
+}
+
+// POST /api/v1/shifts/{id}/handover/appeal
+export interface HandoverAppealRequest {
+  /** Optional, max 1000 chars. */
+  note?: string;
 }
 
 export interface HandoverResponse {
@@ -99,12 +107,17 @@ export interface HandoverResponse {
   pending_tasks: unknown;
   instructions: string;
   equipment_status?: string | null;
+  /** Post-shift photo URLs (Cloudinary). */
+  image_urls: string[];
   submitted_at: string;
   editable_until: string;
   auto_approve_after: string;
   hospital_approved_at?: string | null;
   revision_requested_at?: string | null;
   revision_notes?: string | null;
+  /** Set once the worker has nudged the hospital (see #3). One appeal only. */
+  appeal_raised_at?: string | null;
+  appeal_note?: string | null;
 }
 
 // POST /api/v1/shifts/{id}/clockout
@@ -175,6 +188,13 @@ export interface UseHealthWorkerShiftsResult {
   submitHandover: (
     shiftId: string,
     payload: SubmitHandoverRequest,
+  ) => Promise<HandoverResponse>;
+  /** GET the submitted handover; `null` when none exists yet (404). */
+  getHandover: (shiftId: string) => Promise<HandoverResponse | null>;
+  /** POST /shifts/{id}/handover/appeal — nudge the hospital after >24h. */
+  appealHandover: (
+    shiftId: string,
+    payload?: HandoverAppealRequest,
   ) => Promise<HandoverResponse>;
   clockOut: (shiftId: string) => Promise<ClockoutResponse>;
   rateHospital: (
@@ -481,6 +501,38 @@ export function useHealthWorkerShifts(): UseHealthWorkerShiftsResult {
     [],
   );
 
+  const getHandover = useCallback(async (shiftId: string) => {
+    setLastError(null);
+    try {
+      const res = await apiClient.get<HandoverResponse>(
+        `/api/v1/shifts/${encodeURIComponent(shiftId)}/handover`,
+      );
+      return res.data;
+    } catch (e) {
+      const err = e as WorkerApiError;
+      if (err.status === 404) return null;
+      setLastError(err);
+      throw e;
+    }
+  }, []);
+
+  const appealHandover = useCallback(
+    async (shiftId: string, payload?: HandoverAppealRequest) => {
+      setLastError(null);
+      try {
+        const res = await apiClient.post<HandoverResponse>(
+          `/api/v1/shifts/${encodeURIComponent(shiftId)}/handover/appeal`,
+          payload ?? {},
+        );
+        return res.data;
+      } catch (e) {
+        setLastError(e as WorkerApiError);
+        throw e;
+      }
+    },
+    [],
+  );
+
   const clockOut = useCallback(async (shiftId: string) => {
     setLastError(null);
     try {
@@ -548,6 +600,8 @@ export function useHealthWorkerShifts(): UseHealthWorkerShiftsResult {
     clockIn,
     requestClockinApproval,
     submitHandover,
+    getHandover,
+    appealHandover,
     clockOut,
     rateHospital,
     getEarnings,

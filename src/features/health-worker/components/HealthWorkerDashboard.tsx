@@ -26,7 +26,7 @@ import { ApiError } from "@/lib/apiError";
 import { useAuthStore } from "@/shared/auth/store/authStore";
 import type { AuthUser } from "@/shared/auth/store/authStore";
 import { useHospitalShift } from "@/features/hospital/shifts/hooks/useHospitalShift";
-import type { ApiShift } from "@/features/hospital/shifts/types";
+import type { ApiShiftDetail } from "@/features/hospital/shifts/types";
 import { ThemeToggle } from "@/shared/components/ui/ThemeToggle";
 import {
   useHealthWorkerShifts,
@@ -59,7 +59,7 @@ import { PatientDetailScreen } from "./screens/PatientDetailScreen";
 import { ConsultationScreen } from "./screens/ConsultationScreen";
 import { ClinicalReviewScreen } from "./screens/ClinicalReviewScreen";
 import { HandoverScreen } from "./screens/HandoverScreen";
-import { makeImageEntry } from "@/shared/handover/handoverImages";
+import { HandoverReviewScreen } from "./screens/HandoverReviewScreen";
 import { EarningsScreen } from "./screens/EarningsScreen";
 import { ProfileScreen, type ProfileEditableFields } from "./screens/ProfileScreen";
 import { NotificationsScreen } from "./screens/NotificationsScreen";
@@ -81,7 +81,8 @@ type FlowView =
   | "patient-detail"
   | "consultation"
   | "clinical-review"
-  | "handover";
+  | "handover"
+  | "handover-review";
 
 // Matches the gradient wordmark treatment on the Figma "NEXUSCARE" logo mark.
 const GRADIENT_WORDMARK_CLASS =
@@ -347,17 +348,18 @@ export function HealthWorkerDashboard() {
   const [isLoading, setIsLoading] = useState(true);
 
   const [selectedShiftId, setSelectedShiftId] = useState<string | null>(null);
-  const [selectedShift, setSelectedShift] = useState<ApiShift | null>(null);
+  const [selectedShift, setSelectedShift] = useState<ApiShiftDetail | null>(null);
   const [isInterestSubmitting, setIsInterestSubmitting] = useState(false);
 
   const [acceptError, setAcceptError] = useState<string | null>(null);
   const [isAccepting, setIsAccepting] = useState(false);
 
-  const [activeShift, setActiveShift] = useState<ApiShift | null>(null);
+  const [activeShift, setActiveShift] = useState<ApiShiftDetail | null>(null);
   const call = useVirtualCallRoom(
     activeShift?.id,
     "health worker consultation",
     "worker",
+    activeShift?.hospital_location ?? null,
   );
   // Attendance for the shift in progress — recorded on clock-in (physical &
   // virtual alike). For virtual shifts the LiveKit webhook also records it on
@@ -622,6 +624,11 @@ export function HealthWorkerDashboard() {
     setView("shift-detail");
   }
 
+  function openHandoverReview(shiftId: string) {
+    setSelectedShiftId(shiftId);
+    setView("handover-review");
+  }
+
   async function handleInterested() {
     if (!selectedShiftId) return;
     setIsInterestSubmitting(true);
@@ -688,7 +695,7 @@ export function HealthWorkerDashboard() {
       setSelectedShift(shift);
       const isShiftInProgress =
         shift.status === "in_progress" ||
-        (shift as any).shift_status === "in_progress" ||
+        (shift as { shift_status?: string }).shift_status === "in_progress" ||
         String(shift.status).toLowerCase() === "inprogress";
 
       if (isShiftInProgress) {
@@ -830,9 +837,7 @@ export function HealthWorkerDashboard() {
       const response = await workerApi.submitHandover(selectedShiftId, {
         patients_seen: patients.length,
         instructions,
-        // The handover payload has no image field; ride the photos along in
-        // pending_tasks as tagged entries (see shared/handover/handoverImages).
-        pending_tasks: imageUrls.map((url) => makeImageEntry(url)),
+        image_urls: imageUrls,
       });
       setHandover(response);
     } catch (err) {
@@ -921,10 +926,18 @@ export function HealthWorkerDashboard() {
             onScheduleTabChange={setScheduleTab}
             onOpenShift={openShiftDetail}
             onShiftEntry={openShiftEntry}
+            onOpenHandover={openHandoverReview}
           />
         );
       case "earnings":
-        return <EarningsScreen earnings={earnings} isLoading={isLoading} loadError={earningsError} />;
+        return (
+          <EarningsScreen
+            earnings={earnings}
+            isLoading={isLoading}
+            loadError={earningsError}
+            onOpenHandover={openHandoverReview}
+          />
+        );
       case "profile":
         return (
           <ProfileScreen
@@ -1000,6 +1013,23 @@ export function HealthWorkerDashboard() {
     return (
       <Shell activeTab={activeTab} onTabChange={goTab} user={user} onNotifications={() => setView("notifications")}>
         <NotificationsScreen onBack={() => setView("main")} />
+      </Shell>
+    );
+  }
+
+  if (view === "handover-review" && selectedShiftId) {
+    return (
+      <Shell
+        activeTab={activeTab}
+        onTabChange={goTab}
+        user={user}
+        onNotifications={() => setView("notifications")}
+        showTabs={false}
+      >
+        <HandoverReviewScreen
+          shiftId={selectedShiftId}
+          onBack={() => setView("main")}
+        />
       </Shell>
     );
   }
