@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/Card";
+import { AttachmentGallery } from "@/shared/components/AttachmentGallery";
 import { useHospitalShift } from "@/features/hospital/shifts/hooks/useHospitalShift";
 import { useAuthStore } from "@/shared/auth/store/authStore";
 import type {
@@ -280,6 +281,7 @@ export function ShiftDetailScreen({
   const requirements = shift.requirements ?? [];
   const deliverables = shift.deliverables ?? [];
   const equipment = shift.equipment ?? [];
+  const attachmentUrls = shift.attachment_urls ?? [];
   const matchByReq = new Map<string, boolean>(
     (shift.qualification_match ?? []).map((m: ApiQualificationMatch) => [
       m.requirement,
@@ -449,6 +451,17 @@ export function ShiftDetailScreen({
             </CardHeader>
             <CardContent className="p-4 pt-0">
               <Bullets items={equipment} />
+            </CardContent>
+          </Card>
+        )}
+
+        {attachmentUrls.length > 0 && (
+          <Card>
+            <CardHeader className="p-4 pb-2">
+              <CardTitle className="text-base">Attachments</CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 pt-0">
+              <AttachmentGallery urls={attachmentUrls} />
             </CardContent>
           </Card>
         )}

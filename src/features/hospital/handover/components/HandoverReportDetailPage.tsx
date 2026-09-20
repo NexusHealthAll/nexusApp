@@ -18,6 +18,7 @@ import { Modal } from "@/shared/components/ui/Modal";
 import { Skeleton } from "@/shared/components/ui/Skeleton";
 import { Textarea } from "@/shared/components/ui/Textarea";
 import { AvatarInitials } from "@/shared/components/ui/AvatarInitials";
+import { AttachmentGallery } from "@/shared/components/AttachmentGallery";
 import { appToast } from "@/shared/components/feedback/toast";
 import { PATHS } from "@/routes/paths";
 import { formatKobo } from "@/shared/utils/currency";
@@ -276,6 +277,25 @@ export function HandoverReportDetailPage() {
               <div className="border-t border-neutral-100 p-6 sm:p-8 dark:border-neutral-800">
                 {report.handover ? (
                   <>
+                    {report.handover.appealRaisedAt &&
+                      !report.handover.hospitalApprovedAt && (
+                        <div className="mb-4 flex items-start gap-3 rounded-xl bg-error-50 px-4 py-3.5 dark:bg-error-950">
+                          <span className="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-error-600 text-white">
+                            <AlertTriangle className="h-3.5 w-3.5" />
+                          </span>
+                          <div>
+                            <p className="text-sm font-semibold text-error-800 dark:text-error-300">
+                              Worker requested a review{" "}
+                              {formatDateTime(report.handover.appealRaisedAt)}
+                            </p>
+                            <p className="mt-1 text-sm text-error-700 dark:text-error-400">
+                              {report.handover.appealNote?.trim() ||
+                                "The worker is waiting on this handover to be approved so they can be paid."}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+
                     {report.handover.revisionRequestedAt && (
                       <div className="flex items-start gap-3 rounded-xl bg-warning-50 px-4 py-3.5 dark:bg-warning-950">
                         <span className="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-warning-600 text-white">
@@ -361,24 +381,11 @@ export function HandoverReportDetailPage() {
                           No photos attached.
                         </p>
                       ) : (
-                        <div className="mt-2.5 grid grid-cols-2 gap-2 sm:grid-cols-3">
-                          {report.handover.shiftImages.map((url, i) => (
-                            <a
-                              key={url}
-                              href={url}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="block aspect-square overflow-hidden rounded-xl border border-neutral-100 dark:border-neutral-800"
-                            >
-                              <img
-                                src={url}
-                                alt={`Shift photo ${i + 1}`}
-                                loading="lazy"
-                                className="h-full w-full object-cover transition-transform hover:scale-105"
-                              />
-                            </a>
-                          ))}
-                        </div>
+                        <AttachmentGallery
+                          urls={report.handover.shiftImages}
+                          imageOnly
+                          className="mt-2.5"
+                        />
                       )}
                     </section>
 
