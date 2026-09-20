@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft, CheckCircle2, Plus, Upload, X } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
@@ -18,6 +18,7 @@ import { useWalletFunding } from "@/features/hospital/hooks/useWalletFunding";
 import { useHospitalShift } from "@/features/hospital/shifts/hooks/useHospitalShift";
 import { useShiftDraftStore } from "@/features/hospital/shifts/hooks/useShiftDraftStore";
 import { ShiftService } from "@/features/hospital/shifts/services/shiftService";
+import { uploadFiles } from "@/shared/services/mediaUpload";
 import { ShiftPreview } from "./ShiftPreview";
 import type { ShiftFormData } from "@/features/hospital/shifts/types";
 
@@ -143,6 +144,7 @@ export function CreateShiftPage() {
   const [previewTotalKobo, setPreviewTotalKobo] = useState<number | null>(null);
   const [isBroadcasting, setIsBroadcasting] = useState(false);
   const [broadcastDone, setBroadcastDone] = useState(false);
+  const [attachmentError, setAttachmentError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -240,8 +242,30 @@ export function CreateShiftPage() {
 
   const handleBroadcast = async () => {
     setIsBroadcasting(true);
+    setAttachmentError(null);
     try {
-      await createShift(withDuration(formData));
+      // Upload any brief attachments straight to Cloudinary first, then send
+      // the resulting secure_urls with the shift-create payload (#5).
+      let attachmentUrls = formData.attachmentUrls ?? [];
+      if (attachments.length > 0) {
+        try {
+          attachmentUrls = await uploadFiles(attachments, "shift");
+        } catch (err) {
+          // Distinguish our upload-signature endpoint (ApiError) from a
+          // Cloudinary rejection (plain Error) so the failing leg is obvious.
+          const isSignature = err instanceof ApiError;
+          const detail =
+            err instanceof Error ? err.message : "Unknown upload error.";
+          const msg = isSignature
+            ? `Couldn't get an upload signature from the server (${detail}). Attachments may not be available on this environment yet.`
+            : `The file host rejected the upload (${detail}).`;
+          setAttachmentError(msg);
+          appToast.error("Attachment upload failed", msg);
+          setIsBroadcasting(false);
+          return;
+        }
+      }
+      await createShift(withDuration({ ...formData, attachmentUrls }));
       clearDraft();
       setShowPreview(false);
       setBroadcastDone(true);
@@ -588,6 +612,7 @@ export function CreateShiftPage() {
               <div className="space-y-6">
                 <Textarea
                   label="Description"
+                  autoFocus
                   placeholder="Describe the shift, ward, and patient load..."
                   value={formData.jobDescription}
                   onChange={(e) => update({ jobDescription: e.target.value })}
@@ -634,7 +659,8 @@ export function CreateShiftPage() {
                   }
                 />
 
-                {/* Attachments — local only; the backend has no upload endpoint yet. */}
+                {/* Attachments — uploaded to Cloudinary on broadcast, sent as
+                    `attachment_urls` with the shift-create payload (#5). */}
                 <div>
                   <p className="mb-2 block text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
                     Attachments
@@ -647,18 +673,28 @@ export function CreateShiftPage() {
                         click to upload
                       </span>
                     </span>
+                    <span className="mt-1 text-xs text-neutral-400 dark:text-neutral-500">
+                      Images or PDF, up to 10 MB each
+                    </span>
                     <input
                       type="file"
                       multiple
+                      accept="image/*,application/pdf"
                       className="hidden"
-                      onChange={(e) =>
+                      onChange={(e) => {
+                        setAttachmentError(null);
                         setAttachments((prev) => [
                           ...prev,
                           ...Array.from(e.target.files ?? []),
-                        ])
-                      }
+                        ]);
+                      }}
                     />
                   </label>
+                  {attachmentError && (
+                    <p className="mt-2 text-sm text-error-600 dark:text-error-400">
+                      {attachmentError}
+                    </p>
+                  )}
                   {attachments.length > 0 && (
                     <ul className="mt-3 space-y-2">
                       {attachments.map((file, i) => (
@@ -880,6 +916,24 @@ function ListEditor({
   items,
   onChange,
 }: ListEditorProps) {
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const pendingFocus = useRef<number | null>(null);
+
+  // Focus the row that was just added once it has rendered.
+  useEffect(() => {
+    if (pendingFocus.current !== null) {
+      inputRefs.current[pendingFocus.current]?.focus();
+      pendingFocus.current = null;
+    }
+  }, [items.length]);
+
+  const addRow = (at: number) => {
+    pendingFocus.current = at;
+    const next = [...items];
+    next.splice(at, 0, "");
+    onChange(next);
+  };
+
   return (
     <div>
       <p className="mb-2 block text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
@@ -889,12 +943,21 @@ function ListEditor({
         {items.map((item, index) => (
           <div key={index} className="flex items-center gap-2">
             <input
+              ref={(el) => {
+                inputRefs.current[index] = el;
+              }}
               value={item}
               placeholder={placeholder}
               onChange={(e) => {
                 const next = [...items];
                 next[index] = e.target.value;
                 onChange(next);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  addRow(index + 1);
+                }
               }}
               className="w-full rounded-lg border border-neutral-200 px-4 py-2.5 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-secondary-500 focus:outline-none focus:ring-1 focus:ring-secondary-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 dark:placeholder:text-neutral-500"
             />
@@ -910,7 +973,7 @@ function ListEditor({
         ))}
         <button
           type="button"
-          onClick={() => onChange([...items, ""])}
+          onClick={() => addRow(items.length)}
           className="flex items-center gap-1 rounded-lg border border-dashed border-brand-300 px-3.5 py-2 text-sm font-semibold text-brand-600 transition-colors hover:bg-brand-50 dark:border-brand-800 dark:text-brand-400 dark:hover:bg-brand-950"
         >
           <Plus className="h-3.5 w-3.5" />

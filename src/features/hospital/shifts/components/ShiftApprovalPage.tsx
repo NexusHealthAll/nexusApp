@@ -12,6 +12,7 @@ import { Button } from "@/shared/components/ui/Button";
 import { Badge, type BadgeVariant } from "@/shared/components/ui/Badge";
 import { EmptyState } from "@/shared/components/ui/EmptyState";
 import { Modal } from "@/shared/components/ui/Modal";
+import { AttachmentGallery } from "@/shared/components/AttachmentGallery";
 import { appToast } from "@/shared/components/feedback/toast";
 import { cn } from "@/shared/utils/cn";
 import { formatDateTime } from "@/shared/utils/date";
@@ -25,6 +26,7 @@ import {
 } from "@/features/hospital/workers/workerPublicService";
 import type {
   ApiShift,
+  ApiShiftDetail,
   ApiShiftPriority,
   ApiShiftStatus,
 } from "@/features/hospital/shifts/types";
@@ -146,7 +148,7 @@ export function ShiftApprovalPage() {
     rescheduleShift,
   } = useHospitalShift();
 
-  const [shift, setShift] = useState<ApiShift | null>(null);
+  const [shift, setShift] = useState<ApiShiftDetail | null>(null);
   const [workers, setWorkers] = useState<WorkerUi[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -471,6 +473,15 @@ export function ShiftApprovalPage() {
                 </p>
               </div>
             </div>
+
+            {(shift.attachment_urls?.length ?? 0) > 0 && (
+              <div className="mt-6">
+                <p className="mb-2 text-sm font-semibold text-neutral-900 dark:text-neutral-50">
+                  Attachments
+                </p>
+                <AttachmentGallery urls={shift.attachment_urls ?? []} />
+              </div>
+            )}
           </div>
 
           {/* Interested Workers */}
