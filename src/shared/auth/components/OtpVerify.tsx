@@ -8,6 +8,7 @@ import { ThemeToggle } from "@/shared/components/ui/ThemeToggle";
 
 import { useAuthStore, type AuthUser } from "@/shared/auth/store/authStore";
 import apiClient from "@/lib/apiClient";
+import { getWorkerVerificationState } from "@/shared/auth/services/workerVerificationService";
 import { ApiError } from "@/lib/apiError";
 import { appToast } from "@/shared/components/feedback/toast";
 import {
@@ -200,11 +201,19 @@ export function OtpVerify() {
         }
         if (userRole === "health_worker") {
           const pendingClinicianId = useAuthStore.getState().clinicianId;
-          navigate(
-            pendingClinicianId
-              ? "/medical-staff/onboarding/identity"
-              : "/medical-staff/dashboard",
-          );
+          // A leftover pending clinicianId must not force already-verified
+          // workers back through BVN/NIN; ask the server.
+          const state = await getWorkerVerificationState();
+          if (state?.identityVerified) {
+            useAuthStore.getState().clearClinicianId();
+            navigate("/medical-staff/dashboard");
+          } else {
+            navigate(
+              pendingClinicianId
+                ? "/medical-staff/onboarding/identity"
+                : "/medical-staff/dashboard",
+            );
+          }
           return;
         }
         navigate("/auth/verification-success");
@@ -251,11 +260,19 @@ export function OtpVerify() {
         if (action === "login") {
           clearFlow();
           const pendingClinicianId = useAuthStore.getState().clinicianId;
-          navigate(
-            pendingClinicianId
-              ? "/medical-staff/onboarding/identity"
-              : "/medical-staff/dashboard",
-          );
+          // A leftover pending clinicianId must not force already-verified
+          // workers back through BVN/NIN; ask the server.
+          const state = await getWorkerVerificationState();
+          if (state?.identityVerified) {
+            useAuthStore.getState().clearClinicianId();
+            navigate("/medical-staff/dashboard");
+          } else {
+            navigate(
+              pendingClinicianId
+                ? "/medical-staff/onboarding/identity"
+                : "/medical-staff/dashboard",
+            );
+          }
           return;
         }
 
