@@ -45,14 +45,25 @@ interface VirtualCallTokenResponse {
   expires_at: string;
 }
 
+/** Worker GPS sent with a join request so the backend can enforce the 10 km geofence. */
+export interface JoinCoords {
+  lat: number;
+  lng: number;
+}
+
 export const VirtualCallService = {
   async getCallToken(
     shiftId: string,
     deviceLabel = "hospital virtual shift page",
+    coords?: JoinCoords,
   ): Promise<VirtualCallToken> {
     const res = await apiClient.post<VirtualCallTokenResponse>(
       `/api/v1/shifts/${encodeURIComponent(shiftId)}/consult/token`,
-      { mode: "participant", device_label: deviceLabel },
+      {
+        mode: "participant",
+        device_label: deviceLabel,
+        ...(coords ? { lat: coords.lat, lng: coords.lng } : {}),
+      },
     );
     return {
       url: res.data.url,

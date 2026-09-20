@@ -1,13 +1,60 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Room, RoomEvent, Track } from "livekit-client";
 import { ApiError } from "@/lib/apiError";
-import { VirtualCallService, type ConsultSession } from "./virtualCallService";
+import {
+  VirtualCallService,
+  type ConsultSession,
+  type JoinCoords,
+} from "./virtualCallService";
 import {
   LS_AUDIO_DEVICE,
   LS_VIDEO_DEVICE,
   writeStoredDevice,
 } from "./mediaDevices";
 import type { JoinOptions } from "./components/PreJoinScreen";
+
+/** A clinician must be within this many km of the hospital to join (F6). */
+export const CONSULT_GEOFENCE_KM = 10;
+
+export interface HospitalCoords {
+  latitude: number | null;
+  longitude: number | null;
+}
+
+/** Great-circle distance between two lat/lng points, in km. */
+function distanceKm(a: JoinCoords, b: JoinCoords): number {
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const R = 6371;
+  const dLat = toRad(b.lat - a.lat);
+  const dLng = toRad(b.lng - a.lng);
+  const lat1 = toRad(a.lat);
+  const lat2 = toRad(b.lat);
+  const h =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+}
+
+/** Promisified `getCurrentPosition`, rejecting with a user-facing message. */
+function getCurrentPosition(): Promise<GeolocationPosition> {
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) {
+      reject(
+        new Error(
+          "This device can't share its location, which is required to join.",
+        ),
+      );
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(resolve, () => {
+      reject(
+        new Error(
+          "Location access is required to join this consultation. Enable location for this site in your browser, then try again.",
+        ),
+      );
+    }, { enableHighAccuracy: true, timeout: 15_000, maximumAge: 60_000 });
+  });
+}
 
 export type VirtualCallState =
   | "idle"
@@ -154,6 +201,11 @@ export function useVirtualCallRoom(
   shiftId: string | undefined,
   deviceLabel: string,
   viewerRole: VirtualCallViewer = "hospital",
+  /**
+   * The shift's hospital coordinates, used for the client-side geofence
+   * pre-check on the worker side (F6). The backend stays the source of truth.
+   */
+  hospitalLocation?: HospitalCoords | null,
 ): VirtualCallRoom {
   const [state, setState] = useState<VirtualCallState>("idle");
   const [error, setError] = useState("");
@@ -308,6 +360,9 @@ export function useVirtualCallRoom(
     endedLocallyRef.current = false;
   }, []);
 
+  const hospitalLat = hospitalLocation?.latitude ?? null;
+  const hospitalLng = hospitalLocation?.longitude ?? null;
+
   const join = useCallback(
     async (opts: JoinOptions) => {
       if (!shiftId) return;
@@ -317,9 +372,46 @@ export function useVirtualCallRoom(
       setActiveVideoId(opts.videoDeviceId);
       setActiveAudioId(opts.audioDeviceId);
       try {
+        // F6 — a clinician must send GPS and be within 10 km of the hospital.
+        // Hospital observers are exempt (and hospitals with no coords on file).
+        let coords: JoinCoords | undefined;
+        if (viewerRole === "worker") {
+          let position: GeolocationPosition;
+          try {
+            position = await getCurrentPosition();
+          } catch (geoErr) {
+            setError(
+              geoErr instanceof Error
+                ? geoErr.message
+                : "Location access is required to join this consultation.",
+            );
+            setState("error");
+            return;
+          }
+          coords = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          };
+
+          if (hospitalLat != null && hospitalLng != null) {
+            const km = distanceKm(coords, {
+              lat: hospitalLat,
+              lng: hospitalLng,
+            });
+            if (km > CONSULT_GEOFENCE_KM) {
+              setError(
+                `You are ${km.toFixed(1)} km from the hospital — you must be within ${CONSULT_GEOFENCE_KM} km to join.`,
+              );
+              setState("error");
+              return;
+            }
+          }
+        }
+
         const { url, token } = await VirtualCallService.getCallToken(
           shiftId,
           deviceLabel,
+          coords,
         );
 
         const room = new Room({
@@ -436,17 +528,18 @@ export function useVirtualCallRoom(
           .catch(() => {});
         setState("connected");
       } catch (err) {
-        console.log(err);
+        console.error("[virtual-call] join failed", err);
+        const detail = err instanceof Error && err.message ? err.message : "";
         setError(
           err instanceof ApiError
             ? err.message
-            : "Couldn't connect to the call — check your connection and try again.",
+            : `Couldn't connect to the call${detail ? ` (${detail})` : ""} — check your connection and try again.`,
         );
         setState("error");
         teardownRoom();
       }
     },
-    [shiftId, deviceLabel, teardownRoom],
+    [shiftId, deviceLabel, teardownRoom, viewerRole, hospitalLat, hospitalLng],
   );
 
   const toggleCamera = useCallback(async () => {
