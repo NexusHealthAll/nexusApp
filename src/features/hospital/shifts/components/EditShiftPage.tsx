@@ -4,6 +4,7 @@ import { ArrowLeft, Info, Lock } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
 import { Input } from "@/shared/components/ui/Input";
 import { Textarea } from "@/shared/components/ui/Textarea";
+import { AttachmentGallery } from "@/shared/components/AttachmentGallery";
 import { appToast } from "@/shared/components/feedback/toast";
 import { ApiError } from "@/lib/apiError";
 import { PATHS } from "@/routes/paths";
@@ -296,6 +297,15 @@ export function EditShiftPage() {
                       <li key={i}>{r}</li>
                     ))}
                   </ul>
+                </div>
+              )}
+
+              {(shift.attachment_urls?.length ?? 0) > 0 && (
+                <div className="mt-5">
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+                    Attachments
+                  </p>
+                  <AttachmentGallery urls={shift.attachment_urls ?? []} />
                 </div>
               )}
             </section>

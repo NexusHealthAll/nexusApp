@@ -51,6 +51,10 @@ export default defineConfig({
         // Precache every hashed build asset (JS/CSS/fonts/etc) so a
         // previously-visited page keeps working offline.
         globPatterns: ["**/*.{js,css,html,png,svg,ico,webmanifest}"],
+        // The main bundle is > 2 MiB (workbox's default precache ceiling);
+        // raise the limit so it's actually precached instead of failing the
+        // build.
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         // Must point at the actually-precached document (index.html), not a
         // client-side route path like "/medical-staff/dashboard" — that URL
         // is never a real precache entry, so react-router (client-side)

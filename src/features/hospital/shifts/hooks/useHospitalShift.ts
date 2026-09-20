@@ -73,6 +73,11 @@ function buildShiftPayload(data: ShiftFormData) {
     stat_bonus_kobo: statBonus ? Math.trunc(statBonus.amount * 100) : 0,
     tasks: data.tasks || [],
     urgency_bonus_pct: URGENCY_BONUS_PCT[data.urgencyLevel] ?? 0,
+    // Only send when there's something to attach — keeps the payload identical
+    // to before on backends that don't know this field yet.
+    ...(data.attachmentUrls && data.attachmentUrls.length > 0
+      ? { attachment_urls: data.attachmentUrls }
+      : {}),
   };
 }
 

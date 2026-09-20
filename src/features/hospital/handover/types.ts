@@ -23,19 +23,24 @@ export interface HandoverContent {
   /** F1-H03 — lab results, referrals, medications still pending. */
   pendingTasks: Array<Record<string, unknown>>;
   /**
-   * Post-shift photos the worker attached. The backend handover has no image
-   * field, so these are carried as tagged entries inside the free-form arrays
-   * (see shared/handover/handoverImages) and split back out here.
+   * Post-shift photos the worker attached, from the handover's `image_urls`
+   * (Cloudinary `secure_url`s). Rendered as a thumbnail gallery.
    */
   shiftImages: string[];
   submittedAt: string;
   /** Worker can still edit until this instant (1h after clock-out). */
   editableUntil: string;
-  /** Auto-approves (Tier 3) if the hospital takes no action by this instant. */
+  /** Auto-approves (Tier 3) if the hospital takes no action by this instant (48h). */
   autoApproveAfter: string;
   hospitalApprovedAt: string | null;
   revisionRequestedAt: string | null;
   revisionNotes: string | null;
+  /**
+   * Set once the worker has nudged the hospital about a handover that's been
+   * awaiting approval for over a day (see F3). One appeal only.
+   */
+  appealRaisedAt: string | null;
+  appealNote: string | null;
 }
 
 export interface HandoverReport {

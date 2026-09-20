@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   BriefcaseMedical,
@@ -11,7 +12,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
 import { EmptyState } from "@/shared/components/ui/EmptyState";
-import { useAuthStore } from "@/shared/auth/store/authStore";
+import { getWorkerVerificationState } from "@/shared/auth/services/workerVerificationService";
 import type { AuthUser } from "@/shared/auth/store/authStore";
 import type { MyApplicationEntry, EarningsSummary } from "../../hooks/useHealthWorkerShifts";
 import { Metric, StatusBadge, formatKobo } from "../DashboardChrome";
@@ -39,24 +40,21 @@ export function HomeScreen({
   onOpenShift: (shiftId: string) => void;
 }) {
   const navigate = useNavigate();
-  const verifiedIdentity = useAuthStore((s) => s.verifiedIdentity);
+  const [serverVerified, setServerVerified] = useState<boolean | null>(null);
 
-  const payoutSetupCompleted =
-    typeof window !== "undefined" &&
-    localStorage.getItem("payoutSetupCompleted") === "true";
-  const profileCompleted =
-    typeof window !== "undefined" &&
-    localStorage.getItem("profileCompleted") === "true";
+  useEffect(() => {
+    let cancelled = false;
+    void getWorkerVerificationState().then((state) => {
+      if (!cancelled) setServerVerified(state ? state.identityVerified || state.isVerified : null);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
-  const isProfileOrPayoutComplete = Boolean(
-    user?.is_verified ||
-      user?.is_profile_complete ||
-      user?.verification_status === "verified" ||
-      user?.verification_status === "approved" ||
-      profileCompleted ||
-      payoutSetupCompleted ||
-      Boolean(verifiedIdentity),
-  );
+  // Hide the banner until the server answers (null = unknown/loading) so it
+  // never flashes for already-verified workers.
+  const isProfileOrPayoutComplete = serverVerified !== false;
 
   const upcoming = applications
     .filter((e) => upcomingStatuses.has(e.shift_status))

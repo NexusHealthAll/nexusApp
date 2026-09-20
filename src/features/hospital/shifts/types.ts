@@ -85,6 +85,8 @@ export interface ApiShiftDetail extends ApiShift {
   /** Not returned by the backend today, but rendered when present. */
   deliverables?: string[];
   equipment?: string[];
+  /** Cloudinary `secure_url`s for shift-brief attachments (images / PDF). */
+  attachment_urls?: string[];
 }
 
 export interface ApiPaginationMetadata {
@@ -156,6 +158,8 @@ export interface ShiftFormData {
   deliverables: ShiftDeliverable[];
   equipment: ShiftEquipment[];
   requirements: string[];
+  /** Cloudinary `secure_url`s for shift-brief attachments (images / PDF). */
+  attachmentUrls?: string[];
 
   // Step 4 – Requirements
   qualifications: string[];

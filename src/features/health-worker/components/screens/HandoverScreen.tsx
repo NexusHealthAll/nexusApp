@@ -2,9 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import { Clock, ImagePlus, User, X } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/Card";
+import { AttachmentGallery } from "@/shared/components/AttachmentGallery";
 import type { ApiShift } from "@/features/hospital/shifts/types";
 import { uploadImages } from "@/shared/services/mediaUpload";
-import { partitionHandoverEntries } from "@/shared/handover/handoverImages";
 import type { PatientRecord } from "../../types";
 import type { HandoverResponse } from "../../hooks/useHealthWorkerShifts";
 import { Header, Metric } from "../DashboardChrome";
@@ -51,9 +51,7 @@ export function HandoverScreen({
     return () => urls.forEach((u) => URL.revokeObjectURL(u));
   }, [files]);
 
-  const submittedImages = handover
-    ? partitionHandoverEntries(handover.pending_tasks).images
-    : [];
+  const submittedImages = handover?.image_urls ?? [];
 
   const addFiles = (list: FileList | null) => {
     if (!list) return;
@@ -72,7 +70,7 @@ export function HandoverScreen({
     if (files.length > 0) {
       setIsUploading(true);
       try {
-        urls = await uploadImages(files, "shift_photo");
+        urls = await uploadImages(files, "handover");
       } catch (err) {
         setUploadError(
           err instanceof Error ? err.message : "Couldn't upload photos.",
@@ -188,23 +186,7 @@ export function HandoverScreen({
               <CardContent className="space-y-2 p-4 pt-0 text-sm text-neutral-600 dark:text-neutral-400">
                 <p>{handover.instructions}</p>
                 {submittedImages.length > 0 && (
-                  <div className="grid grid-cols-4 gap-2 pt-1">
-                    {submittedImages.map((img) => (
-                      <a
-                        key={img.url}
-                        href={img.url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="aspect-square"
-                      >
-                        <img
-                          src={img.url}
-                          alt="Shift attachment"
-                          className="h-full w-full rounded-lg object-cover"
-                        />
-                      </a>
-                    ))}
-                  </div>
+                  <AttachmentGallery urls={submittedImages} imageOnly className="pt-1" />
                 )}
                 <p className="text-xs text-neutral-400 dark:text-neutral-500">
                   Editable until{" "}

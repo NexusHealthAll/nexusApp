@@ -1,6 +1,5 @@
 import apiClient from "@/lib/apiClient";
 import { ApiError } from "@/lib/apiError";
-import { partitionHandoverEntries } from "@/shared/handover/handoverImages";
 import type {
   ApiShift,
   ApiShiftListResponse,
@@ -38,31 +37,44 @@ interface ApiHandoverResponse {
   pending_tasks: unknown;
   instructions: string;
   equipment_status?: string | null;
+  /** Post-shift photo URLs (Cloudinary). */
+  image_urls?: string[] | null;
   submitted_at: string;
   editable_until: string;
   auto_approve_after: string;
   hospital_approved_at?: string | null;
   revision_requested_at?: string | null;
   revision_notes?: string | null;
+  appeal_raised_at?: string | null;
+  appeal_note?: string | null;
+}
+
+/** Coerce a free-form handover array into a list of plain objects. */
+function toEntries(value: unknown): Array<Record<string, unknown>> {
+  if (!Array.isArray(value)) return [];
+  return value.filter(
+    (item): item is Record<string, unknown> =>
+      typeof item === "object" && item !== null && !Array.isArray(item),
+  );
 }
 
 function mapHandover(api: ApiHandoverResponse): HandoverContent {
-  const critical = partitionHandoverEntries(api.critical_patients);
-  const pending = partitionHandoverEntries(api.pending_tasks);
   return {
     id: api.id,
     patientsSeen: api.patients_seen,
     instructions: api.instructions,
     equipmentStatus: api.equipment_status ?? null,
-    criticalPatients: critical.entries,
-    pendingTasks: pending.entries,
-    shiftImages: [...pending.images, ...critical.images].map((i) => i.url),
+    criticalPatients: toEntries(api.critical_patients),
+    pendingTasks: toEntries(api.pending_tasks),
+    shiftImages: api.image_urls ?? [],
     submittedAt: api.submitted_at,
     editableUntil: api.editable_until,
     autoApproveAfter: api.auto_approve_after,
     hospitalApprovedAt: api.hospital_approved_at ?? null,
     revisionRequestedAt: api.revision_requested_at ?? null,
     revisionNotes: api.revision_notes ?? null,
+    appealRaisedAt: api.appeal_raised_at ?? null,
+    appealNote: api.appeal_note ?? null,
   };
 }
 

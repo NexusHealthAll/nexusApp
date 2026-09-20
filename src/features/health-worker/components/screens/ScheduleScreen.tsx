@@ -87,6 +87,7 @@ export function ScheduleScreen({
   onScheduleTabChange,
   onOpenShift,
   onShiftEntry,
+  onOpenHandover,
 }: {
   entries: MyApplicationEntry[];
   scheduleTab: ScheduleTab;
@@ -95,6 +96,7 @@ export function ScheduleScreen({
   onScheduleTabChange: (tab: ScheduleTab) => void;
   onOpenShift: (shiftId: string) => void;
   onShiftEntry: (shiftId: string) => void;
+  onOpenHandover: (shiftId: string) => void;
 }) {
   const today = useMemo(() => new Date(), []);
   const days = useMemo(() => weekStrip(today), [today]);
@@ -206,13 +208,21 @@ export function ScheduleScreen({
               />
             ) : (
               completed.map((entry) => (
-                <ScheduleEntryCard
-                  key={entry.shift_id}
-                  entry={entry}
-                  badgeLabel={entry.role_title}
-                  ctaLabel="View Summary"
-                  onCta={() => onOpenShift(entry.shift_id)}
-                />
+                <div key={entry.shift_id} className="space-y-2">
+                  <ScheduleEntryCard
+                    entry={entry}
+                    badgeLabel={entry.role_title}
+                    ctaLabel="View Summary"
+                    onCta={() => onOpenShift(entry.shift_id)}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => onOpenHandover(entry.shift_id)}
+                    className="w-full rounded-xl border border-brand-200 py-2.5 text-sm font-bold text-brand-700 transition-colors hover:bg-brand-50 dark:border-brand-800 dark:text-brand-300 dark:hover:bg-brand-950/40"
+                  >
+                    Handover status &amp; payout
+                  </button>
+                </div>
               ))
             ))}
 
