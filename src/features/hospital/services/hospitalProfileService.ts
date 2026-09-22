@@ -1,5 +1,6 @@
 import apiClient from "@/lib/apiClient";
 import { useAuthStore } from "@/shared/auth/store/authStore";
+import { uploadImage } from "@/shared/services/mediaUpload";
 
 export type HospitalRegistrationStatus = "pending" | "approved" | "rejected";
 
@@ -154,17 +155,21 @@ export class HospitalProfileService {
     );
   }
 
-  /** PATCH /hospitals/:id/logo — replaces the hospital's logo image. */
-  static async updateLogo(
-    photoBase64: string,
-    mimeType: string,
-  ): Promise<string> {
+  /**
+   * Replaces the hospital's logo. `PATCH /hospitals/:id/logo` (base64 body)
+   * never existed on the backend — every call 404'd despite this method
+   * looking complete. The logo image goes through the same signed Cloudinary
+   * upload pipeline used elsewhere, then the resulting URL is saved via the
+   * real, already-working `PATCH /hospitals/:id` (`logo_url` is one of its
+   * ordinary optional fields — see `updateHospitalDetails` above).
+   */
+  static async updateLogo(file: File): Promise<string> {
     const hospitalId = useAuthStore.getState().user?.hospital_id;
     if (!hospitalId) throw new Error("No hospital on the current session");
-    const res = await apiClient.patch<{ logo_url: string }>(
-      `/api/v1/hospitals/${encodeURIComponent(hospitalId)}/logo`,
-      { photo_base64: photoBase64, photo_mime_type: mimeType },
-    );
-    return res.data.logo_url;
+    const logoUrl = await uploadImage(file, "hospital_logo");
+    await apiClient.patch(`/api/v1/hospitals/${encodeURIComponent(hospitalId)}`, {
+      logo_url: logoUrl,
+    });
+    return logoUrl;
   }
 }
