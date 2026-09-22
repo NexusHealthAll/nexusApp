@@ -33,9 +33,11 @@ interface PreJoinScreenProps {
   /** What the other side is called, e.g. "Clinician" (default) or "Hospital". */
   remoteRoleLabel?: string;
   /**
-   * When set, the "Join now" button is disabled and this reason is shown.
-   * Used for the health worker, who can only join once the hospital has
-   * started the call.
+   * When set, this hint is shown under the "Join now" button — e.g. the
+   * hospital doesn't look present yet. It does not disable the button:
+   * presence is a polled, best-effort signal (delayed webhooks, the periodic
+   * reconciler) and must never be the thing that blocks someone from joining
+   * a room that's actually live. Joining first and waiting is normal.
    */
   joinBlockedReason?: string;
   /** True while the parent is establishing the LiveKit connection. */
@@ -431,12 +433,18 @@ export function PreJoinScreen({
         <Button
           onClick={handleJoin}
           isLoading={joining}
-          disabled={joining || acquiring || Boolean(joinBlockedReason)}
+          disabled={joining || acquiring}
           className="w-full"
         >
           {joining ? "Joining…" : "Join now"}
         </Button>
         {joinBlockedReason && (
+          // Informational only — presence is polled from the backend and can
+          // lag or miss a real join (e.g. a delayed webhook), so it must never
+          // be the thing that stops someone from joining a room that's
+          // actually live. The room is created lazily on first join anyway,
+          // so joining first and waiting is a normal, supported state
+          // (see CallStage's "Waiting for …" screen).
           <p className="text-sm text-white/60">{joinBlockedReason}</p>
         )}
         <button

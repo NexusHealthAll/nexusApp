@@ -302,10 +302,12 @@ function WorkerCallStrip({
         <button
           type="button"
           onClick={call.openPreJoin}
-          disabled={!call.present && call.state !== "ended"}
+          // Presence is a polled, best-effort signal (webhooks/reconciler can
+          // lag or miss) — it's a hint, never a hard gate on joining a room
+          // that may already be live.
           title={
             !call.present && call.state !== "ended"
-              ? "Waiting for the hospital to start the call"
+              ? "The hospital doesn't look present yet — you can still join and wait"
               : undefined
           }
           className="rounded-full bg-brand-600 px-3.5 py-1.5 text-xs font-bold transition-colors hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-50"
@@ -998,7 +1000,7 @@ export function HealthWorkerDashboard() {
           joinBlockedReason={
             call.present
               ? undefined
-              : "Waiting for the hospital to start the call — you can join as soon as they're on."
+              : "The hospital doesn't look present yet, but you can still join now and wait for them."
           }
           joining={call.state === "connecting"}
           error={call.error || undefined}

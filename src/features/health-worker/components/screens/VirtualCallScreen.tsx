@@ -103,13 +103,16 @@ export function VirtualCallScreen({
                   ? "You've left the consultation call."
                   : hospitalPresent
                     ? "The hospital is on the call and waiting for you."
-                    : "Waiting for the hospital to start the call. You can join as soon as they're on."}
+                    // Presence is a polled, best-effort signal (webhooks/the
+                    // reconciler can lag or miss a real join) — it must never
+                    // block joining a room that may already be live, so this
+                    // is a hint, not a gate (see the button below).
+                    : "The hospital doesn't look present yet — you can still join and wait for them."}
             </p>
             {!consultEnded && (
               <Button
                 type="button"
                 onClick={call.openPreJoin}
-                disabled={!hospitalPresent && call.state !== "ended"}
                 className="bg-brand-600 hover:bg-brand-700 text-white"
               >
                 {call.state === "ended" ? "Rejoin call" : "Join call"}
