@@ -7,7 +7,6 @@ import { Input } from "@/shared/components/ui/Input";
 import { Skeleton } from "@/shared/components/ui/Skeleton";
 import { appToast } from "@/shared/components/feedback/toast";
 import { cn } from "@/shared/utils/cn";
-import { fileToBase64 } from "@/shared/utils/fileToBase64";
 import {
   HospitalProfileService,
   type HospitalDetails,
@@ -88,11 +87,7 @@ export function HospitalProfilePage() {
     if (!file || !details) return;
     setIsUploadingLogo(true);
     try {
-      const photoBase64 = await fileToBase64(file);
-      const logoUrl = await HospitalProfileService.updateLogo(
-        photoBase64,
-        file.type,
-      );
+      const logoUrl = await HospitalProfileService.updateLogo(file);
       setDetails({ ...details, logoUrl });
       appToast.success("Hospital logo updated");
       refreshShared();

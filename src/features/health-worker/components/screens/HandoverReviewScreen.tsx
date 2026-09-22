@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { AlertTriangle, CheckCircle2, Clock, ShieldAlert } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Clock, ShieldAlert, Wallet } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
 import { Card, CardContent } from "@/shared/components/ui/Card";
 import { Modal } from "@/shared/components/ui/Modal";
@@ -8,8 +8,8 @@ import { AttachmentGallery } from "@/shared/components/AttachmentGallery";
 import { appToast } from "@/shared/components/feedback/toast";
 import { ApiError } from "@/lib/apiError";
 import { useHealthWorkerShifts } from "../../hooks/useHealthWorkerShifts";
-import type { HandoverResponse } from "../../hooks/useHealthWorkerShifts";
-import { Header, StatusBadge } from "../DashboardChrome";
+import type { EarningsTransaction, HandoverResponse } from "../../hooks/useHealthWorkerShifts";
+import { formatKobo, Header, StatusBadge } from "../DashboardChrome";
 
 /** Hours a handover must sit unapproved before the worker may nudge the hospital. */
 const APPEAL_AFTER_HOURS = 24;
@@ -43,11 +43,19 @@ export function HandoverReviewScreen({
   shiftId: string;
   onBack: () => void;
 }) {
-  const { getHandover, appealHandover } = useHealthWorkerShifts();
+  const { getHandover, appealHandover, getEarnings } = useHealthWorkerShifts();
 
   const [handover, setHandover] = useState<HandoverResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
+
+  // The real payout for this shift, found by matching `shift_id` inside the
+  // worker's earnings transactions — there's no single-shift payout lookup,
+  // so this is the closest to ground truth without a new backend endpoint.
+  // A large page size keeps a shift with many other payouts ahead of it from
+  // falling off the first page.
+  const [payoutTx, setPayoutTx] = useState<EarningsTransaction | null>(null);
+  const [isPayoutLoading, setIsPayoutLoading] = useState(true);
 
   const [appealOpen, setAppealOpen] = useState(false);
   const [note, setNote] = useState("");
@@ -63,7 +71,17 @@ export function HandoverReviewScreen({
         setLoadError("This handover couldn't be loaded. Please try again."),
       )
       .finally(() => setIsLoading(false));
-  }, [getHandover, shiftId]);
+
+    setIsPayoutLoading(true);
+    getEarnings({ page_size: 100 })
+      .then((summary) => {
+        setPayoutTx(
+          summary.transactions.find((tx) => tx.shift_id === shiftId) ?? null,
+        );
+      })
+      .catch(() => setPayoutTx(null))
+      .finally(() => setIsPayoutLoading(false));
+  }, [getHandover, getEarnings, shiftId]);
 
   useEffect(load, [load]);
 
@@ -163,8 +181,7 @@ export function HandoverReviewScreen({
               {status === "approved" && handover.hospital_approved_at && (
                 <p className="mt-1 flex items-center gap-1.5 text-sm font-semibold">
                   <CheckCircle2 className="h-4 w-4" />
-                  Approved {formatDateTime(handover.hospital_approved_at)} — payout
-                  released.
+                  Approved {formatDateTime(handover.hospital_approved_at)}
                 </p>
               )}
               {status === "awaiting_review" && (
@@ -175,6 +192,63 @@ export function HandoverReviewScreen({
                 </p>
               )}
             </section>
+
+            {/* Real payout status — approval alone doesn't mean paid; a
+                background job still has to run the transfer. */}
+            {status === "approved" && (
+              <Card>
+                <CardContent className="flex items-start gap-3 p-4">
+                  <span
+                    className={`mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full ${
+                      payoutTx?.status === "success"
+                        ? "bg-success-100 text-success-700 dark:bg-success-950/40 dark:text-success-400"
+                        : payoutTx?.status === "failed"
+                          ? "bg-error-100 text-error-700 dark:bg-error-950/40 dark:text-error-400"
+                          : "bg-warning-100 text-warning-700 dark:bg-warning-950/40 dark:text-warning-400"
+                    }`}
+                  >
+                    <Wallet className="h-4 w-4" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-neutral-400 dark:text-neutral-500">
+                      Payment
+                    </p>
+                    {isPayoutLoading ? (
+                      <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+                        Checking payout status…
+                      </p>
+                    ) : !payoutTx ? (
+                      <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-400">
+                        Not paid out yet. Payouts run automatically a short
+                        while after approval — check back shortly.
+                      </p>
+                    ) : payoutTx.status === "success" ? (
+                      <p className="mt-1 text-sm font-semibold text-success-700 dark:text-success-400">
+                        {formatKobo(payoutTx.amount_kobo)} paid
+                        {payoutTx.completed_at
+                          ? ` on ${formatDateTime(payoutTx.completed_at)}`
+                          : ""}
+                        .
+                      </p>
+                    ) : payoutTx.status === "pending" ? (
+                      <p className="mt-1 text-sm text-warning-700 dark:text-warning-400">
+                        {formatKobo(payoutTx.amount_kobo)} is being processed.
+                      </p>
+                    ) : payoutTx.status === "failed" ? (
+                      <p className="mt-1 text-sm text-error-700 dark:text-error-400">
+                        The payout of {formatKobo(payoutTx.amount_kobo)} failed.
+                        Contact support if this doesn't resolve soon.
+                      </p>
+                    ) : (
+                      <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-400">
+                        {formatKobo(payoutTx.amount_kobo)} — status:{" "}
+                        {payoutTx.status}
+                      </p>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {status === "revision_requested" && handover.revision_notes && (
               <div className="flex items-start gap-3 rounded-xl bg-warning-50 px-4 py-3.5 dark:bg-warning-950/40">

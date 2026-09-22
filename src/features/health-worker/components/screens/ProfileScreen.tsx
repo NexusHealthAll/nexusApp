@@ -4,7 +4,6 @@ import { Button } from "@/shared/components/ui/Button";
 import { Select } from "@/shared/components/ui/Select";
 import { appToast } from "@/shared/components/feedback/toast";
 import { cn } from "@/shared/utils/cn";
-import { fileToBase64 } from "@/shared/utils/fileToBase64";
 import { AvatarService } from "@/shared/auth/services/avatarService";
 import type { AuthUser } from "@/shared/auth/store/authStore";
 import { Avatar } from "../DashboardChrome";
@@ -93,8 +92,7 @@ export function ProfileScreen({
     if (!file) return;
     setIsUploadingPhoto(true);
     try {
-      const photoBase64 = await fileToBase64(file);
-      await AvatarService.updateAvatar(photoBase64, file.type);
+      await AvatarService.updateAvatar(file);
       appToast.success("Profile photo updated");
     } catch (err) {
       appToast.fromError(err, "Unable to update your profile photo");

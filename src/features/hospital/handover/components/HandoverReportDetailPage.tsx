@@ -80,10 +80,15 @@ function describeEntry(entry: Record<string, unknown>): string {
 }
 
 /**
- * Full-screen handover report review (Figma "Handover" detail frames):
- * printable report card rendering the worker's submitted F1-H01..H05 handover
- * (fetched from `GET /api/v1/shifts/{id}/handover`), with Approve & Release
- * Payment / Request Revision wired to the real handover endpoints.
+ * Handover report review (Figma "Handover" detail frames): printable report
+ * card rendering the worker's submitted F1-H01..H05 handover (fetched from
+ * `GET /api/v1/shifts/{id}/handover`), with Approve & Release Payment /
+ * Request Revision wired to the real handover endpoints.
+ *
+ * Renders in-flow like every other hospital page (MainLayout's sidebar +
+ * content), not as a full-viewport takeover — it used to be a `fixed
+ * inset-0` overlay, which broke out of that layout and rendered underneath
+ * the sidebar instead of beside it.
  */
 export function HandoverReportDetailPage() {
   const { shiftId } = useParams<{ shiftId: string }>();
@@ -160,12 +165,14 @@ export function HandoverReportDetailPage() {
   const display = report ? statusDisplay[report.status] : null;
 
   return (
-    <div className="fixed inset-0 z-40 flex flex-col overflow-y-auto bg-neutral-50 dark:bg-neutral-950">
-      {/* Top bar */}
-      <div className="sticky top-0 z-10 flex h-14 flex-shrink-0 items-center justify-between border-b border-neutral-200 bg-white px-4 print:hidden lg:px-6 dark:border-neutral-800 dark:bg-neutral-900">
+    <div className="space-y-6">
+      {/* Header — plain in-flow row, matching every other hospital detail
+          page (e.g. ShiftApprovalPage), instead of the old sticky full-bleed
+          bar that came with the fixed-overlay layout. */}
+      <div className="flex flex-col gap-4 print:hidden sm:flex-row sm:items-center sm:justify-between">
         <button
           onClick={() => navigate(PATHS.hospital.handoverReports)}
-          className="flex items-center gap-2 text-sm font-semibold text-neutral-800 transition-colors hover:text-neutral-900 dark:text-neutral-200 dark:hover:text-neutral-50"
+          className="flex items-center gap-2 text-sm font-semibold text-neutral-600 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to Handover Reports
@@ -188,7 +195,7 @@ export function HandoverReportDetailPage() {
         </div>
       </div>
 
-      <div className="mx-auto w-full max-w-3xl flex-1 px-4 py-8">
+      <div className="mx-auto w-full max-w-3xl">
         {isLoading ? (
           <Skeleton className="h-[560px] w-full rounded-2xl" />
         ) : !report ? (

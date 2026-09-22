@@ -35,25 +35,65 @@ function distanceKm(a: JoinCoords, b: JoinCoords): number {
   return 2 * R * Math.asin(Math.sqrt(h));
 }
 
-/** Promisified `getCurrentPosition`, rejecting with a user-facing message. */
-function getCurrentPosition(): Promise<GeolocationPosition> {
-  return new Promise((resolve, reject) => {
-    if (!navigator.geolocation) {
-      reject(
-        new Error(
-          "This device can't share its location, which is required to join.",
-        ),
+/** A user-facing message for a real `GeolocationPositionError` code. Only
+ * `PERMISSION_DENIED` is actually a permission problem — `POSITION_UNAVAILABLE`
+ * and `TIMEOUT` are common on devices with no GPS chip (most desktops) and
+ * were previously all reported as "enable location", which sent people to the
+ * wrong browser setting. */
+function geolocationErrorMessage(err: GeolocationPositionError): string {
+  switch (err.code) {
+    case err.PERMISSION_DENIED:
+      return "Location access is required to join this consultation. Enable location for this site in your browser, then try again.";
+    case err.TIMEOUT:
+      return "Couldn't get your location in time. Check your device's location settings and try again.";
+    case err.POSITION_UNAVAILABLE:
+    default:
+      return "Couldn't determine your location. Check your device's location settings and try again.";
+  }
+}
+
+function getPosition(options: PositionOptions): Promise<GeolocationPosition> {
+  return new Promise((resolve, reject) =>
+    navigator.geolocation.getCurrentPosition(resolve, reject, options),
+  );
+}
+
+/** Promisified `getCurrentPosition`, rejecting with a user-facing message.
+ *
+ * High-accuracy (GPS) positioning can time out or report
+ * `POSITION_UNAVAILABLE` on hardware with no GPS chip — most laptops/desktops
+ * — well before a permission problem is the cause. Mirrors the fallback
+ * `useHealthWorkerShifts.getNearbyShifts` already uses: try high accuracy
+ * with a short timeout, then retry once with network/IP-based positioning
+ * before giving up.
+ */
+async function getCurrentPosition(): Promise<GeolocationPosition> {
+  if (!navigator.geolocation) {
+    throw new Error(
+      "This device can't share its location, which is required to join.",
+    );
+  }
+  try {
+    return await getPosition({
+      enableHighAccuracy: true,
+      timeout: 8_000,
+      maximumAge: 60_000,
+    });
+  } catch {
+    try {
+      return await getPosition({
+        enableHighAccuracy: false,
+        timeout: 8_000,
+        maximumAge: 300_000,
+      });
+    } catch (err) {
+      throw new Error(
+        err instanceof GeolocationPositionError
+          ? geolocationErrorMessage(err)
+          : "Couldn't determine your location. Check your device's location settings and try again.",
       );
-      return;
     }
-    navigator.geolocation.getCurrentPosition(resolve, () => {
-      reject(
-        new Error(
-          "Location access is required to join this consultation. Enable location for this site in your browser, then try again.",
-        ),
-      );
-    }, { enableHighAccuracy: true, timeout: 15_000, maximumAge: 60_000 });
-  });
+  }
 }
 
 export type VirtualCallState =
@@ -75,6 +115,13 @@ interface LiveKitPublication {
   kind: string;
   source?: string;
   track?: LiveKitTrack;
+  isMuted?: boolean;
+}
+
+/** The subset of `Participant` needed to tell a `TrackMuted`/`TrackUnmuted`
+ * event's local participant apart from the remote one. */
+interface LiveKitEventParticipant {
+  isLocal?: boolean;
 }
 
 interface LiveKitParticipant {
@@ -111,6 +158,9 @@ export interface VirtualCallRoom {
   localVideoAttached: boolean;
   /** True once a remote participant has joined the room. */
   remoteJoined: boolean;
+  /** The remote participant's microphone state. Unknown reads as `true`
+   * (unmuted) so no badge flashes before the first signal arrives. */
+  remoteMicOn: boolean;
   consultation: ConsultSession | null;
   /** For the green room: is someone already connected, and who. */
   present: boolean;
@@ -215,6 +265,9 @@ export function useVirtualCallRoom(
   const [audioBlocked, setAudioBlocked] = useState(false);
   const [localVideoAttached, setLocalVideoAttached] = useState(false);
   const [remoteJoined, setRemoteJoined] = useState(false);
+  /** Unknown/not-yet-signaled reads as unmuted, so no badge flashes before
+   * the first mute-state signal arrives. */
+  const [remoteMicOn, setRemoteMicOn] = useState(true);
   const [consultation, setConsultation] = useState<ConsultSession | null>(null);
   const [present, setPresent] = useState(false);
   const [presentName, setPresentName] = useState<string | null>(null);
@@ -449,8 +502,28 @@ export function useVirtualCallRoom(
         });
         room.on(RoomEvent.ParticipantConnected, () => setRemoteJoined(true));
         room.on(RoomEvent.ParticipantDisconnected, () => {
-          if (room.remoteParticipants.size === 0) setRemoteJoined(false);
+          if (room.remoteParticipants.size === 0) {
+            setRemoteJoined(false);
+            // Stale mute state must not survive them leaving and rejoining.
+            setRemoteMicOn(true);
+          }
         });
+        room.on(
+          RoomEvent.TrackMuted,
+          (pub: LiveKitPublication, participant?: LiveKitEventParticipant) => {
+            if (pub.kind === Track.Kind.Audio && !participant?.isLocal) {
+              setRemoteMicOn(false);
+            }
+          },
+        );
+        room.on(
+          RoomEvent.TrackUnmuted,
+          (pub: LiveKitPublication, participant?: LiveKitEventParticipant) => {
+            if (pub.kind === Track.Kind.Audio && !participant?.isLocal) {
+              setRemoteMicOn(true);
+            }
+          },
+        );
         room.on(
           RoomEvent.LocalTrackPublished,
           (publication: LiveKitPublication) => {
@@ -477,6 +550,7 @@ export function useVirtualCallRoom(
         room.on(RoomEvent.Disconnected, () => {
           if (stateRef.current !== "error") setState("ended");
           setRemoteJoined(false);
+          setRemoteMicOn(true);
         });
 
         await room.connect(url, token);
@@ -484,13 +558,15 @@ export function useVirtualCallRoom(
 
         // Attach audio for anyone who was already publishing before we joined —
         // `TrackSubscribed` is not guaranteed to re-fire for pre-existing
-        // tracks in every livekit-client version.
-        if (audioHostRef.current) {
-          for (const participant of room.remoteParticipants.values()) {
-            for (const pub of participant.trackPublications.values()) {
-              if (pub.track && pub.track.kind === Track.Kind.Audio) {
-                attachRemoteAudio(pub.track, audioHostRef.current);
-              }
+        // tracks in every livekit-client version. Their current mute state
+        // needs the same catch-up: `TrackMuted`/`TrackUnmuted` only fire on a
+        // change from here on, not for state that predates our join.
+        for (const participant of room.remoteParticipants.values()) {
+          for (const pub of participant.trackPublications.values()) {
+            if (pub.kind !== Track.Kind.Audio) continue;
+            setRemoteMicOn(!pub.isMuted);
+            if (pub.track && audioHostRef.current) {
+              attachRemoteAudio(pub.track, audioHostRef.current);
             }
           }
         }
@@ -644,6 +720,7 @@ export function useVirtualCallRoom(
     audioBlocked,
     localVideoAttached,
     remoteJoined,
+    remoteMicOn,
     consultation,
     present,
     presentName,

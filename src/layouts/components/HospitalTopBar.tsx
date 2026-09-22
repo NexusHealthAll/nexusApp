@@ -60,7 +60,7 @@ export function HospitalTopBar({ onMenuClick }: HospitalTopBarProps) {
   const adminName = profile?.adminName ?? "—";
 
   return (
-    <header className="flex h-16 items-center gap-3 border-b border-neutral-200 bg-white px-4 lg:px-6 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100 transition-colors duration-200">
+    <header className="flex h-16 items-center gap-3 border-b border-neutral-200 bg-white px-4 print:hidden lg:px-6 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100 transition-colors duration-200">
       <button
         onClick={onMenuClick}
         className="rounded-md p-2 text-neutral-500 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800 lg:hidden"

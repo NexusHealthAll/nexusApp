@@ -30,6 +30,10 @@ function statusLabel(entry: MyApplicationEntry): string {
   return entry.shift_status.replace("_", " ");
 }
 
+/** A shift in one of these statuses is over — no withdrawal is possible and
+ * "pending hospital selection" no longer applies. */
+const closedStatuses = new Set(["completed", "cancelled"]);
+
 export function MyApplicationsScreen({
   entries,
   isLoading,
@@ -37,6 +41,7 @@ export function MyApplicationsScreen({
   onBack,
   onRefresh,
   onRespondToOffer,
+  onViewShift,
 }: {
   entries: MyApplicationEntry[];
   isLoading: boolean;
@@ -44,6 +49,8 @@ export function MyApplicationsScreen({
   onBack: () => void;
   onRefresh: () => void;
   onRespondToOffer: (shiftId: string) => void;
+  /** Opens the shift's Handover Status & Payout screen. */
+  onViewShift: (shiftId: string) => void;
 }) {
   const { withdrawInterest } = useHealthWorkerShifts();
   const [withdrawingId, setWithdrawingId] = useState<string | null>(null);
@@ -88,6 +95,7 @@ export function MyApplicationsScreen({
         <div className="space-y-3">
           {entries.map((entry) => {
             const hasOffer = entry.application_status === "offered";
+            const isClosed = closedStatuses.has(entry.shift_status);
 
             return (
               <Card key={`${entry.kind}-${entry.shift_id}-${entry.created_at}`}>
@@ -111,7 +119,19 @@ export function MyApplicationsScreen({
                       minute: "2-digit",
                     })}
                   </p>
-                  {hasOffer ? (
+                  {isClosed ? (
+                    // Completed/cancelled shifts have nothing left to withdraw
+                    // from or wait on — send the worker to where the real
+                    // handover + payment status lives instead.
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => onViewShift(entry.shift_id)}
+                    >
+                      View Shift Details
+                    </Button>
+                  ) : hasOffer ? (
                     <div className="grid grid-cols-2 gap-2 pt-1">
                       <Button
                         type="button"

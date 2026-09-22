@@ -164,7 +164,7 @@ export interface UseHealthWorkerShiftsResult {
     lat?: number;
     lng?: number;
     radius_km?: number;
-  }) => Promise<NearbyShiftCard[]>;
+  }) => Promise<{ shifts: NearbyShiftCard[]; locationRequired: boolean }>;
   getMyApplications: () => Promise<MyApplicationEntry[]>;
   expressInterest: (shiftId: string) => Promise<void>;
   withdrawInterest: (shiftId: string) => Promise<void>;
@@ -264,14 +264,15 @@ export function useHealthWorkerShifts(): UseHealthWorkerShiftsResult {
               lat = pos.coords.latitude;
               lng = pos.coords.longitude;
             } catch {
-              // Fallback to default coordinates if geolocation fails or times out
-              lat = 6.5244;
-              lng = 3.3792;
+              // Both attempts failed — leave lat/lng unset rather than
+              // substituting a hardcoded city-center coordinate. A fake
+              // "real" location silently produced wrong distances and hid
+              // every in-person shift outside its actual radius, with no
+              // sign anything was wrong. Omitting lat/lng lets the backend
+              // fall back to the clinician's last-known location on file,
+              // or tell us via `location_required` that it has none either.
             }
           }
-        } else if (lat === undefined || lng === undefined) {
-          lat = 6.5244;
-          lng = 3.3792;
         }
 
         const queryParams = new URLSearchParams();
@@ -288,18 +289,19 @@ export function useHealthWorkerShifts(): UseHealthWorkerShiftsResult {
         const res = await apiClient.get<unknown>(url);
         const data = res.data;
         if (Array.isArray(data)) {
-          return data as NearbyShiftCard[];
+          return { shifts: data as NearbyShiftCard[], locationRequired: false };
         }
         if (data && typeof data === "object") {
           const obj = data as Record<string, unknown>;
+          const locationRequired = obj.location_required === true;
           if (Array.isArray(obj.shifts)) {
-            return obj.shifts as NearbyShiftCard[];
+            return { shifts: obj.shifts as NearbyShiftCard[], locationRequired };
           }
           if (Array.isArray(obj.data)) {
-            return obj.data as NearbyShiftCard[];
+            return { shifts: obj.data as NearbyShiftCard[], locationRequired };
           }
         }
-        return [];
+        return { shifts: [], locationRequired: false };
       } catch (e) {
         setLastError(e as WorkerApiError);
         throw e;
