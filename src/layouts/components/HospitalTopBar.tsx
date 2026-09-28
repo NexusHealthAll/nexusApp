@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   Bell,
-  Building2,
   ChevronDown,
   LogOut,
   Menu,
@@ -139,14 +138,8 @@ export function HospitalTopBar({ onMenuClick }: HospitalTopBarProps) {
                   {profile?.name ?? ""}
                 </p>
               </div>
-              <Link
-                to={PATHS.hospital.profile}
-                onClick={() => setMenuOpen(false)}
-                className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-white"
-              >
-                <Building2 className="h-4 w-4" />
-                Hospital Profile
-              </Link>
+              {/* "Hospital Profile" was folded into Settings — one link now
+                  covers both (Settings opens to its "Hospital Profile" tab). */}
               <Link
                 to={PATHS.hospital.settings}
                 onClick={() => setMenuOpen(false)}

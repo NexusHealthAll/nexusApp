@@ -1,4 +1,5 @@
 import type { RouteObject } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import { DashboardOverview } from "@/features/hospital/components/DashboardOverview";
 import { SettingsPage } from "@/shared/settings/components/SettingsPage";
 import { HelpPage } from "@/shared/help/components/HelpPage";
@@ -15,7 +16,6 @@ import { HandoverReportDetailPage } from "@/features/hospital/handover/component
 import { PaymentsPage } from "@/features/hospital/payments/components/PaymentsPage";
 import { MessagesPage } from "@/features/hospital/messages/components/MessagesPage";
 import { NotificationsPage } from "@/features/hospital/notifications/components/NotificationsPage";
-import { HospitalProfilePage } from "@/features/hospital/profile/components/HospitalProfilePage";
 import { AnalyticsPage } from "@/features/hospital/analytics/components/AnalyticsPage";
 
 export const hospitalPageRoutes: RouteObject[] = [
@@ -37,7 +37,9 @@ export const hospitalPageRoutes: RouteObject[] = [
   { path: "messages", element: <MessagesPage /> },
   { path: "notifications", element: <NotificationsPage /> },
   { path: "analytics", element: <AnalyticsPage /> },
-  { path: "profile", element: <HospitalProfilePage /> },
+  // Hospital Profile is now folded into Settings — keep the old URL working
+  // for anything (bookmarks, external links) that still points at it.
+  { path: "profile", element: <Navigate to="/hospital/settings" replace /> },
   { path: "settings", element: <SettingsPage /> },
   { path: "help", element: <HelpPage /> },
 ];
