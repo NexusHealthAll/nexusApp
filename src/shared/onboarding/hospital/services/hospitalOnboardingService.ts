@@ -72,6 +72,17 @@ function buildPayload(data: OnboardingFormData) {
   };
 }
 
+/** Builds a single readable address line from the onboarding form's address fields. */
+function formatAddressLine(data: OnboardingFormData): string {
+  const parts = [
+    data.streetAddress,
+    data.addressLine2,
+    [data.city, data.state].filter(Boolean).join(", "),
+    data.postalCode,
+  ].filter((part) => part && part.trim().length > 0);
+  return parts.join(", ");
+}
+
 // ── Service ──────────────────────────────────────────────────────────────────
 
 export const hospitalOnboardingService = {
@@ -87,5 +98,29 @@ export const hospitalOnboardingService = {
       payload,
     );
     return response.data;
+  },
+
+  /**
+   * PATCH /api/v1/hospitals/:id
+   * The register endpoint stores a placeholder in `hospitals.address` (a known
+   * backend bug — it never gets overwritten with the real address). This call
+   * immediately corrects it using the same PATCH endpoint the profile/settings
+   * pages already use, which persists `address` correctly. Best-effort: a
+   * failure here doesn't block onboarding, since registration itself already
+   * succeeded.
+   */
+  async syncAddress(hospitalId: string, data: OnboardingFormData): Promise<void> {
+    const address = formatAddressLine(data);
+    if (!address) return;
+    try {
+      await apiClient.patch(`/api/v1/hospitals/${encodeURIComponent(hospitalId)}`, {
+        address,
+        ...(data.latitude != null && data.longitude != null
+          ? { latitude: data.latitude, longitude: data.longitude }
+          : {}),
+      });
+    } catch {
+      // Non-fatal — the hospital can still fix its address later from Settings.
+    }
   },
 };

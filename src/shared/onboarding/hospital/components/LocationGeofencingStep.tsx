@@ -447,6 +447,9 @@ export function LocationGeofencingStep() {
       const result = await hospitalOnboardingService.register(merged);
       // Store the returned hospital ID so the Identity Verification step can use it
       setField("hospitalId", result.hospital_id);
+      // The register endpoint stores a placeholder address (backend bug) — patch
+      // the real one in immediately via the endpoint that persists it correctly.
+      await hospitalOnboardingService.syncAddress(result.hospital_id, merged);
       navigate("/hospital/onboarding/identity-verification");
     } catch (err) {
       const apiErr = err instanceof ApiError ? err : null;
@@ -623,7 +626,7 @@ export function LocationGeofencingStep() {
             </div>
 
             {/* City + State */}
-            <div className="grid grid-cols-2 gap-3 mb-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
               <div>
                 <label className="block text-[10px] font-semibold uppercase tracking-widest text-neutral-500 mb-1.5">
                   City <span className="text-red-500">*</span>
