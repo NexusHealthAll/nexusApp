@@ -14,6 +14,64 @@ type WorkerApiError = {
   data?: unknown;
 };
 
+/**
+ * Resolves the browser's current position, or null if unavailable.
+ *
+ * Checks permission state first (where supported) so a genuinely-denied
+ * permission fails immediately instead of waiting out a full timeout. When
+ * permission is granted or not yet decided ("prompt"), a real GPS/Wi-Fi fix
+ * is given a realistic amount of time — the previous 3s/5s timeouts here
+ * were far too aggressive: a real fix (especially indoors, or on desktops
+ * without GPS falling back to Wi-Fi/IP-based positioning) routinely takes
+ * longer than that, which made this report "no location" even when the
+ * user's OS/browser permission was genuinely on.
+ */
+async function resolveGeolocation(): Promise<GeolocationPosition | null> {
+  if (typeof navigator === "undefined" || !navigator.geolocation) return null;
+
+  if (navigator.permissions?.query) {
+    try {
+      const status = await navigator.permissions.query({
+        name: "geolocation" as PermissionName,
+      });
+      if (status.state === "denied") return null;
+    } catch {
+      // Permissions API unsupported for "geolocation" (e.g. some Safari
+      // versions) — fall through and just try getCurrentPosition directly.
+    }
+  }
+
+  try {
+    // First attempt: high accuracy (GPS), generous timeout for a cold fix.
+    return await new Promise<GeolocationPosition>((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(resolve, reject, {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 60000,
+      });
+    });
+  } catch {
+    try {
+      // Second attempt: low accuracy (Wi-Fi/IP-based), also generous.
+      return await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: false,
+          timeout: 10000,
+          maximumAge: 300000,
+        });
+      });
+    } catch {
+      // Both attempts failed — leave lat/lng unset rather than substituting
+      // a hardcoded city-center coordinate. A fake "real" location silently
+      // produced wrong distances and hid every in-person shift outside its
+      // actual radius, with no sign anything was wrong. Omitting lat/lng
+      // lets the backend fall back to the clinician's last-known location
+      // on file, or tell us via `location_required` that it has none either.
+      return null;
+    }
+  }
+}
+
 // GET /api/v1/worker/shifts/nearby
 export interface NearbyShiftCard {
   shift_id: string;
@@ -235,43 +293,11 @@ export function useHealthWorkerShifts(): UseHealthWorkerShiftsResult {
         let lat = params?.lat;
         let lng = params?.lng;
 
-        if (
-          (lat === undefined || lng === undefined) &&
-          typeof navigator !== "undefined" &&
-          navigator.geolocation
-        ) {
-          try {
-            // First attempt: High accuracy with 3s timeout
-            const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
-              navigator.geolocation.getCurrentPosition(resolve, reject, {
-                enableHighAccuracy: true,
-                timeout: 3000,
-                maximumAge: 60000,
-              });
-            });
+        if (lat === undefined || lng === undefined) {
+          const pos = await resolveGeolocation();
+          if (pos) {
             lat = pos.coords.latitude;
             lng = pos.coords.longitude;
-          } catch {
-            try {
-              // Second attempt: Low accuracy (IP / network based) with 5s timeout
-              const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
-                navigator.geolocation.getCurrentPosition(resolve, reject, {
-                  enableHighAccuracy: false,
-                  timeout: 5000,
-                  maximumAge: 300000,
-                });
-              });
-              lat = pos.coords.latitude;
-              lng = pos.coords.longitude;
-            } catch {
-              // Both attempts failed — leave lat/lng unset rather than
-              // substituting a hardcoded city-center coordinate. A fake
-              // "real" location silently produced wrong distances and hid
-              // every in-person shift outside its actual radius, with no
-              // sign anything was wrong. Omitting lat/lng lets the backend
-              // fall back to the clinician's last-known location on file,
-              // or tell us via `location_required` that it has none either.
-            }
           }
         }
 
