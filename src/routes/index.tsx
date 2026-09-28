@@ -2,7 +2,6 @@ import { Navigate, Outlet } from "react-router-dom";
 import type { RouteObject } from "react-router-dom";
 import { RoleLayout } from "@/layouts/RoleLayout";
 import type { AppProfile } from "@/types";
-import { buildOnboardingRoutes } from "./roles/onboarding.routes";
 import {
   hospitalPageRoutes,
   hospitalStandaloneRoutes,
@@ -41,12 +40,6 @@ function buildRoleTree(
   const requiredRole =
     profile === "medical-staff" ? "health_worker" : "hospital_admin";
 
-  // Onboarding routes are public — no auth check required
-  const onboardingRoutes = buildOnboardingRoutes(profile).map((route) => ({
-    ...route,
-    path: `${basePath}/${route.path}`,
-  }));
-
   // Health workers must use the installed PWA — InstallGate hard-blocks
   // browser-tab access to every post-login medical-staff route (prod only).
   const roleLayout =
@@ -74,7 +67,7 @@ function buildRoleTree(
     ],
   };
 
-  return [...onboardingRoutes, protectedTree];
+  return [protectedTree];
 }
 
 /** Hospital-specific onboarding routes — wrapped in OnboardingProvider for shared form context */
