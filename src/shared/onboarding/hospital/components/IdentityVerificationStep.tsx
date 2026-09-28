@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   CheckCircle2,
@@ -11,6 +11,13 @@ import { HospitalOnboardingLayout } from "./HospitalOnboardingLayout";
 import { useOnboarding } from "../context/OnboardingContext";
 import apiClient from "@/lib/apiClient";
 import { ApiError } from "@/lib/apiError";
+import { appToast } from "@/shared/components/feedback/toast";
+
+// Cooldown after any OTP send (initial or resend) before "Resend OTP" is
+// clickable again — the backend has no dedicated resend endpoint or its own
+// rate limit on `/identity/initiate`, so this guards against accidental
+// spam-clicking client-side.
+const RESEND_COOLDOWN_SECONDS = 45;
 
 // ─── Styles ──────────────────────────────────────────────────────────────────
 
@@ -47,8 +54,30 @@ export function IdentityVerificationStep() {
   const [validateStatus, setValidateStatus] = useState<ValidateStatus>("idle");
   const [validateError, setValidateError] = useState<string | null>(null);
 
+  // ── Resend OTP state ─────────────────────────────────────────────────────
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendError, setResendError] = useState<string | null>(null);
+  const [resendCooldown, setResendCooldown] = useState(0);
+
   const card1Done = initiateStatus === "success";
   const card2Active = card1Done;
+
+  // The initial `initiate` call already sends the first OTP, so start the
+  // cooldown the moment that step succeeds and the OTP card becomes active.
+  useEffect(() => {
+    if (card1Done) {
+      setResendCooldown(RESEND_COOLDOWN_SECONDS);
+    }
+  }, [card1Done]);
+
+  // Simple 1s countdown while resendCooldown > 0.
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const timer = setTimeout(() => {
+      setResendCooldown((prev) => Math.max(0, prev - 1));
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [resendCooldown]);
 
   // ── Initiate handler ─────────────────────────────────────────────────────
   async function handleInitiate() {
@@ -78,6 +107,39 @@ export function IdentityVerificationStep() {
         apiErr?.message ?? "Identity initiation failed. Please check your details and try again."
       );
       setInitiateStatus("error");
+    }
+  }
+
+  // ── Resend OTP handler ───────────────────────────────────────────────────
+  // There's no dedicated resend endpoint on the backend — re-calling the same
+  // `identity/initiate` endpoint re-sends an OTP to the hospital's phone,
+  // which is semantically a resend from the user's perspective.
+  async function handleResendOtp() {
+    if (resendCooldown > 0 || resendLoading) return;
+
+    const number = identityNumber.trim();
+    if (!number) return; // shouldn't happen once card1Done, but guard anyway
+
+    setResendError(null);
+    setResendLoading(true);
+
+    try {
+      await apiClient.post(`/api/v1/hospitals/${hospitalId}/identity/initiate`, {
+        number,
+        type: IDENTITY_TYPE,
+      });
+      setResendCooldown(RESEND_COOLDOWN_SECONDS);
+      appToast.success(
+        "Code resent",
+        "A new code has been sent to your registered phone number."
+      );
+    } catch (err) {
+      const apiErr = err instanceof ApiError ? err : null;
+      setResendError(
+        apiErr?.message ?? "Couldn't resend the OTP. Please try again."
+      );
+    } finally {
+      setResendLoading(false);
     }
   }
 
@@ -360,6 +422,35 @@ export function IdentityVerificationStep() {
                   />
                   {otpError && <p className={fieldError}>{otpError}</p>}
                 </div>
+
+                {/* Resend OTP */}
+                <div className="flex items-center justify-between">
+                  <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+                    Didn&apos;t get the code?
+                  </p>
+                  <button
+                    type="button"
+                    onClick={handleResendOtp}
+                    disabled={resendCooldown > 0 || resendLoading}
+                    className="text-[12px] font-semibold text-[#1A5888] dark:text-[#5AA6D6] hover:text-[#0F766E] dark:hover:text-[#349C93] disabled:text-neutral-400 dark:disabled:text-neutral-500 disabled:cursor-not-allowed transition-colors duration-150"
+                  >
+                    {resendLoading
+                      ? "Sending…"
+                      : resendCooldown > 0
+                        ? `Resend OTP in ${resendCooldown}s`
+                        : "Resend OTP"}
+                  </button>
+                </div>
+
+                {/* Resend error banner */}
+                {resendError && (
+                  <div className="flex items-start gap-3 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-lg px-4 py-3">
+                    <AlertCircle className="h-4 w-4 text-red-500 shrink-0 mt-0.5" />
+                    <p className="text-[12px] text-red-700 dark:text-red-300 font-medium leading-relaxed">
+                      {resendError}
+                    </p>
+                  </div>
+                )}
 
                 {/* Validate error banner */}
                 {validateStatus === "error" && validateError && (
