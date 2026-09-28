@@ -12,6 +12,7 @@ import { Button } from "@/shared/components/ui/Button";
 import { Badge, type BadgeVariant } from "@/shared/components/ui/Badge";
 import { EmptyState } from "@/shared/components/ui/EmptyState";
 import { Modal } from "@/shared/components/ui/Modal";
+import { LocationMapPreview } from "@/shared/components/ui/LocationMapPreview";
 import { AttachmentGallery } from "@/shared/components/AttachmentGallery";
 import { appToast } from "@/shared/components/feedback/toast";
 import { cn } from "@/shared/utils/cn";
@@ -24,6 +25,10 @@ import {
   getWorkerPublic,
   type WorkerPublicDetail,
 } from "@/features/hospital/workers/workerPublicService";
+import {
+  HospitalProfileService,
+  type HospitalLocation,
+} from "@/features/hospital/services/hospitalProfileService";
 import type {
   ApiShift,
   ApiShiftDetail,
@@ -169,6 +174,22 @@ export function ShiftApprovalPage() {
   const [rescheduleDuration, setRescheduleDuration] = useState(0);
   const [rescheduling, setRescheduling] = useState(false);
 
+  const [hospitalLocation, setHospitalLocation] = useState<HospitalLocation | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    HospitalProfileService.getHospitalLocation()
+      .then((loc) => {
+        if (!cancelled) setHospitalLocation(loc);
+      })
+      .catch(() => {
+        if (!cancelled) setHospitalLocation(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const loadShift = async (id: string, opts: { showSpinner: boolean }) => {
     if (opts.showSpinner) setIsLoading(true);
     setLoadError(null);
@@ -198,13 +219,14 @@ export function ShiftApprovalPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shiftId]);
 
-  const mapsUrl = useMemo(
-    () =>
-      shift?.hospital_name
-        ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(shift.hospital_name)}`
-        : undefined,
-    [shift?.hospital_name],
-  );
+  const mapsUrl = useMemo(() => {
+    if (hospitalLocation?.latitude != null && hospitalLocation?.longitude != null) {
+      return `https://www.google.com/maps/search/?api=1&query=${hospitalLocation.latitude}%2C${hospitalLocation.longitude}`;
+    }
+    return shift?.hospital_name
+      ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(shift.hospital_name)}`
+      : undefined;
+  }, [hospitalLocation, shift?.hospital_name]);
 
   const timeline = useMemo(() => (shift ? buildTimeline(shift) : []), [shift]);
 
@@ -621,18 +643,17 @@ export function ShiftApprovalPage() {
               {shift.hospital_name || "—"}
             </p>
             <div className="relative mb-3 h-32 overflow-hidden rounded-xl bg-secondary-50 dark:bg-secondary-950">
-              <svg
-                viewBox="0 0 260 130"
-                className="h-full w-full"
-                preserveAspectRatio="xMidYMid slice"
-                aria-hidden="true"
-              >
-                <rect width="260" height="130" fill="#ECFEFF" />
-                <path d="M0 40 H260 M0 90 H260" stroke="#BAE6FD" strokeWidth="3" />
-                <path d="M60 0 V130 M190 0 V130" stroke="#BAE6FD" strokeWidth="3" />
-                <rect x="70" y="50" width="110" height="30" rx="4" fill="#A5F3FC" opacity="0.6" />
-              </svg>
-              <MapPin className="absolute left-1/2 top-1/2 h-6 w-6 -translate-x-1/2 -translate-y-full fill-secondary-700 text-secondary-700" />
+              {hospitalLocation?.latitude != null && hospitalLocation?.longitude != null ? (
+                <LocationMapPreview
+                  latitude={hospitalLocation.latitude}
+                  longitude={hospitalLocation.longitude}
+                  label={shift.hospital_name ?? undefined}
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center">
+                  <MapPin className="h-6 w-6 text-secondary-700 dark:text-secondary-400" />
+                </div>
+              )}
             </div>
             {mapsUrl && (
               <a

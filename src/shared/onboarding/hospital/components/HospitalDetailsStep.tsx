@@ -1,13 +1,13 @@
 import { useNavigate } from "react-router-dom";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { BadgeCheck, ShieldCheck, Mail, Phone, User } from "lucide-react";
+import { BadgeCheck, ShieldCheck, Mail, User } from "lucide-react";
 import { HospitalOnboardingLayout } from "./HospitalOnboardingLayout";
 import { useOnboarding } from "../context/OnboardingContext";
 import { authUtils } from "@/shared/auth/utils/authUtils";
+import { PhoneNumberInput } from "@/shared/components/ui/PhoneNumberInput";
 import {
   hospitalDetailsSchema,
-  normalizePhone,
   type HospitalDetailsValues,
 } from "@/shared/onboarding/onboardingSchemas";
 
@@ -31,6 +31,7 @@ export function HospitalDetailsStep() {
 
   const {
     register,
+    control,
     handleSubmit,
     formState: { errors },
   } = useForm<HospitalDetailsValues>({
@@ -46,10 +47,7 @@ export function HospitalDetailsStep() {
   });
 
   function onValid(values: HospitalDetailsValues) {
-    setFields({
-      ...values,
-      phone: values.phone ? normalizePhone(values.phone) : "",
-    });
+    setFields(values);
     navigate("/hospital/onboarding/location");
   }
 
@@ -77,7 +75,7 @@ export function HospitalDetailsStep() {
             </h2>
 
             {/* First Name + Last Name */}
-            <div className="grid grid-cols-2 gap-3 mb-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
               <div>
                 <label htmlFor="admin-first-name" className="block text-[11px] font-medium text-neutral-600 dark:text-neutral-300 mb-1.5">
                   First Name <span className="text-red-500">*</span>
@@ -113,7 +111,7 @@ export function HospitalDetailsStep() {
             </div>
 
             {/* Email + Phone */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label htmlFor="contact-email" className="block text-[11px] font-medium text-neutral-600 dark:text-neutral-300 mb-1.5">
                   Contact Email <span className="text-red-500">*</span>
@@ -132,16 +130,19 @@ export function HospitalDetailsStep() {
               </div>
               <div>
                 <label htmlFor="phone-number" className="block text-[11px] font-medium text-neutral-600 dark:text-neutral-300 mb-1.5">Phone Number</label>
-                <div className="relative">
-                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-neutral-400 pointer-events-none" />
-                  <input
-                    type="tel"
-                    id="phone-number"
-                    {...register("phone")}
-                    placeholder="e.g. 08012345678 or +2348012345678"
-                    className={`${inputCls} pl-9`}
-                  />
-                </div>
+                <Controller
+                  name="phone"
+                  control={control}
+                  render={({ field }) => (
+                    <PhoneNumberInput
+                      id="phone-number"
+                      value={field.value}
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
+                      className={inputCls}
+                    />
+                  )}
+                />
                 {errors.phone && <p className={fieldError}>{errors.phone.message}</p>}
               </div>
             </div>

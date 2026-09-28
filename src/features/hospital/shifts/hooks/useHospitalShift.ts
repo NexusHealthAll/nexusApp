@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react";
 import apiClient from "@/lib/apiClient";
+import { useAuthStore } from "@/shared/auth/store/authStore";
 import {
   URGENCY_BONUS_PCT,
   type ApiShiftDetail,
@@ -238,7 +239,17 @@ export function useHospitalShift(): UseHospitalShiftResult {
             },
           },
         );
-        return res.data;
+        // GET /api/v1/shifts is not hospital-scoped server-side (backend bug —
+        // it returns every hospital's shifts). Filter to this hospital's own
+        // shifts client-side so at least nothing here is displayed. Note:
+        // `pagination` still reflects the unfiltered server-side count/pages,
+        // since the server has no concept of "this hospital's shifts" to
+        // paginate over — a real fix needs the backend to scope the query.
+        const hospitalId = useAuthStore.getState().user?.hospital_id;
+        const shifts = hospitalId
+          ? res.data.shifts.filter((shift) => shift.hospital_id === hospitalId)
+          : res.data.shifts;
+        return { ...res.data, shifts };
       } catch (e) {
         setLastError(e as ShiftApiError);
         throw e;

@@ -1,12 +1,15 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { Card, CardContent } from '@/shared/components/ui/Card';
 import { Button } from '@/shared/components/ui/Button';
 import { NexusCareLogo } from '@/shared/components/ui/NexusCareLogo';
-import { 
-  Mail, 
-  Shield, 
-  Lock, 
+import {
+  Mail,
+  Shield,
+  Lock,
   FileText,
   HelpCircle,
   UserCheck
@@ -14,31 +17,36 @@ import {
 import { useAuthStore } from '@/shared/auth/store/authStore';
 import apiClient from '@/lib/apiClient';
 import { ThemeToggle } from '@/shared/components/ui/ThemeToggle';
+import { emailField } from '@/shared/validation/fields';
+
+// This screen only ever collects a work email (registration OTP is sent
+// next) — there's no password, name, or phone field here, so the schema is
+// just the shared email primitive.
+const signupSchema = z.object({ email: emailField });
+type SignupValues = z.infer<typeof signupSchema>;
 
 export function EmailSignup() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [serverError, setServerError] = useState('');
 
-  const handleContinue = async () => {
-    if (!email) {
-      setError('Please enter your work email');
-      return;
-    }
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<SignupValues>({
+    resolver: zodResolver(signupSchema),
+    defaultValues: { email: '' },
+  });
 
-    if (!email.includes('@')) {
-      setError('Please enter a valid email address');
-      return;
-    }
-
+  const onValid = async (values: SignupValues) => {
     setIsLoading(true);
-    setError('');
+    setServerError('');
 
     try {
       // Store email and health-worker registration flow
-      localStorage.setItem('pendingEmail', email);
-      useAuthStore.getState().setPendingEmail(email);
+      localStorage.setItem('pendingEmail', values.email);
+      useAuthStore.getState().setPendingEmail(values.email);
       useAuthStore.getState().setActiveAuthFlow({
         role: "health-worker",
         action: "register",
@@ -46,7 +54,7 @@ export function EmailSignup() {
       });
 
       // Send registration OTP
-      await apiClient.post("/api/v1/clinicians/otp/send", { email });
+      await apiClient.post("/api/v1/clinicians/otp/send", { email: values.email });
 
       // Navigate to OTP verification
       navigate('/auth/verify-otp');
@@ -58,6 +66,8 @@ export function EmailSignup() {
       setIsLoading(false);
     }
   };
+
+  const displayError = serverError || errors.email?.message || '';
 
   return (
     <div className="min-h-screen bg-[#F3FAFF] dark:bg-neutral-950 flex items-center justify-center p-4">
@@ -87,34 +97,31 @@ export function EmailSignup() {
             </div>
 
             {/* Email Input */}
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-onboarding-textPrimary dark:text-neutral-300 mb-2">
-                WORK EMAIL
-              </label>
-              <div className="relative">
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => {
-                    setEmail(e.target.value);
-                    if (error) setError('');
-                  }}
-                  placeholder="name@medicalcenter.com"
-                  className="w-full px-4 py-4 bg-[#E8F4FD] dark:bg-neutral-800 border-0 rounded-xl text-onboarding-textPrimary dark:text-neutral-50 placeholder-onboarding-textSecondary dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-onboarding-primaryBlue"
-                />
-                <Mail className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-onboarding-textSecondary dark:text-neutral-500" />
+            <form onSubmit={handleSubmit(onValid)} noValidate>
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-onboarding-textPrimary dark:text-neutral-300 mb-2">
+                  WORK EMAIL
+                </label>
+                <div className="relative">
+                  <input
+                    type="email"
+                    {...register('email')}
+                    placeholder="name@medicalcenter.com"
+                    className="w-full px-4 py-4 pr-11 bg-[#E8F4FD] dark:bg-neutral-800 border-0 rounded-xl text-onboarding-textPrimary dark:text-neutral-50 placeholder-onboarding-textSecondary dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-onboarding-primaryBlue"
+                  />
+                  <Mail className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-onboarding-textSecondary dark:text-neutral-500 pointer-events-none" />
+                </div>
+                {displayError && (
+                  <p className="mt-2 text-sm text-red-600 dark:text-red-400">{displayError}</p>
+                )}
               </div>
-              {error && (
-                <p className="mt-2 text-sm text-red-600 dark:text-red-400">{error}</p>
-              )}
-            </div>
 
-            {/* Continue Button */}
-            <Button
-              onClick={handleContinue}
-              disabled={isLoading || !email}
-              className="w-full bg-gradient-to-r from-onboarding-primaryGreen to-onboarding-primaryBlue hover:opacity-90 text-white font-semibold py-4 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl mb-6"
-            >
+              {/* Continue Button */}
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="w-full bg-gradient-to-r from-onboarding-primaryGreen to-onboarding-primaryBlue hover:opacity-90 text-white font-semibold py-4 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl mb-6"
+              >
               {isLoading ? (
                 <div className="flex items-center justify-center space-x-2">
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -123,7 +130,8 @@ export function EmailSignup() {
               ) : (
                 'Continue →'
               )}
-            </Button>
+              </Button>
+            </form>
 
             {/* Security Features */}
             <div className="space-y-3 mb-6">

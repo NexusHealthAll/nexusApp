@@ -1,18 +1,22 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, CheckCircle2, Plus, Upload, X } from "lucide-react";
+import { ArrowLeft, CheckCircle2, MapPin, Plus, Upload, X } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
 import { Input } from "@/shared/components/ui/Input";
 import { Textarea } from "@/shared/components/ui/Textarea";
 import { Select } from "@/shared/components/ui/Select";
 import { Modal } from "@/shared/components/ui/Modal";
+import { LocationMapPreview } from "@/shared/components/ui/LocationMapPreview";
 import { WizardSteps } from "@/shared/components/ui/WizardSteps";
 import { appToast } from "@/shared/components/feedback/toast";
 import { ApiError } from "@/lib/apiError";
 import { cn } from "@/shared/utils/cn";
 import { PATHS } from "@/routes/paths";
 import { useHospitalProfile } from "@/features/hospital/hooks/useHospitalProfile";
-import { HospitalProfileService } from "@/features/hospital/services/hospitalProfileService";
+import {
+  HospitalProfileService,
+  type HospitalLocation,
+} from "@/features/hospital/services/hospitalProfileService";
 import { useHospitalApprovalStatus } from "@/features/hospital/hooks/useHospitalApprovalStatus";
 import { useWalletFunding } from "@/features/hospital/hooks/useWalletFunding";
 import { useHospitalShift } from "@/features/hospital/shifts/hooks/useHospitalShift";
@@ -120,6 +124,7 @@ export function CreateShiftPage() {
   const isVirtualLocked = searchParams.get("type") === "virtual";
   const { profile } = useHospitalProfile();
   const [hospitalAddress, setHospitalAddress] = useState<string | null>(null);
+  const [hospitalLocation, setHospitalLocation] = useState<HospitalLocation | null>(null);
   const { isLoading: isApprovalLoading, isApproved, status } =
     useHospitalApprovalStatus();
   const {
@@ -138,6 +143,15 @@ export function CreateShiftPage() {
   });
   const [attachments, setAttachments] = useState<File[]>([]);
   const [customCertificate, setCustomCertificate] = useState<string | null>(null);
+  // Raw textarea text, decoupled from the cleaned `formData.qualifications`
+  // array — trimming/filtering that array on every keystroke (the old
+  // behaviour) fed straight back into this controlled input's `value`, so a
+  // just-typed trailing space (or a blank line from pressing Enter) was
+  // wiped the instant it was typed. This keeps what's on screen untouched
+  // while still deriving the clean array for preview/submission.
+  const [qualificationsText, setQualificationsText] = useState(
+    formData.qualifications.join("\n"),
+  );
   const [showPreview, setShowPreview] = useState(false);
   const [isPreviewing, setIsPreviewing] = useState(false);
   /** Authoritative shift cost from the backend preview (kobo), when available. */
@@ -154,6 +168,15 @@ export function CreateShiftPage() {
       })
       .catch(() => {
         if (!cancelled) setHospitalAddress(null);
+      });
+    // Lets a hospital admin visually confirm where an in-person shift will
+    // take place while creating it — see the "Shift Location" card in Step 1.
+    HospitalProfileService.getHospitalLocation()
+      .then((loc) => {
+        if (!cancelled) setHospitalLocation(loc);
+      })
+      .catch(() => {
+        if (!cancelled) setHospitalLocation(null);
       });
     return () => {
       cancelled = true;
@@ -482,6 +505,39 @@ export function CreateShiftPage() {
                   className="bg-neutral-50 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400"
                 />
               </div>
+
+              {/* Shift location preview — confirms visually where an
+                  in-person shift will take place, using the hospital's own
+                  saved coordinates (GET /hospitals/:id/location). Skipped
+                  for virtual shifts, which have no physical location. */}
+              {formData.shiftType !== "virtual" && (
+                <div className="mt-6 overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-800">
+                  <div className="flex items-center justify-between border-b border-neutral-200 bg-neutral-50 px-4 py-2.5 dark:border-neutral-800 dark:bg-neutral-800">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+                      Shift Location
+                    </p>
+                    {(hospitalAddress ?? profile?.name) && (
+                      <span className="truncate text-xs text-neutral-400 dark:text-neutral-500">
+                        {hospitalAddress ?? profile?.name}
+                      </span>
+                    )}
+                  </div>
+                  {hospitalLocation?.latitude != null &&
+                  hospitalLocation?.longitude != null ? (
+                    <LocationMapPreview
+                      latitude={hospitalLocation.latitude}
+                      longitude={hospitalLocation.longitude}
+                      label={profile?.name}
+                      className="h-40 w-full"
+                    />
+                  ) : (
+                    <div className="flex h-40 items-center justify-center gap-2 bg-secondary-50 text-xs font-semibold text-secondary-700 dark:bg-secondary-950 dark:text-secondary-300">
+                      <MapPin className="h-3.5 w-3.5" />
+                      Location not set yet
+                    </div>
+                  )}
+                </div>
+              )}
             </section>
           )}
 
@@ -802,16 +858,18 @@ export function CreateShiftPage() {
               <div className="mt-6">
                 <Textarea
                   label="Skills & Qualifications"
-                  placeholder="e.g. IV insertion, EMR proficiency..."
-                  value={formData.qualifications.join("\n")}
-                  onChange={(e) =>
+                  placeholder={"List one per line, e.g.\n1. IV insertion\n2. EMR proficiency\n3. ACLS certified"}
+                  hint="One skill or qualification per line."
+                  value={qualificationsText}
+                  onChange={(e) => {
+                    setQualificationsText(e.target.value);
                     update({
                       qualifications: e.target.value
                         .split("\n")
                         .map((s) => s.trim())
                         .filter(Boolean),
-                    })
-                  }
+                    });
+                  }}
                   rows={4}
                 />
               </div>
