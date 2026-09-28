@@ -1,5 +1,8 @@
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Card, CardContent } from "@/shared/components/ui/Card";
 import { Button } from "@/shared/components/ui/Button";
 import { NexusCareLogo } from "@/shared/components/ui/NexusCareLogo";
@@ -20,8 +23,14 @@ import {
   HOSPITAL_APPROVAL_TOAST_TITLE,
   isHospitalPendingApprovalError,
 } from "@/shared/auth/utils/hospitalApprovalError";
+import { emailField } from "@/shared/validation/fields";
 
 import { ThemeToggle } from "@/shared/components/ui/ThemeToggle";
+
+// Login only ever collects an email (OTP is sent next) — no password field
+// exists on this screen, so the schema is just the shared email primitive.
+const loginSchema = z.object({ email: emailField });
+type LoginValues = z.infer<typeof loginSchema>;
 
 export function EmailLogin() {
   const navigate = useNavigate();
@@ -30,24 +39,37 @@ export function EmailLogin() {
     (location.state as { justRegistered?: boolean } | null)?.justRegistered,
   );
 
-  const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [isValidEmail, setIsValidEmail] = useState(false);
+  const [serverError, setServerError] = useState("");
   const [isVisible, setIsVisible] = useState(false);
   const [healthWorkerFallback, setHealthWorkerFallback] = useState(false);
 
   const { pendingEmail, clearPendingEmail, setActiveAuthFlow } = useAuthStore();
+
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    trigger,
+    formState: { errors, isValid },
+  } = useForm<LoginValues>({
+    resolver: zodResolver(loginSchema),
+    mode: "onChange",
+    defaultValues: { email: "" },
+  });
+
+  const email = watch("email");
+  const isValidEmail = Boolean(email) && !errors.email;
+  const displayError = serverError || errors.email?.message || "";
 
   // Animation + autofill on mount
   useEffect(() => {
     setIsVisible(true);
 
     if (pendingEmail) {
-      setEmail(pendingEmail);
-
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      setIsValidEmail(emailRegex.test(pendingEmail));
+      setValue("email", pendingEmail);
+      trigger("email");
 
       // Clear after reading so it doesn't keep refilling
       clearPendingEmail();
@@ -61,6 +83,7 @@ export function EmailLogin() {
       if (emailInput) emailInput.focus();
     }, 300);
     return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- setValue/trigger identities are stable from useForm
   }, [pendingEmail, clearPendingEmail]);
 
   const activeAuthFlow = useAuthStore((s) => s.activeAuthFlow);
@@ -92,24 +115,12 @@ export function EmailLogin() {
       action: activeAuthFlow?.action ?? "login",
       origin: activeAuthFlow?.origin ?? "landing",
     });
-    setError("");
+    setServerError("");
   };
 
-  const handleSendOTP = async (e: React.SyntheticEvent) => {
-    e.preventDefault();
-
-    if (!email.trim()) {
-      setError("Email address is required");
-      return;
-    }
-
-    if (!isValidEmail) {
-      setError("Please enter a valid email address");
-      return;
-    }
-
+  const onValid = async (values: LoginValues) => {
     setIsLoading(true);
-    setError("");
+    setServerError("");
     setHealthWorkerFallback(false);
 
     try {
@@ -122,10 +133,10 @@ export function EmailLogin() {
         ? "/api/v1/clinicians/otp/send"
         : "/api/v1/auth/otp/send";
 
-      await apiClient.post(otpSendPath, { email });
+      await apiClient.post(otpSendPath, { email: values.email });
 
       // Persist email so the verify-otp screen can read it
-      localStorage.setItem("pendingEmail", email);
+      localStorage.setItem("pendingEmail", values.email);
       navigate("/auth/verify-otp");
     } catch (err) {
       const isHospitalLogin =
@@ -137,35 +148,17 @@ export function EmailLogin() {
           HOSPITAL_APPROVAL_TOAST_TITLE,
           HOSPITAL_APPROVAL_MESSAGE,
         );
-        setError(HOSPITAL_APPROVAL_MESSAGE);
+        setServerError(HOSPITAL_APPROVAL_MESSAGE);
       } else if (err instanceof ApiError) {
-        setError(
+        setServerError(
           err.message ||
             `Failed to send OTP (${err.status}). Please try again.`,
         );
       } else {
-        setError("Network error — please check your connection and try again.");
+        setServerError("Network error — please check your connection and try again.");
       }
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const handleEmailChange = (value: string) => {
-    setEmail(value);
-
-    // Real-time email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    setIsValidEmail(emailRegex.test(value));
-
-    if (error) {
-      setError("");
-    }
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && email.trim() && isValidEmail && !isLoading) {
-      handleSendOTP(e);
     }
   };
 
@@ -246,7 +239,8 @@ export function EmailLogin() {
             </div>
 
             <form
-              onSubmit={handleSendOTP}
+              onSubmit={handleSubmit(onValid)}
+              noValidate
               className={`space-y-8 transition-all duration-700 delay-400 ease-out ${
                 isVisible
                   ? "translate-y-0 opacity-100"
@@ -266,7 +260,7 @@ export function EmailLogin() {
                       ? "bg-onboarding-inputBackground dark:bg-neutral-800 shadow-inner"
                       : "bg-onboarding-inputBackground dark:bg-neutral-800"
                   } ${
-                    error
+                    displayError
                       ? "ring-2 ring-red-200 dark:ring-red-800 bg-red-50/50 dark:bg-red-950/50"
                       : isValidEmail && email
                         ? "ring-2 ring-green-200 dark:ring-green-800 bg-green-50/50 dark:bg-green-950/50"
@@ -276,7 +270,7 @@ export function EmailLogin() {
                   {/* Email Icon with animation */}
                   <Mail
                     className={`h-5 w-5 flex-shrink-0 transition-all duration-300 ${
-                      error
+                      displayError
                         ? "text-red-500 dark:text-red-400"
                         : isValidEmail && email
                           ? "text-green-500 dark:text-green-400"
@@ -287,9 +281,7 @@ export function EmailLogin() {
                   {/* Email Input */}
                   <input
                     type="email"
-                    value={email}
-                    onChange={(e) => handleEmailChange(e.target.value)}
-                    onKeyPress={handleKeyPress}
+                    {...register("email")}
                     className="flex-1 bg-transparent text-base text-neutral-800 dark:text-neutral-100 placeholder:text-neutral-400 dark:placeholder:text-neutral-500 outline-none transition-all duration-200"
                     placeholder="name@medicalcenter.com"
                   />
@@ -307,16 +299,16 @@ export function EmailLogin() {
                 </div>
 
                 {/* Enhanced Error Display */}
-                {error && (
+                {displayError && (
                   <div className="animate-in slide-in-from-left-2 duration-300">
                     <p className="text-sm text-red-600 dark:text-red-400 flex items-center gap-2">
                       <AlertCircle className="h-4 w-4" />
-                      {error}
+                      {displayError}
                     </p>
                   </div>
                 )}
 
-                {healthWorkerFallback && !error && (
+                {healthWorkerFallback && !displayError && (
                   <div className="animate-in slide-in-from-left-2 duration-300">
                     <p className="text-sm text-neutral-800 dark:text-neutral-200 mb-3">
                       Click continue to register worker with otp.
@@ -328,9 +320,9 @@ export function EmailLogin() {
               {/* Enhanced Continue Button */}
               <Button
                 type="submit"
-                disabled={isLoading || !email.trim() || !isValidEmail}
+                disabled={isLoading || !isValid}
                 className={`w-full rounded-xl py-5 text-base font-semibold uppercase tracking-widest text-white transition-all duration-300 ease-out transform ${
-                  isLoading || !email.trim() || !isValidEmail
+                  isLoading || !isValid
                     ? "bg-gray-300 dark:bg-neutral-700 cursor-not-allowed scale-100"
                     : "bg-gradient-to-r from-onboarding-primaryGreen to-onboarding-primaryBlue shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
                 }`}

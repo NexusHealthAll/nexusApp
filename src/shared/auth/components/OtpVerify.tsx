@@ -404,7 +404,7 @@ export function OtpVerify() {
 
         {/* OTP Verification Card */}
         <Card className="bg-white border-slate-100 shadow-md rounded-2xl dark:bg-neutral-900 dark:border-neutral-800 dark:shadow-none">
-          <CardContent className="p-8">
+          <CardContent className="p-5 sm:p-8">
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -418,7 +418,7 @@ export function OtpVerify() {
                   Enter Verification Code
                 </label>
 
-                <div className="flex justify-center space-x-3">
+                <div className="flex justify-center space-x-1.5 sm:space-x-3">
                   {otp.map((digit, index) => (
                     <input
                       key={index}
@@ -429,7 +429,7 @@ export function OtpVerify() {
                       onChange={(e) => handleOtpChange(index, e.target.value)}
                       onKeyDown={(e) => handleKeyDown(index, e)}
                       onPaste={index === 0 ? handlePaste : undefined}
-                      className={`w-12 h-14 text-center text-xl font-bold border-2 rounded-xl bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-50 focus:ring-2 focus:ring-secondary-500 focus:border-secondary-500 transition-all ${
+                      className={`w-9 h-11 sm:w-12 sm:h-14 text-center text-base sm:text-xl font-bold border-2 rounded-xl bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-50 focus:ring-2 focus:ring-secondary-500 focus:border-secondary-500 transition-all ${
                         error
                           ? "border-red-300 dark:border-red-700 focus:ring-red-500 focus:border-red-500"
                           : digit

@@ -1,5 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Card, CardContent } from "@/shared/components/ui/Card";
 import { Button } from "@/shared/components/ui/Button";
 import { NexusCareLogo } from "@/shared/components/ui/NexusCareLogo";
@@ -20,6 +23,26 @@ import apiClient from "@/lib/apiClient";
 import { ApiError } from "@/lib/apiError";
 
 type IdType = "NIN" | "BVN";
+
+// The BVN/NIN number and the OTP are the only two directly-typed fields on
+// this screen (the resolved first/last name that comes back from validation
+// is derived, not typed, and is left untouched). Each stage gets its own
+// small schema/form since they're two independent <form> submissions.
+// The message intentionally doesn't interpolate idType (NIN/BVN) to avoid a
+// resolver that has to be rebuilt on every idType change — the label and
+// placeholder right above the input already say which id type is expected.
+const idNumberSchema = z.object({
+  idNumber: z.string().trim().length(11, "Enter your 11-digit ID number."),
+});
+type IdNumberValues = z.infer<typeof idNumberSchema>;
+
+const otpSchema = z.object({
+  otp: z
+    .string({ required_error: "Enter the code sent to your registered phone number." })
+    .trim()
+    .min(1, "Enter the code sent to your registered phone number."),
+});
+type OtpValues = z.infer<typeof otpSchema>;
 
 function extractNamesFromResponse(body: Record<string, unknown>): {
   firstName: string;
@@ -98,29 +121,42 @@ export function IdentityVerification() {
 
   const [idType, setIdType] = useState<IdType>("NIN");
   const [showChoiceModal, setShowChoiceModal] = useState(true);
-  const [idNumber, setIdNumber] = useState("");
-  const [otp, setOtp] = useState("");
   const [stage, setStage] = useState<"input" | "otp">("input");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  // Kept so onValidate can still record the verified number, same as the
+  // pre-RHF version, without lifting the id-number form's value up.
+  const [submittedIdNumber, setSubmittedIdNumber] = useState("");
 
-  const handleNumberChange = (value: string) => {
-    setIdNumber(value.replace(/\D/g, "").slice(0, 11));
-    if (error) setError("");
-  };
+  const {
+    register: registerIdNumber,
+    handleSubmit: handleIdNumberSubmit,
+    setValue: setIdNumberValue,
+    reset: resetIdNumberForm,
+    formState: { errors: idNumberErrors },
+  } = useForm<IdNumberValues>({
+    resolver: zodResolver(idNumberSchema),
+    defaultValues: { idNumber: "" },
+  });
 
-  const handleInitiate = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const {
+    register: registerOtp,
+    handleSubmit: handleOtpSubmit,
+    setValue: setOtpValue,
+    reset: resetOtpForm,
+    formState: { errors: otpErrors },
+  } = useForm<OtpValues>({
+    resolver: zodResolver(otpSchema),
+    defaultValues: { otp: "" },
+  });
+
+  const onInitiate = handleIdNumberSubmit(async ({ idNumber }) => {
     setError("");
 
     if (!clinicianId) {
       setError(
         "We couldn't find your clinician account for this session. Please log in again to continue.",
       );
-      return;
-    }
-    if (idNumber.length !== 11) {
-      setError(`Enter your 11-digit ${idType}.`);
       return;
     }
 
@@ -130,6 +166,7 @@ export function IdentityVerification() {
         `/api/v1/clinicians/${encodeURIComponent(clinicianId)}/identity/initiate`,
         { type: idType, number: idNumber },
       );
+      setSubmittedIdNumber(idNumber);
       setStage("otp");
     } catch (err) {
       setError(
@@ -140,18 +177,10 @@ export function IdentityVerification() {
     } finally {
       setIsLoading(false);
     }
-  };
+  });
 
-  const handleValidate = async (e?: React.FormEvent, otpOverride?: string) => {
-    e?.preventDefault();
+  const onValidate = handleOtpSubmit(async ({ otp: codeToValidate }) => {
     setError("");
-
-    const codeToValidate = (otpOverride ?? otp).trim();
-
-    if (codeToValidate.length === 0) {
-      setError("Enter the code sent to your registered phone number.");
-      return;
-    }
 
     setIsLoading(true);
     try {
@@ -169,7 +198,7 @@ export function IdentityVerification() {
       // Save populated identity data into Zustand and localStorage so it is locked & non-editable in profile
       useAuthStore.getState().setVerifiedIdentity({
         type: idType,
-        number: idNumber,
+        number: submittedIdNumber,
         firstName: resolvedFirstName,
         lastName: resolvedLastName,
       });
@@ -184,7 +213,7 @@ export function IdentityVerification() {
     } finally {
       setIsLoading(false);
     }
-  };
+  });
 
   const handleClose = () => navigate("/medical-staff/dashboard");
   const handleSkip = () => navigate("/medical-staff/dashboard");
@@ -221,7 +250,7 @@ export function IdentityVerification() {
                 type="button"
                 onClick={() => {
                   setIdType("NIN");
-                  setIdNumber("");
+                  resetIdNumberForm();
                   setError("");
                   setShowChoiceModal(false);
                 }}
@@ -254,7 +283,7 @@ export function IdentityVerification() {
                 type="button"
                 onClick={() => {
                   setIdType("BVN");
-                  setIdNumber("");
+                  resetIdNumberForm();
                   setError("");
                   setShowChoiceModal(false);
                 }}
@@ -304,7 +333,7 @@ export function IdentityVerification() {
                 onClick={() => {
                   if (stage === "otp") {
                     setStage("input");
-                    setOtp("");
+                    resetOtpForm();
                     setError("");
                   } else {
                     navigate(-1);
@@ -390,7 +419,7 @@ export function IdentityVerification() {
             </div>
 
             {stage === "input" ? (
-              <form onSubmit={handleInitiate} className="space-y-6">
+              <form onSubmit={onInitiate} className="space-y-6">
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <label className="block text-[10px] font-semibold uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
@@ -408,12 +437,19 @@ export function IdentityVerification() {
                     <input
                       type="text"
                       inputMode="numeric"
-                      value={idNumber}
-                      onChange={(e) => handleNumberChange(e.target.value)}
+                      {...registerIdNumber("idNumber")}
+                      onChange={(e) => {
+                        const cleaned = e.target.value.replace(/\D/g, "").slice(0, 11);
+                        setIdNumberValue("idNumber", cleaned, { shouldValidate: true });
+                        if (error) setError("");
+                      }}
                       className="flex-1 bg-transparent text-sm text-neutral-800 outline-none placeholder:text-neutral-400 font-mono dark:text-neutral-100"
                       placeholder={`Enter 11-digit ${idType}`}
                     />
                   </div>
+                  {idNumberErrors.idNumber && (
+                    <p className="text-sm text-red-600">{idNumberErrors.idNumber.message}</p>
+                  )}
                 </div>
 
                 {error && (
@@ -431,7 +467,7 @@ export function IdentityVerification() {
                 </Button>
               </form>
             ) : (
-              <form onSubmit={handleValidate} className="space-y-6">
+              <form onSubmit={onValidate} className="space-y-6">
                 <div className="space-y-3">
                   <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
                     Enter the code sent to your registered phone number
@@ -441,21 +477,24 @@ export function IdentityVerification() {
                       type="text"
                       inputMode="numeric"
                       maxLength={6}
-                      value={otp}
+                      {...registerOtp("otp")}
                       onChange={(e) => {
                         const next = e.target.value.replace(/\D/g, "").slice(0, 6);
-                        setOtp(next);
+                        setOtpValue("otp", next, { shouldValidate: true });
                         if (error) setError("");
 
                         // Auto-submit once the code is fully entered.
                         if (next.length === 6 && !isLoading) {
-                          handleValidate(undefined, next);
+                          onValidate();
                         }
                       }}
                       className="flex-1 bg-transparent text-sm text-neutral-800 outline-none placeholder:text-neutral-400 font-mono tracking-widest dark:text-neutral-100"
                       placeholder="123456"
                     />
                   </div>
+                  {otpErrors.otp && (
+                    <p className="text-sm text-red-600">{otpErrors.otp.message}</p>
+                  )}
                 </div>
 
                 {error && (
@@ -476,7 +515,7 @@ export function IdentityVerification() {
                     type="button"
                     onClick={() => {
                       setStage("input");
-                      setOtp("");
+                      resetOtpForm();
                       setError("");
                     }}
                     className="text-sm text-slate-500 hover:text-slate-700 transition-colors dark:text-neutral-400 dark:hover:text-neutral-200"
