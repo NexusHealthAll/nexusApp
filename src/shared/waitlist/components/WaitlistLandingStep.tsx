@@ -22,6 +22,7 @@ import {
   waitlistSteps,
 } from "../constants/waitlistContent";
 import { useWaitlistFlow } from "./waitlistFlowContext";
+import { useWaitlistLoginNavigation } from "../hooks/useWaitlistLoginNavigation";
 import {
   WaitlistSubmissionError,
   submitWaitlistEmailToFirebase,
@@ -90,6 +91,7 @@ const ecosystemColumns = [
 
 export function WaitlistLandingStep() {
   const { openJoinModal } = useWaitlistFlow();
+  const handleLoginNavigation = useWaitlistLoginNavigation();
   const location = useLocation();
   const [ctaEmail, setCtaEmail] = useState("");
   const [ctaState, setCtaState] = useState<
@@ -267,7 +269,11 @@ export function WaitlistLandingStep() {
                   </p>
                   <Button
                     type="button"
-                    onClick={openJoinModal}
+                    onClick={() =>
+                      handleLoginNavigation(
+                        isHospital ? "hospital" : "health-worker",
+                      )
+                    }
                     className="mt-6 rounded-xl bg-onboarding-primaryBlue px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-onboarding-primaryBlue/90"
                   >
                     {card.ctaLabel}
