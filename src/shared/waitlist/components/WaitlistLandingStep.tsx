@@ -1,11 +1,14 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import {
   Activity,
   ArrowRight,
   Brain,
   CalendarClock,
   ClipboardCheck,
+  ShieldCheck,
   Sparkles,
+  Stethoscope,
   TrendingDown,
   UserCheck,
   Wallet,
@@ -87,9 +90,24 @@ const ecosystemColumns = [
 
 export function WaitlistLandingStep() {
   const { openJoinModal } = useWaitlistFlow();
+  const location = useLocation();
   const [ctaEmail, setCtaEmail] = useState("");
-  const [ctaState, setCtaState] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [ctaState, setCtaState] = useState<
+    "idle" | "loading" | "success" | "error"
+  >("idle");
   const [ctaMessage, setCtaMessage] = useState("");
+
+  // Support header nav links that arrive as "/#section" from another route.
+  useEffect(() => {
+    if (!location.hash) return;
+    const id = location.hash.slice(1);
+    const frame = requestAnimationFrame(() => {
+      document
+        .getElementById(id)
+        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [location.hash]);
 
   const handleCtaSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -114,52 +132,81 @@ export function WaitlistLandingStep() {
   };
 
   return (
-    <div className="bg-[#f4f6fa] dark:bg-neutral-950">
+    <div className="bg-white dark:bg-neutral-950">
       {/* 1. HERO SECTION */}
-      <section className="px-4 pb-12 pt-12 sm:px-6 lg:px-8 lg:pb-16 lg:pt-20">
-        <div className="mx-auto max-w-6xl text-center">
-          <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-teal-200/60 bg-teal-50/80 px-4 py-2 text-sm font-medium text-teal-700 shadow-sm dark:border-teal-800/60 dark:bg-teal-950/80 dark:text-teal-300">
-            <Sparkles className="h-4 w-4 text-teal-600 dark:text-teal-400" />
-            Redefining Clinical Efficiency
+      <section className="px-4 pb-14 pt-12 sm:px-6 lg:px-8 lg:pb-20 lg:pt-20 h-[90vh]">
+        <div className="mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-2 lg:gap-16">
+          {/* Copy */}
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-onboarding-primaryBlue/25 bg-onboarding-primaryBlue/5 px-4 py-2 text-sm font-medium text-onboarding-primaryBlue dark:border-[#5AA6D6]/30 dark:bg-[#5AA6D6]/10 dark:text-[#5AA6D6]">
+              <Sparkles className="h-4 w-4" />
+              Redefining Clinical Efficiency
+            </div>
+
+            <h1 className="mt-6 text-4xl font-semibold tracking-tight text-neutral-950 sm:text-5xl lg:text-[3.25rem] lg:leading-[1.1] dark:text-neutral-50">
+              The{" "}
+              <span className="text-onboarding-primaryBlue dark:text-[#5AA6D6]">
+                Digital Pulse
+              </span>{" "}
+              of Modern Healthcare.
+            </h1>
+
+            <p className="mt-5 max-w-xl text-sm leading-7 text-neutral-600 sm:text-base dark:text-neutral-400">
+              Empowering healthcare facilities with AI-driven documentation and
+              a high-fidelity marketplace for elite clinical talent. Experience
+              the future of medical workflows.
+            </p>
+
+            {/* <div className="mt-8">
+              <Button
+                type="button"
+                onClick={openJoinModal}
+                className="rounded-xl bg-onboarding-primaryBlue px-6 py-3 text-base font-semibold text-white transition-colors hover:bg-onboarding-primaryBlue/90"
+              >
+                Join Waitlist
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </div> */}
           </div>
 
-          <h1 className="mt-6 text-4xl font-semibold tracking-tight text-neutral-950 sm:text-5xl lg:text-6xl dark:text-neutral-50">
-            The{" "}
-            <span className="text-onboarding-primaryBlue dark:text-[#5AA6D6]">Digital Pulse</span>{" "}
-            of Modern Healthcare.
-          </h1>
+          {/* Graphic */}
+          <div className="relative mx-auto flex h-[22rem] w-full max-w-md items-center justify-center sm:h-[26rem] lg:mx-0 lg:max-w-none">
+            <div className="absolute inset-0 rounded-[2.5rem] bg-onboarding-primaryBlue dark:bg-[#123a56]" />
+            <Stethoscope className="relative h-20 w-20 text-white/90 sm:h-24 sm:w-24" strokeWidth={1.25} />
 
-          <p className="mx-auto mt-5 max-w-3xl text-sm leading-7 text-neutral-600 sm:text-base dark:text-neutral-400">
-            Empowering healthcare facilities with AI-driven documentation and a
-            high-fidelity marketplace for elite clinical talent. Experience the
-            future of medical workflows.
-          </p>
+            <div className="absolute left-4 top-10 flex items-center gap-3 rounded-2xl border border-neutral-200 bg-white px-4 py-3 shadow-soft sm:left-8 dark:border-neutral-800 dark:bg-neutral-900">
+              <ShieldCheck className="h-5 w-5 shrink-0 text-onboarding-primaryGreen" />
+              <div>
+                <p className="text-xs font-semibold text-neutral-900 dark:text-neutral-50">
+                  Verified Clinicians
+                </p>
+                <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+                  Credentials checked
+                </p>
+              </div>
+            </div>
 
-          <div className="mt-8 flex justify-center">
-            <Button
-              type="button"
-              onClick={openJoinModal}
-              className="rounded-xl bg-gradient-to-r from-onboarding-primaryGreen to-onboarding-primaryBlue px-6 py-3 text-base font-semibold text-white shadow-soft hover:opacity-90 transition-opacity"
-            >
-              Join Waitlist
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </div>
-
-          <div className="mx-auto mt-12 max-w-6xl overflow-hidden rounded-2xl border border-neutral-200 bg-[#0a2f4a] shadow-strong dark:border-neutral-800">
-            <img
-              src="/waitlist/landing.jpg"
-              alt="Clinical workflow dashboard"
-              className="h-[32rem] w-full object-cover center opacity-80 sm:h-[36rem]"
-            />
+            <div className="absolute bottom-10 right-4 flex items-center gap-3 rounded-2xl border border-neutral-200 bg-white px-4 py-3 shadow-soft sm:right-8 dark:border-neutral-800 dark:bg-neutral-900">
+              <Wallet className="h-5 w-5 shrink-0 text-onboarding-primaryGreen" />
+              <div>
+                <p className="text-xs font-semibold text-neutral-900 dark:text-neutral-50">
+                  Same-day Payouts
+                </p>
+                <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+                  Instant, secure
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
       {/* 2. PARTNERS SECTION */}
-      <section className="border-y border-neutral-200/80 bg-[#eef0f5] px-4 py-6 sm:px-6 lg:px-8 dark:border-neutral-800 dark:bg-neutral-900">
+      <section className="border-y border-neutral-200/80 bg-[#f7f8fa] px-4 py-6 sm:px-6 lg:px-8 dark:border-neutral-800 dark:bg-neutral-900">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-8 gap-y-3 text-xs font-semibold uppercase tracking-[0.15em] text-neutral-500 sm:text-sm dark:text-neutral-400">
-          <span className="text-onboarding-primaryBlue dark:text-[#5AA6D6]">PARTNERED WITH</span>
+          <span className="text-onboarding-primaryBlue dark:text-[#5AA6D6]">
+            PARTNERED WITH
+          </span>
           {waitlistPartners.map((partner) => (
             <span key={partner}>{partner}</span>
           ))}
@@ -167,14 +214,18 @@ export function WaitlistLandingStep() {
       </section>
 
       {/* 3. PRECISION WORKFLOW SECTION */}
-      <section className="px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
+      <section
+        id="workflow"
+        className="scroll-mt-24 px-4 py-14 sm:px-6 lg:px-8 lg:py-20"
+      >
         <div className="mx-auto max-w-6xl">
           <div className="text-center">
             <h2 className="text-3xl font-semibold text-onboarding-primaryBlue sm:text-4xl dark:text-[#5AA6D6]">
               Precision Workflow
             </h2>
             <p className="mx-auto mt-3 max-w-2xl text-sm text-neutral-600 sm:text-base dark:text-neutral-400">
-              A seamless 3-step engine built from registration to shift reconciliation.
+              A seamless 3-step engine built from registration to shift
+              reconciliation.
             </p>
           </div>
 
@@ -182,9 +233,9 @@ export function WaitlistLandingStep() {
             {waitlistSteps.map((step) => (
               <div
                 key={step.id}
-                className="flex flex-col items-center text-center p-6 rounded-2xl bg-white border border-neutral-200/70 shadow-sm dark:bg-neutral-900 dark:border-neutral-800"
+                className="flex flex-col items-center rounded-2xl border border-neutral-200/70 bg-white p-6 text-center dark:border-neutral-800 dark:bg-neutral-900"
               >
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r from-onboarding-primaryGreen to-onboarding-primaryBlue text-white font-bold text-lg shadow-sm">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-onboarding-primaryBlue text-lg font-bold text-white">
                   {step.id}
                 </div>
                 <h3 className="mt-5 text-xl font-semibold text-neutral-900 dark:text-neutral-50">
@@ -211,26 +262,29 @@ export function WaitlistLandingStep() {
             return (
               <article
                 key={card.title}
-                className="relative overflow-hidden rounded-3xl shadow-strong group"
+                className="group overflow-hidden rounded-3xl border border-neutral-200/80 bg-white dark:border-neutral-800 dark:bg-neutral-900"
               >
-                <img
-                  src={imgSrc}
-                  alt={card.title}
-                  className="h-[26rem] w-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#06345c]/95 via-[#06345c]/55 to-transparent" />
-                <div className="absolute bottom-8 left-8 right-8 text-white">
-                  <p className="text-xs uppercase tracking-[0.2em] text-white/70">
+                <div className="h-56 overflow-hidden sm:h-64">
+                  <img
+                    src={imgSrc}
+                    alt={card.title}
+                    className="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-[1.03]"
+                  />
+                </div>
+                <div className="p-7 sm:p-8">
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-onboarding-primaryBlue dark:text-[#5AA6D6]">
                     {card.eyebrow}
                   </p>
-                  <h2 className="mt-2 text-3xl font-semibold">{card.title}</h2>
-                  <p className="mt-3 text-sm leading-7 text-white/80 max-w-md">
+                  <h3 className="mt-2 text-2xl font-semibold text-neutral-900 dark:text-neutral-50">
+                    {card.title}
+                  </h3>
+                  <p className="mt-3 text-sm leading-7 text-neutral-600 dark:text-neutral-400">
                     {card.description}
                   </p>
                   <Button
                     type="button"
                     onClick={openJoinModal}
-                    className="mt-5 rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-neutral-900 shadow hover:bg-neutral-100 transition-colors"
+                    className="mt-6 rounded-xl bg-onboarding-primaryBlue px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-onboarding-primaryBlue/90"
                   >
                     {card.ctaLabel}
                   </Button>
@@ -242,10 +296,13 @@ export function WaitlistLandingStep() {
       </section>
 
       {/* 5. EMPOWERING THE ECOSYSTEM */}
-      <section className="px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
+      <section
+        id="ecosystem"
+        className="scroll-mt-24 px-4 py-14 sm:px-6 lg:px-8 lg:py-20"
+      >
         <div className="mx-auto max-w-6xl">
           <div className="text-center">
-            <h2 className="text-3xl font-semibold bg-gradient-to-br from-onboarding-primaryBlue to-onboarding-primaryGreen bg-clip-text text-transparent sm:text-4xl dark:from-[#5AA6D6] dark:to-onboarding-primaryGreen">
+            <h2 className="text-3xl font-semibold text-onboarding-primaryBlue sm:text-4xl dark:text-[#5AA6D6]">
               Empowering the Ecosystem
             </h2>
             <p className="mx-auto mt-3 max-w-3xl text-sm leading-7 text-neutral-600 sm:text-base dark:text-neutral-400">
@@ -258,10 +315,10 @@ export function WaitlistLandingStep() {
             {ecosystemColumns.map((column) => (
               <article
                 key={column.title}
-                className="rounded-3xl border border-[#e7e9ee] bg-[#f3f4f8] p-7 sm:p-9 dark:border-neutral-800 dark:bg-neutral-900"
+                className="rounded-3xl border border-neutral-200 bg-[#f7f8fa] p-7 sm:p-9 dark:border-neutral-800 dark:bg-neutral-900"
               >
                 <div className="flex items-center gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-onboarding-primaryGreen to-onboarding-primaryBlue text-white">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-onboarding-primaryBlue text-white">
                     <ClipboardCheck className="h-5 w-5" />
                   </div>
                   <h3 className="text-3xl font-semibold text-neutral-900 dark:text-neutral-50">
@@ -295,7 +352,10 @@ export function WaitlistLandingStep() {
       </section>
 
       {/* 6. EDITORIAL INSIGHTS */}
-      <section className="px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
+      <section
+        id="insights"
+        className="scroll-mt-24 px-4 py-14 sm:px-6 lg:px-8 lg:py-20"
+      >
         <div className="mx-auto max-w-6xl">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div>
@@ -303,7 +363,8 @@ export function WaitlistLandingStep() {
                 Editorial Insights
               </h2>
               <p className="mt-2 text-sm text-neutral-600 sm:text-base dark:text-neutral-400">
-                A curated collection of research, product updates, and clinical operational guides.
+                A curated collection of research, product updates, and clinical
+                operational guides.
               </p>
             </div>
             <button
@@ -319,20 +380,22 @@ export function WaitlistLandingStep() {
             {waitlistInsights.map((insight) => (
               <article
                 key={insight.title}
-                className="overflow-hidden rounded-2xl border border-neutral-200/80 bg-white shadow-soft flex flex-col group dark:border-neutral-800 dark:bg-neutral-900"
+                className="overflow-hidden rounded-2xl border border-neutral-200/80 bg-white flex flex-col group dark:border-neutral-800 dark:bg-neutral-900"
               >
                 <div className="relative h-48 overflow-hidden bg-neutral-100 dark:bg-neutral-800">
                   <img
                     src={insight.image}
                     alt={insight.title}
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                   />
                 </div>
                 <div className="p-6 flex flex-col flex-1">
                   <div className="flex items-center gap-2 text-xs font-semibold text-onboarding-primaryBlue uppercase tracking-wider dark:text-[#5AA6D6]">
                     <span>{insight.category}</span>
                     <span>•</span>
-                    <span className="text-neutral-500 dark:text-neutral-400">{insight.readTime}</span>
+                    <span className="text-neutral-500 dark:text-neutral-400">
+                      {insight.readTime}
+                    </span>
                   </div>
                   <h3 className="mt-3 text-lg font-semibold text-neutral-900 line-clamp-2 dark:text-neutral-50">
                     {insight.title}
@@ -349,7 +412,7 @@ export function WaitlistLandingStep() {
 
       {/* 7. READY FOR THE PULSE? */}
       <section className="px-4 pb-16 sm:px-6 lg:px-8 lg:pb-24">
-        <div className="mx-auto max-w-5xl overflow-hidden rounded-3xl bg-gradient-to-r from-[#0d5675] via-[#107085] to-[#189a96] p-8 text-center sm:p-14 shadow-strong text-white">
+        <div className="mx-auto max-w-5xl overflow-hidden rounded-3xl bg-onboarding-primaryBlue p-8 text-center sm:p-14 text-white">
           <h2 className="text-3xl font-semibold sm:text-4xl">
             Ready for the Pulse?
           </h2>
@@ -368,12 +431,12 @@ export function WaitlistLandingStep() {
               onChange={(e) => setCtaEmail(e.target.value)}
               placeholder="Enter your work email"
               required
-              className="h-12 w-full sm:flex-1 rounded-xl bg-white px-4 text-sm text-neutral-800 placeholder:text-neutral-400 outline-none shadow-sm focus:ring-2 focus:ring-teal-300"
+              className="h-12 w-full sm:flex-1 rounded-xl bg-white px-4 text-sm text-neutral-800 placeholder:text-neutral-400 outline-none focus:ring-2 focus:ring-white/60"
             />
             <Button
               type="submit"
               isLoading={ctaState === "loading"}
-              className="h-12 w-full sm:w-auto rounded-xl bg-white px-6 text-sm font-semibold text-[#13888d] hover:bg-neutral-50 shadow-md transition-colors shrink-0"
+              className="h-12 w-full sm:w-auto rounded-xl bg-white px-6 text-sm font-semibold text-onboarding-primaryBlue hover:bg-neutral-50 transition-colors shrink-0"
             >
               Secure My Spot
             </Button>

@@ -1,4 +1,4 @@
-import { Link, Outlet, useNavigate } from "react-router-dom";
+import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/shared/auth/store/authStore";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -18,8 +18,30 @@ import {
 import { WaitlistJoinModalFlow } from "./WaitlistJoinModalFlow";
 import { ThemeToggle } from "@/shared/components/ui/ThemeToggle";
 
+const navSectionIds: Record<string, string> = {
+  Solutions: "ecosystem",
+  "How it Works": "workflow",
+  Resources: "insights",
+};
+
 export function WaitlistFlowShell() {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const handleNavClick = useCallback(
+    (item: string) => (event: React.MouseEvent) => {
+      event.preventDefault();
+      const id = navSectionIds[item];
+      if (!id) return;
+
+      if (location.pathname === "/") {
+        document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+      } else {
+        navigate(`/#${id}`);
+      }
+    },
+    [location.pathname, navigate],
+  );
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [openAccordion, setOpenAccordion] = useState<
@@ -307,26 +329,19 @@ export function WaitlistFlowShell() {
             className="hidden items-center gap-8 md:flex"
           >
             {waitlistNavItems.map((item) => (
-              <Link
+              <a
                 key={item}
-                to="/"
+                href={`/#${navSectionIds[item]}`}
+                onClick={handleNavClick(item)}
                 className="text-sm font-medium text-neutral-600 transition-colors hover:text-onboarding-primaryBlue dark:text-neutral-400"
               >
                 {item}
-              </Link>
+              </a>
             ))}
           </nav>
 
           <div className="flex flex-row items-center gap-3">
             <ThemeToggle />
-            {/* <Button
-              type="button"
-              onClick={openJoinModal}
-              className="rounded-xl bg-gradient-to-r from-onboarding-primaryGreen to-onboarding-primaryBlue px-5 text-sm font-semibold text-white shadow-soft"
-            >
-              Join Waitlist
-            </Button> */}
-
             {/* Logged-in users see their avatar instead of the Get started CTA */}
             <div className="relative" data-waitlist-get-started>
               {isLoggedIn ? (

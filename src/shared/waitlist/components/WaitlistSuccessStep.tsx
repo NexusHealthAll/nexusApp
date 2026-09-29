@@ -14,7 +14,7 @@ export function WaitlistSuccessStep() {
 
   return (
     <section className="bg-[#f4f6fa] px-4 py-20 sm:px-6 lg:px-8 dark:bg-neutral-950">
-      <div className="mx-auto max-w-3xl rounded-[2rem] border border-neutral-200 bg-white p-8 text-center shadow-strong sm:p-10 dark:border-neutral-800 dark:bg-neutral-900">
+      <div className="mx-auto max-w-3xl rounded-[2rem] border border-neutral-200 bg-white p-8 text-center shadow-soft sm:p-10 dark:border-neutral-800 dark:bg-neutral-900">
         <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-success-100 text-success-700 dark:bg-success-950 dark:text-success-300">
           <CheckCircle2 className="h-8 w-8" />
         </div>
@@ -37,7 +37,7 @@ export function WaitlistSuccessStep() {
           <Button
             type="button"
             onClick={handleStartAgain}
-            className="rounded-xl bg-gradient-to-r from-onboarding-primaryGreen to-onboarding-primaryBlue px-6 text-white"
+            className="rounded-xl bg-onboarding-primaryBlue px-6 text-white transition-colors hover:bg-onboarding-primaryBlue/90"
           >
             <RotateCcw className="mr-2 h-4 w-4" /> Start again
           </Button>

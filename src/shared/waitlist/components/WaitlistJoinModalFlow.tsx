@@ -182,9 +182,7 @@ export function WaitlistJoinModalFlow() {
       className={cn(
         "max-h-[calc(100dvh-2rem)] overflow-y-auto",
         modalStep === "role" ? "max-w-4xl" : "max-w-2xl",
-        modalStep === "role"
-          ? "border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900"
-          : "border-white/45 bg-[linear-gradient(180deg,_rgba(236,241,246,0.95)_0%,_rgba(169,196,208,0.82)_54%,_rgba(48,100,144,0.72)_100%)] backdrop-blur-xl",
+        "border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900",
       )}
     >
       {modalStep === "role" ? (
@@ -199,10 +197,10 @@ export function WaitlistJoinModalFlow() {
                 type="button"
                 onClick={() => handleRoleSelect(card.role)}
                 className={cn(
-                  "group relative overflow-hidden rounded-2xl border text-left shadow-strong transition-all",
+                  "group relative overflow-hidden rounded-2xl border text-left transition-colors",
                   isSelected
-                    ? "border-3 shadow-2xl drop-shadow-2xl"
-                    : "border-neutral-200 hover:border-secondary-300 dark:border-neutral-800",
+                    ? "border-2 border-onboarding-primaryBlue"
+                    : "border-neutral-200 hover:border-onboarding-primaryBlue/50 dark:border-neutral-800",
                 )}
               >
                 <img
@@ -210,12 +208,9 @@ export function WaitlistJoinModalFlow() {
                   alt={card.title}
                   className="h-[22rem] w-full object-cover"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#06345c]/90 via-[#06345c]/40 to-transparent" />
+                <div className="absolute inset-0 bg-[#06345c]/55" />
                 {isSelected && (
-                  <div className="absolute inset-0 bg-[#06345c]/40 transition-opacity" />
-                )}
-                {isSelected && (
-                  <div className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full bg-onboarding-primaryGreen shadow-lg">
+                  <div className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full bg-onboarding-primaryGreen">
                     <CheckCircle2 className="h-5 w-5 text-white" />
                   </div>
                 )}
@@ -252,7 +247,7 @@ export function WaitlistJoinModalFlow() {
             onChange={(event) =>
               updateHospitalForm({ fullName: event.target.value })
             }
-            className="h-12 w-full rounded-xl border border-white/55 bg-[linear-gradient(180deg,_rgba(255,255,255,0.95),_rgba(238,245,251,0.88))] px-4 text-sm text-neutral-900 outline-none backdrop-blur transition focus:border-onboarding-primaryBlue"
+            className="h-12 w-full rounded-xl border border-neutral-200 bg-white px-4 text-sm text-neutral-900 outline-none transition focus:border-onboarding-primaryBlue dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100"
             placeholder="Full name"
           />
           <input
@@ -261,7 +256,7 @@ export function WaitlistJoinModalFlow() {
             onChange={(event) =>
               updateHospitalForm({ email: event.target.value })
             }
-            className="h-12 w-full rounded-xl border border-white/55 bg-[linear-gradient(180deg,_rgba(255,255,255,0.95),_rgba(238,245,251,0.88))] px-4 text-sm text-neutral-900 outline-none backdrop-blur transition focus:border-onboarding-primaryBlue"
+            className="h-12 w-full rounded-xl border border-neutral-200 bg-white px-4 text-sm text-neutral-900 outline-none transition focus:border-onboarding-primaryBlue dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100"
             placeholder="Work email"
           />
           <input
@@ -270,7 +265,7 @@ export function WaitlistJoinModalFlow() {
             onChange={(event) =>
               updateHospitalForm({ phoneNumber: event.target.value })
             }
-            className="h-12 w-full rounded-xl border border-white/55 bg-[linear-gradient(180deg,_rgba(255,255,255,0.95),_rgba(238,245,251,0.88))] px-4 text-sm text-neutral-900 outline-none backdrop-blur transition focus:border-onboarding-primaryBlue"
+            className="h-12 w-full rounded-xl border border-neutral-200 bg-white px-4 text-sm text-neutral-900 outline-none transition focus:border-onboarding-primaryBlue dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100"
             placeholder="Phone number"
           />
           <input
@@ -279,14 +274,14 @@ export function WaitlistJoinModalFlow() {
             onChange={(event) =>
               updateHospitalForm({ hospitalName: event.target.value })
             }
-            className="h-12 w-full rounded-xl border border-white/55 bg-[linear-gradient(180deg,_rgba(255,255,255,0.95),_rgba(238,245,251,0.88))] px-4 text-sm text-neutral-900 outline-none backdrop-blur transition focus:border-onboarding-primaryBlue"
+            className="h-12 w-full rounded-xl border border-neutral-200 bg-white px-4 text-sm text-neutral-900 outline-none transition focus:border-onboarding-primaryBlue dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100"
             placeholder="Hospital name"
           />
           <Select
             value={state.hospitalForm.location}
             onChange={(value) => updateHospitalForm({ location: value })}
             placeholder="Select location"
-            className="h-12 rounded-xl border-white/55 bg-[linear-gradient(180deg,_rgba(255,255,255,0.95),_rgba(238,245,251,0.88))] px-4 text-sm text-neutral-900 backdrop-blur transition focus-visible:ring-onboarding-primaryBlue"
+            className="h-12 rounded-xl border-neutral-200 bg-white px-4 text-sm text-neutral-900 transition focus-visible:ring-onboarding-primaryBlue dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100"
             options={[
               { value: "Abuja", label: "Abuja" },
               { value: "Lagos", label: "Lagos" },
@@ -298,7 +293,7 @@ export function WaitlistJoinModalFlow() {
             value={state.hospitalForm.roleCategory}
             onChange={(value) => updateHospitalForm({ roleCategory: value })}
             placeholder="Select role category"
-            className="h-12 rounded-xl border-white/55 bg-[linear-gradient(180deg,_rgba(255,255,255,0.95),_rgba(238,245,251,0.88))] px-4 text-sm text-neutral-900 backdrop-blur transition focus-visible:ring-onboarding-primaryBlue"
+            className="h-12 rounded-xl border-neutral-200 bg-white px-4 text-sm text-neutral-900 transition focus-visible:ring-onboarding-primaryBlue dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100"
             options={[
               { value: "Operations Lead", label: "Operations Lead" },
               { value: "Clinical Director", label: "Clinical Director" },
@@ -309,7 +304,7 @@ export function WaitlistJoinModalFlow() {
           <Button
             type="submit"
             isLoading={submitState === "loading"}
-            className="h-12 w-full rounded-xl bg-gradient-to-r from-onboarding-primaryGreen to-onboarding-primaryBlue text-white"
+            className="h-12 w-full rounded-xl bg-onboarding-primaryBlue text-white transition-colors hover:bg-onboarding-primaryBlue/90"
           >
             Join Waitlist
           </Button>
@@ -334,7 +329,7 @@ export function WaitlistJoinModalFlow() {
             onChange={(event) =>
               updateHealthWorkerForm({ fullName: event.target.value })
             }
-            className="h-12 w-full rounded-xl border border-white/55 bg-[linear-gradient(180deg,_rgba(255,255,255,0.95),_rgba(238,245,251,0.88))] px-4 text-sm text-neutral-900 outline-none backdrop-blur transition focus:border-onboarding-primaryBlue"
+            className="h-12 w-full rounded-xl border border-neutral-200 bg-white px-4 text-sm text-neutral-900 outline-none transition focus:border-onboarding-primaryBlue dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100"
             placeholder="Full name"
           />
           <input
@@ -343,7 +338,7 @@ export function WaitlistJoinModalFlow() {
             onChange={(event) =>
               updateHealthWorkerForm({ email: event.target.value })
             }
-            className="h-12 w-full rounded-xl border border-white/55 bg-[linear-gradient(180deg,_rgba(255,255,255,0.95),_rgba(238,245,251,0.88))] px-4 text-sm text-neutral-900 outline-none backdrop-blur transition focus:border-onboarding-primaryBlue"
+            className="h-12 w-full rounded-xl border border-neutral-200 bg-white px-4 text-sm text-neutral-900 outline-none transition focus:border-onboarding-primaryBlue dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100"
             placeholder="Work email"
           />
           <input
@@ -352,7 +347,7 @@ export function WaitlistJoinModalFlow() {
             onChange={(event) =>
               updateHealthWorkerForm({ phoneNumber: event.target.value })
             }
-            className="h-12 w-full rounded-xl border border-white/55 bg-[linear-gradient(180deg,_rgba(255,255,255,0.95),_rgba(238,245,251,0.88))] px-4 text-sm text-neutral-900 outline-none backdrop-blur transition focus:border-onboarding-primaryBlue"
+            className="h-12 w-full rounded-xl border border-neutral-200 bg-white px-4 text-sm text-neutral-900 outline-none transition focus:border-onboarding-primaryBlue dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100"
             placeholder="Phone number"
           />
           <input
@@ -361,7 +356,7 @@ export function WaitlistJoinModalFlow() {
             onChange={(event) =>
               updateHealthWorkerForm({ professionalTitle: event.target.value })
             }
-            className="h-12 w-full rounded-xl border border-white/55 bg-[linear-gradient(180deg,_rgba(255,255,255,0.95),_rgba(238,245,251,0.88))] px-4 text-sm text-neutral-900 outline-none backdrop-blur transition focus:border-onboarding-primaryBlue"
+            className="h-12 w-full rounded-xl border border-neutral-200 bg-white px-4 text-sm text-neutral-900 outline-none transition focus:border-onboarding-primaryBlue dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100"
             placeholder="Professional title / speciality"
           />
           <input
@@ -370,14 +365,14 @@ export function WaitlistJoinModalFlow() {
             onChange={(event) =>
               updateHealthWorkerForm({ licenseNumber: event.target.value })
             }
-            className="h-12 w-full rounded-xl border border-white/55 bg-[linear-gradient(180deg,_rgba(255,255,255,0.95),_rgba(238,245,251,0.88))] px-4 text-sm text-neutral-900 outline-none backdrop-blur transition focus:border-onboarding-primaryBlue"
+            className="h-12 w-full rounded-xl border border-neutral-200 bg-white px-4 text-sm text-neutral-900 outline-none transition focus:border-onboarding-primaryBlue dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100"
             placeholder="License number"
           />
 
           <Button
             type="submit"
             isLoading={submitState === "loading"}
-            className="h-12 w-full rounded-xl bg-gradient-to-r from-onboarding-primaryGreen to-onboarding-primaryBlue text-white"
+            className="h-12 w-full rounded-xl bg-onboarding-primaryBlue text-white transition-colors hover:bg-onboarding-primaryBlue/90"
           >
             Join Waitlist
           </Button>
