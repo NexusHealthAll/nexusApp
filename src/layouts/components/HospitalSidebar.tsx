@@ -3,7 +3,6 @@ import type { ComponentType } from "react";
 import {
   BarChart2,
   Bell,
-  Building2,
   CalendarDays,
   CreditCard,
   FileText,
@@ -56,12 +55,9 @@ const mainNavItems: NavItem[] = [
   { name: "Notifications", href: PATHS.hospital.notifications, icon: Bell },
 ];
 
+// "Hospital Profile" was folded into Settings (/hospital/settings now opens
+// straight to its "Hospital Profile" section) — no separate nav entry needed.
 const secondaryNavItems: NavItem[] = [
-  {
-    name: "Hospital Profile",
-    href: PATHS.hospital.profile,
-    icon: Building2,
-  },
   { name: "Settings", href: PATHS.hospital.settings, icon: Settings },
   { name: "Help Center", href: PATHS.hospital.help, icon: HelpCircle },
 ];

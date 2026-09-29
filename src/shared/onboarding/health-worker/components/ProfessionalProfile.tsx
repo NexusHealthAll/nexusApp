@@ -1,5 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Card, CardContent } from "@/shared/components/ui/Card";
 import { Button } from "@/shared/components/ui/Button";
 import { Select } from "@/shared/components/ui/Select";
@@ -10,6 +13,7 @@ import { useAuthStore } from "@/shared/auth/store/authStore";
 import apiClient from "@/lib/apiClient";
 import { ApiError } from "@/lib/apiError";
 import { InstallPromptBanner } from "@/features/health-worker/components/InstallPromptBanner";
+import { requiredText } from "@/shared/validation/fields";
 
 const ROLE_OPTIONS = [
   { value: "doctor", label: "Doctor" },
@@ -37,21 +41,18 @@ const SPECIALTY_OPTIONS = [
   { value: "other", label: "Other" },
 ];
 
-interface ProfessionalFormData {
-  firstName: string;
-  lastName: string;
-  role: string;
-  licenseNumber: string;
-  specialty: string;
-}
-
-interface ProfessionalFormErrors {
-  firstName?: string;
-  lastName?: string;
-  role?: string;
-  licenseNumber?: string;
-  specialty?: string;
-}
+const professionalProfileSchema = z.object({
+  firstName: requiredText("First name"),
+  lastName: requiredText("Last name"),
+  role: z.string().min(1, "Please select your professional role"),
+  licenseNumber: z
+    .string()
+    .trim()
+    .min(1, "License number is required")
+    .min(2, "License number is too short"),
+  specialty: z.string().min(1, "Please select a specialty"),
+});
+type ProfessionalFormValues = z.infer<typeof professionalProfileSchema>;
 
 export function ProfessionalProfile() {
   const navigate = useNavigate();
@@ -59,22 +60,32 @@ export function ProfessionalProfile() {
   const verifiedIdentity = useAuthStore((s) => s.verifiedIdentity);
   const user = useAuthStore((s) => s.user);
 
-  const [formData, setFormData] = useState<ProfessionalFormData>({
-    firstName: verifiedIdentity?.firstName || user?.first_name || "",
-    lastName: verifiedIdentity?.lastName || user?.last_name || "",
-    role: "",
-    licenseNumber: "",
-    specialty: "",
+  const {
+    register,
+    control,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm<ProfessionalFormValues>({
+    resolver: zodResolver(professionalProfileSchema),
+    defaultValues: {
+      firstName: verifiedIdentity?.firstName || user?.first_name || "",
+      lastName: verifiedIdentity?.lastName || user?.last_name || "",
+      role: "",
+      licenseNumber: "",
+      specialty: "",
+    },
   });
 
+  // First/last name are populated from the verified BVN/NIN lookup — they
+  // are read-only (not directly typed by the user), so we only push updates
+  // into the form via setValue as the identity data resolves, same as the
+  // pre-RHF version did via setFormData.
   useEffect(() => {
     let active = true;
     if (verifiedIdentity?.firstName || verifiedIdentity?.lastName) {
-      setFormData((prev) => ({
-        ...prev,
-        firstName: verifiedIdentity.firstName || prev.firstName,
-        lastName: verifiedIdentity.lastName || prev.lastName,
-      }));
+      if (verifiedIdentity.firstName) setValue("firstName", verifiedIdentity.firstName);
+      if (verifiedIdentity.lastName) setValue("lastName", verifiedIdentity.lastName);
     } else if (clinicianId) {
       apiClient
         .get<{
@@ -93,11 +104,8 @@ export function ProfessionalProfile() {
               firstName: fn,
               lastName: ln,
             });
-            setFormData((prev) => ({
-              ...prev,
-              firstName: fn || prev.firstName,
-              lastName: ln || prev.lastName,
-            }));
+            if (fn) setValue("firstName", fn);
+            if (ln) setValue("lastName", ln);
           }
         })
         .catch(() => {});
@@ -105,31 +113,12 @@ export function ProfessionalProfile() {
     return () => {
       active = false;
     };
-  }, [clinicianId, verifiedIdentity]);
+  }, [clinicianId, verifiedIdentity, setValue]);
 
   const [isLoading, setIsLoading] = useState(false);
-  const [errors, setErrors] = useState<ProfessionalFormErrors>({});
   const [submitError, setSubmitError] = useState("");
 
-  const validateForm = (): boolean => {
-    const newErrors: ProfessionalFormErrors = {};
-
-    if (!formData.firstName.trim()) newErrors.firstName = "First name is required";
-    if (!formData.lastName.trim()) newErrors.lastName = "Last name is required";
-    if (!formData.role) newErrors.role = "Please select your professional role";
-    if (!formData.licenseNumber.trim()) {
-      newErrors.licenseNumber = "License number is required";
-    } else if (formData.licenseNumber.trim().length < 2) {
-      newErrors.licenseNumber = "License number is too short";
-    }
-    if (!formData.specialty) newErrors.specialty = "Please select a specialty";
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleContinue = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onValid = async (values: ProfessionalFormValues) => {
     setSubmitError("");
 
     if (!clinicianId) {
@@ -139,18 +128,16 @@ export function ProfessionalProfile() {
       return;
     }
 
-    if (!validateForm()) return;
-
     setIsLoading(true);
     try {
       await apiClient.put(
         `/api/v1/clinicians/${encodeURIComponent(clinicianId)}/profile`,
         {
-          first_name: formData.firstName.trim(),
-          last_name: formData.lastName.trim(),
-          role: formData.role,
-          license_number: formData.licenseNumber.trim(),
-          specialty: formData.specialty,
+          first_name: values.firstName.trim(),
+          last_name: values.lastName.trim(),
+          role: values.role,
+          license_number: values.licenseNumber.trim(),
+          specialty: values.specialty,
         },
       );
 
@@ -161,8 +148,8 @@ export function ProfessionalProfile() {
           refreshToken,
           user: {
             ...user,
-            first_name: formData.firstName.trim(),
-            last_name: formData.lastName.trim(),
+            first_name: values.firstName.trim(),
+            last_name: values.lastName.trim(),
           },
         });
       }
@@ -240,7 +227,7 @@ export function ProfessionalProfile() {
               To ensure clinical safety and maintain our high standards of care,
               please provide your current medical registration details.
             </p>
-            <form onSubmit={handleContinue} className="space-y-8">
+            <form onSubmit={handleSubmit(onValid)} noValidate className="space-y-8">
               {/* Name fields - Populated from NIN / BVN (Not Editable) */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
@@ -252,7 +239,7 @@ export function ProfessionalProfile() {
                     Not Editable (Populated from {verifiedIdentity?.type || "NIN/BVN"})
                   </span>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-2">
                     <label className="mb-1.5 flex items-center space-x-1.5 text-[10px] font-semibold uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
                       <User className="h-3.5 w-3.5" />
@@ -263,7 +250,7 @@ export function ProfessionalProfile() {
                       <input
                         type="text"
                         readOnly
-                        value={formData.firstName}
+                        {...register("firstName")}
                         className="w-full bg-transparent text-sm font-semibold text-slate-700 outline-none cursor-not-allowed dark:text-neutral-300"
                         placeholder="First name"
                       />
@@ -278,7 +265,7 @@ export function ProfessionalProfile() {
                       <input
                         type="text"
                         readOnly
-                        value={formData.lastName}
+                        {...register("lastName")}
                         className="w-full bg-transparent text-sm font-semibold text-slate-700 outline-none cursor-not-allowed dark:text-neutral-300"
                         placeholder="Last name"
                       />
@@ -289,33 +276,33 @@ export function ProfessionalProfile() {
 
               {/* Professional Role */}
               <div className="space-y-3">
-                <Select
-                  label="Professional Role"
-                  value={formData.role}
-                  onChange={(value) => setFormData((prev) => ({ ...prev, role: value }))}
-                  placeholder="Select your role"
-                  className="bg-onboarding-inputBackground dark:bg-neutral-800"
-                  options={ROLE_OPTIONS}
-                  error={errors.role}
+                <Controller
+                  name="role"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      label="Professional Role"
+                      value={field.value}
+                      onChange={field.onChange}
+                      placeholder="Select your role"
+                      className="bg-onboarding-inputBackground dark:bg-neutral-800"
+                      options={ROLE_OPTIONS}
+                      error={errors.role?.message}
+                    />
+                  )}
                 />
               </div>
 
               {/* License Number */}
               <div className="space-y-3">
-                <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-neutral-500 flex items-center space-x-2 dark:text-neutral-400">
+                <label className="mb-1.5 flex items-center space-x-2 text-[10px] font-semibold uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
                   <Award className="h-4 w-4" />
                   <span>License Number</span>
                 </label>
                 <div className="flex items-center gap-2.5 rounded-lg bg-onboarding-inputBackground px-3 py-2.5 dark:bg-neutral-800">
                   <input
                     type="text"
-                    value={formData.licenseNumber}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        licenseNumber: e.target.value,
-                      }))
-                    }
+                    {...register("licenseNumber")}
                     className={`flex-1 bg-transparent text-sm text-neutral-800 outline-none placeholder:text-neutral-400 font-mono dark:text-neutral-100 ${
                       errors.licenseNumber ? "text-red-600" : ""
                     }`}
@@ -323,7 +310,7 @@ export function ProfessionalProfile() {
                   />
                 </div>
                 {errors.licenseNumber && (
-                  <p className="text-sm text-red-600">{errors.licenseNumber}</p>
+                  <p className="text-sm text-red-600">{errors.licenseNumber.message}</p>
                 )}
               </div>
 
@@ -332,26 +319,30 @@ export function ProfessionalProfile() {
                 <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
                   Specialty
                 </label>
-                <div className="flex flex-wrap gap-3">
-                  {SPECIALTY_OPTIONS.map((opt) => (
-                    <button
-                      key={opt.value}
-                      type="button"
-                      onClick={() =>
-                        setFormData((prev) => ({ ...prev, specialty: opt.value }))
-                      }
-                      className={`px-4 py-2 rounded-full border transition-all text-sm font-medium ${
-                        formData.specialty === opt.value
-                          ? "bg-teal-500 text-white border-teal-500"
-                          : "bg-slate-100 text-slate-700 border-slate-200 hover:border-slate-300 dark:bg-neutral-800 dark:text-neutral-300 dark:border-neutral-700 dark:hover:border-neutral-600"
-                      }`}
-                    >
-                      {opt.label}
-                    </button>
-                  ))}
-                </div>
+                <Controller
+                  name="specialty"
+                  control={control}
+                  render={({ field }) => (
+                    <div className="flex flex-wrap gap-3">
+                      {SPECIALTY_OPTIONS.map((opt) => (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          onClick={() => field.onChange(opt.value)}
+                          className={`px-4 py-2 rounded-full border transition-all text-sm font-medium ${
+                            field.value === opt.value
+                              ? "bg-teal-500 text-white border-teal-500"
+                              : "bg-slate-100 text-slate-700 border-slate-200 hover:border-slate-300 dark:bg-neutral-800 dark:text-neutral-300 dark:border-neutral-700 dark:hover:border-neutral-600"
+                          }`}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                />
                 {errors.specialty && (
-                  <p className="text-sm text-red-600">{errors.specialty}</p>
+                  <p className="text-sm text-red-600">{errors.specialty.message}</p>
                 )}
               </div>
 

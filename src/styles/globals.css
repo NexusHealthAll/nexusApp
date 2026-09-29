@@ -187,3 +187,44 @@ html.dark textarea::placeholder {
 .scrollbar-thin::-webkit-scrollbar-thumb:hover {
   @apply bg-neutral-400 dark:bg-neutral-600;
 }
+
+/* ── Reusable phone input (react-phone-number-input) ──────────────────────
+   The wrapping .PhoneInput element carries whatever className the call site
+   passes (background/border/radius/padding), same as a normal text input.
+   These rules strip the library's own input/flag chrome so it inherits that
+   look instead of introducing its own. */
+.NexusPhoneInput {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.NexusPhoneInput .PhoneInputInput {
+  flex: 1 1 auto;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 0;
+  color: inherit;
+  font: inherit;
+}
+
+.NexusPhoneInput .PhoneInputCountry {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+
+.NexusPhoneInput .PhoneInputCountryIcon {
+  width: 1.1rem;
+  height: 1.1rem;
+  box-shadow: none;
+}
+
+.NexusPhoneInput .PhoneInputCountrySelectArrow {
+  opacity: 0.6;
+  color: inherit;
+  border-color: currentColor;
+}

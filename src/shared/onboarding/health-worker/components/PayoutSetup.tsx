@@ -1,5 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Card, CardContent } from "@/shared/components/ui/Card";
 import { Button } from "@/shared/components/ui/Button";
 import { NexusCareLogo } from "@/shared/components/ui/NexusCareLogo";
@@ -22,11 +25,20 @@ interface Bank {
   name: string;
 }
 
-interface PayoutData {
-  bankCode: string;
-  accountNumber: string;
-  accountName: string;
-}
+// Only bankCode and accountNumber are directly typed/picked by the user.
+// accountName is auto-resolved from the backend (or falls back to the
+// verified identity name) — it is never hand-typed, so it isn't a zod field
+// here, same treatment as the read-only identity-derived fields elsewhere in
+// onboarding.
+const payoutSchema = z.object({
+  bankCode: z.string().min(1, "Please select a bank"),
+  accountNumber: z
+    .string()
+    .trim()
+    .min(1, "Account number is required")
+    .length(10, "Account number must be 10 digits"),
+});
+type PayoutValues = z.infer<typeof payoutSchema>;
 
 export function PayoutSetup() {
   const navigate = useNavigate();
@@ -44,15 +56,26 @@ export function PayoutSetup() {
   const [banksLoading, setBanksLoading] = useState(true);
   const [banksError, setBanksError] = useState(false);
 
-  const [formData, setFormData] = useState<PayoutData>({
-    bankCode: "",
-    accountNumber: "",
-    accountName: "",
+  const {
+    control,
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors },
+  } = useForm<PayoutValues>({
+    resolver: zodResolver(payoutSchema),
+    defaultValues: { bankCode: "", accountNumber: "" },
   });
+
+  const bankCode = watch("bankCode");
+  const accountNumber = watch("accountNumber");
+
+  const [accountName, setAccountName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
-  const [errors, setErrors] = useState<Partial<PayoutData>>({});
+  const [accountNameError, setAccountNameError] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState("");
 
   useEffect(() => {
@@ -109,8 +132,8 @@ export function PayoutSetup() {
 
   // Resolve the account name once a bank + full account number are entered.
   useEffect(() => {
-    if (!(formData.bankCode && formData.accountNumber.length === 10)) {
-      setFormData((prev) => ({ ...prev, accountName: "" }));
+    if (!(bankCode && accountNumber?.length === 10)) {
+      setAccountName("");
       setIsVerified(false);
       return;
     }
@@ -123,22 +146,19 @@ export function PayoutSetup() {
         const { data } = await apiClient.post<{ account_name: string }>(
           "/api/v1/banks/resolve",
           {
-            account_number: formData.accountNumber,
-            bank_code: formData.bankCode,
+            account_number: accountNumber,
+            bank_code: bankCode,
           },
         );
         if (!cancelled) {
           const resolvedName = data.account_name || expectedName;
-          setFormData((prev) => ({ ...prev, accountName: resolvedName }));
+          setAccountName(resolvedName);
           setIsVerified(true);
         }
       } catch {
         if (!cancelled) {
           // Default fallback matching verified identity name for smooth experience
-          setFormData((prev) => ({
-            ...prev,
-            accountName: expectedName,
-          }));
+          setAccountName(expectedName);
           setIsVerified(true);
         }
       } finally {
@@ -149,32 +169,9 @@ export function PayoutSetup() {
     return () => {
       cancelled = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [formData.bankCode, formData.accountNumber, expectedName]);
+  }, [bankCode, accountNumber, expectedName]);
 
-  const handleAccountNumberChange = (value: string) => {
-    const cleaned = value.replace(/\D/g, "").slice(0, 10);
-    setFormData((prev) => ({ ...prev, accountNumber: cleaned }));
-    if (errors.accountNumber) {
-      setErrors((prev) => ({ ...prev, accountNumber: undefined }));
-    }
-  };
-
-  const validateForm = (): boolean => {
-    const newErrors: Partial<PayoutData> = {};
-    if (!formData.bankCode) newErrors.bankCode = "Please select a bank";
-    if (!formData.accountNumber) {
-      newErrors.accountNumber = "Account number is required";
-    } else if (formData.accountNumber.length !== 10) {
-      newErrors.accountNumber = "Account number must be 10 digits";
-    }
-    if (!isVerified) newErrors.accountName = "Account verification is required";
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleComplete = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onValid = async (values: PayoutValues) => {
     setSubmitError("");
 
     if (!clinicianId) {
@@ -183,7 +180,11 @@ export function PayoutSetup() {
       );
       return;
     }
-    if (!validateForm()) return;
+    if (!isVerified) {
+      setAccountNameError("Account verification is required");
+      return;
+    }
+    setAccountNameError(null);
 
     setIsLoading(true);
     try {
@@ -192,16 +193,16 @@ export function PayoutSetup() {
         account_number_masked: string;
         bank_code: string;
       }>(`/api/v1/clinicians/${encodeURIComponent(clinicianId)}/bank-account`, {
-        account_number: formData.accountNumber,
-        bank_code: formData.bankCode,
+        account_number: values.accountNumber,
+        bank_code: values.bankCode,
       });
 
-      const bankName = banks.find((b) => b.code === formData.bankCode)?.name;
+      const bankName = banks.find((b) => b.code === values.bankCode)?.name;
       localStorage.setItem("payoutSetupCompleted", "true");
       navigate("/medical-staff/onboarding/pending", {
         state: {
           bankName,
-          accountNumberMasked: data.account_number_masked || `******${formData.accountNumber.slice(-4)}`,
+          accountNumberMasked: data.account_number_masked || `******${values.accountNumber.slice(-4)}`,
           accountName: data.account_name || expectedName,
         },
       });
@@ -285,20 +286,24 @@ export function PayoutSetup() {
               </div>
             </div>
 
-            <form onSubmit={handleComplete} className="space-y-6">
+            <form onSubmit={handleSubmit(onValid)} noValidate className="space-y-6">
               {/* Bank Selection with Search */}
               <div className="space-y-3">
                 <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
                   Select Bank
                 </label>
-                <BankDropdown
-                  banks={banks}
-                  loading={banksLoading}
-                  value={formData.bankCode}
-                  onChange={(code) =>
-                    setFormData((prev) => ({ ...prev, bankCode: code }))
-                  }
-                  error={!!errors.bankCode}
+                <Controller
+                  name="bankCode"
+                  control={control}
+                  render={({ field }) => (
+                    <BankDropdown
+                      banks={banks}
+                      loading={banksLoading}
+                      value={field.value}
+                      onChange={field.onChange}
+                      error={!!errors.bankCode}
+                    />
+                  )}
                 />
                 {banksError && (
                   <p className="text-sm text-red-600">
@@ -306,7 +311,7 @@ export function PayoutSetup() {
                   </p>
                 )}
                 {errors.bankCode && (
-                  <p className="text-sm text-red-600">{errors.bankCode}</p>
+                  <p className="text-sm text-red-600">{errors.bankCode.message}</p>
                 )}
               </div>
 
@@ -318,8 +323,11 @@ export function PayoutSetup() {
                 <div className="flex items-center gap-2.5 rounded-lg bg-onboarding-inputBackground px-3 py-2.5 dark:bg-neutral-800">
                   <input
                     type="text"
-                    value={formData.accountNumber}
-                    onChange={(e) => handleAccountNumberChange(e.target.value)}
+                    {...register("accountNumber")}
+                    onChange={(e) => {
+                      const cleaned = e.target.value.replace(/\D/g, "").slice(0, 10);
+                      setValue("accountNumber", cleaned, { shouldValidate: true });
+                    }}
                     className={`flex-1 bg-transparent text-sm text-neutral-800 outline-none placeholder:text-neutral-400 font-mono dark:text-neutral-100 ${
                       errors.accountNumber ? "text-red-600" : ""
                     }`}
@@ -333,7 +341,7 @@ export function PayoutSetup() {
                   </div>
                 </div>
                 {errors.accountNumber && (
-                  <p className="text-sm text-red-600">{errors.accountNumber}</p>
+                  <p className="text-sm text-red-600">{errors.accountNumber.message}</p>
                 )}
               </div>
 
@@ -354,14 +362,14 @@ export function PayoutSetup() {
                       <Loader2 className="h-4 w-4 animate-spin text-teal-600 dark:text-teal-400" />
                       <span className="text-sm">Verifying bank account name...</span>
                     </div>
-                  ) : formData.accountName ? (
+                  ) : accountName ? (
                     <div className="flex items-center justify-between w-full">
                       <div className="flex items-center space-x-2">
                         {isVerified && <CheckCircle className="h-4 w-4 text-green-600 flex-shrink-0 dark:text-green-400" />}
                         <span
                           className={`text-sm ${isVerified ? "text-green-900 font-bold dark:text-green-200" : "text-neutral-800 dark:text-neutral-100"}`}
                         >
-                          {formData.accountName}
+                          {accountName}
                         </span>
                       </div>
                       {isVerified && (
@@ -377,8 +385,8 @@ export function PayoutSetup() {
                     </span>
                   )}
                 </div>
-                {errors.accountName && (
-                  <p className="text-sm text-red-600">{errors.accountName}</p>
+                {accountNameError && (
+                  <p className="text-sm text-red-600">{accountNameError}</p>
                 )}
               </div>
 
