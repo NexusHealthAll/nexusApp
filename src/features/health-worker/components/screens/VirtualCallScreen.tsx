@@ -18,6 +18,7 @@ export function VirtualCallScreen({
   patientsCount,
   clockIn,
   onRecordClockIn,
+  onJoinCall,
   onBackToShift,
   onWaitingRoom,
 }: {
@@ -26,6 +27,7 @@ export function VirtualCallScreen({
   patientsCount: number;
   clockIn?: { at: string; method: string } | null;
   onRecordClockIn: () => void;
+  onJoinCall: () => void;
   onBackToShift: () => void;
   onWaitingRoom: () => void;
 }) {
@@ -112,7 +114,7 @@ export function VirtualCallScreen({
             {!consultEnded && (
               <Button
                 type="button"
-                onClick={call.openPreJoin}
+                onClick={onJoinCall}
                 className="bg-brand-600 hover:bg-brand-700 text-white"
               >
                 {call.state === "ended" ? "Rejoin call" : "Join call"}

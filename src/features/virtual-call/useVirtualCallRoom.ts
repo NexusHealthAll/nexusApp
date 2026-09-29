@@ -162,6 +162,8 @@ export interface VirtualCallRoom {
    * (unmuted) so no badge flashes before the first signal arrives. */
   remoteMicOn: boolean;
   consultation: ConsultSession | null;
+  /** True once the *other* side ended/left the call — not this client. */
+  endedByRemote: boolean;
   /** For the green room: is someone already connected, and who. */
   present: boolean;
   presentName: string | null;
@@ -269,6 +271,10 @@ export function useVirtualCallRoom(
    * the first mute-state signal arrives. */
   const [remoteMicOn, setRemoteMicOn] = useState(true);
   const [consultation, setConsultation] = useState<ConsultSession | null>(null);
+  /** True once the call ended because the *other* side ended/left it — not
+   * because this client called `leave()`/`end()` itself. Drives an explicit
+   * "the hospital ended this call" notification on the worker side. */
+  const [endedByRemote, setEndedByRemote] = useState(false);
   const [present, setPresent] = useState(false);
   const [presentName, setPresentName] = useState<string | null>(null);
   const [activeVideoId, setActiveVideoId] = useState<string | undefined>();
@@ -344,6 +350,20 @@ export function useVirtualCallRoom(
     return () => clearInterval(interval);
   }, [state, shiftId]);
 
+  // Safety net: ending a call deletes the LiveKit room server-side, but that
+  // call is best-effort (a LiveKit outage doesn't block the end-session
+  // request) — so the DB can say "ended" while this client's room connection
+  // is still technically alive. Tear down locally as soon as the poll above
+  // reflects it, rather than leaving the worker talking into a dead call.
+  useEffect(() => {
+    if (state !== "connected") return;
+    if (consultation?.status !== "ended") return;
+    if (endedLocallyRef.current) return;
+    setEndedByRemote(true);
+    teardownRoom();
+    setState("ended");
+  }, [state, consultation, teardownRoom]);
+
   // While the green room is open (or a join is in flight / just failed), poll
   // the session so the caller can show whether the other side is already there.
   useEffect(() => {
@@ -410,6 +430,7 @@ export function useVirtualCallRoom(
     setError("");
     setState("idle");
     setConsultation(null);
+    setEndedByRemote(false);
     endedLocallyRef.current = false;
   }, []);
 
@@ -422,6 +443,7 @@ export function useVirtualCallRoom(
       setError("");
       setState("connecting");
       endedLocallyRef.current = false;
+      setEndedByRemote(false);
       setActiveVideoId(opts.videoDeviceId);
       setActiveAudioId(opts.audioDeviceId);
       try {
@@ -549,6 +571,18 @@ export function useVirtualCallRoom(
         );
         room.on(RoomEvent.Disconnected, () => {
           if (stateRef.current !== "error") setState("ended");
+          if (!endedLocallyRef.current) {
+            setEndedByRemote(true);
+            // The cached consultation can be up to 10s stale (the periodic
+            // refresh only runs while connected) — re-fetch so the post-call
+            // screen correctly says "the hospital ended this call" instead of
+            // the generic "you left" message.
+            if (shiftId) {
+              VirtualCallService.getSession(shiftId)
+                .then(setConsultation)
+                .catch(() => {});
+            }
+          }
           setRemoteJoined(false);
           setRemoteMicOn(true);
         });
@@ -722,6 +756,7 @@ export function useVirtualCallRoom(
     remoteJoined,
     remoteMicOn,
     consultation,
+    endedByRemote,
     present,
     presentName,
     activeVideoId,
