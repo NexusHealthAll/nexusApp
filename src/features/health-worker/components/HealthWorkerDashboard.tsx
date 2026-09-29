@@ -226,13 +226,16 @@ function Shell({
 function WorkerCallStrip({
   call,
   onOpen,
+  onJoinCall,
 }: {
   call: VirtualCallRoom;
   onOpen: () => void;
+  onJoinCall: () => void;
 }) {
   if (call.state === "prejoin" || call.state === "connecting") return null;
 
   const connected = call.state === "connected";
+  const consultEnded = call.consultation?.status === "ended";
 
   return (
     <div className="fixed bottom-24 left-1/2 z-40 flex -translate-x-1/2 items-center gap-2 rounded-full border border-white/10 bg-neutral-900/90 px-3 py-2 text-white shadow-2xl backdrop-blur md:bottom-6">
@@ -299,10 +302,12 @@ function WorkerCallStrip({
             Leave
           </button>
         </>
+      ) : consultEnded ? (
+        <span className="px-2 text-xs font-semibold text-white/50">Call ended</span>
       ) : (
         <button
           type="button"
-          onClick={call.openPreJoin}
+          onClick={onJoinCall}
           // Presence is a polled, best-effort signal (webhooks/reconciler can
           // lag or miss) — it's a hint, never a hard gate on joining a room
           // that may already be live.
@@ -772,6 +777,24 @@ export function HealthWorkerDashboard() {
     }
   }
 
+  // Every "Join call" / "Rejoin" affordance on a virtual shift (the floating
+  // call strip, the virtual-call screen, the per-patient consultation screen)
+  // routes through this before opening the green room, so clock-in is always
+  // attempted on click rather than relying solely on the LiveKit webhook.
+  // Best-effort: a failure here doesn't block joining — the webhook and the
+  // "Record clock-in" fallback still reconcile it.
+  async function handleJoinVirtualCall() {
+    if (activeShift && !clockIn) {
+      try {
+        const res = await workerApi.clockIn(activeShift.id, { method: "virtual" });
+        setClockIn({ at: res.clockin_at, method: "virtual" });
+      } catch {
+        // ignore — webhook / manual "Record clock-in" reconcile this
+      }
+    }
+    call.openPreJoin();
+  }
+
   async function handleRequestApproval(payload: { latitude?: number; longitude?: number; photo_base64: string; photo_mime_type?: string }) {
     if (!selectedShiftId) return;
     await workerApi.requestClockinApproval(selectedShiftId, payload);
@@ -1003,7 +1026,11 @@ export function HealthWorkerDashboard() {
     [user?.first_name, user?.last_name].filter(Boolean).join(" ") || "You";
   const isVirtualShift = activeShift?.shift_type === "virtual";
   const callBar = isVirtualShift ? (
-    <WorkerCallStrip call={call} onOpen={() => setView("virtual-call")} />
+    <WorkerCallStrip
+      call={call}
+      onOpen={() => setView("virtual-call")}
+      onJoinCall={handleJoinVirtualCall}
+    />
   ) : null;
 
   // Green room — gates the whole active-shift flow while the worker previews
@@ -1166,6 +1193,7 @@ export function HealthWorkerDashboard() {
           patientsCount={patients.length}
           clockIn={clockIn}
           onRecordClockIn={handleRecordVirtualClockIn}
+          onJoinCall={handleJoinVirtualCall}
           onBackToShift={() => setView("active-shift")}
           onWaitingRoom={() => setView("waiting-room")}
         />
@@ -1244,6 +1272,7 @@ export function HealthWorkerDashboard() {
           isCamOn={isCamOn}
           videoTrack={videoTrackRef.current}
           call={isVirtualShift ? call : undefined}
+          onJoinCall={handleJoinVirtualCall}
           hospitalName={activeShift.hospital_name ?? null}
         />
       </Shell>

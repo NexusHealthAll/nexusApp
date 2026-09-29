@@ -59,6 +59,7 @@ export function ConsultationScreen({
   isCamOn,
   videoTrack,
   call,
+  onJoinCall,
   hospitalName,
 }: {
   shift: ApiShift;
@@ -73,11 +74,13 @@ export function ConsultationScreen({
   videoTrack?: MediaStreamTrack | null;
   /** Live virtual-visit room, when this is a virtual shift. */
   call?: VirtualCallRoom;
+  onJoinCall?: () => void;
   hospitalName?: string | null;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const prediction = patient.prediction;
   const isMlRunning = prediction?.status === "pending" || prediction?.status === "processing";
+  const consultEnded = call?.consultation?.status === "ended";
 
   // ─── Web Speech Recognition State ───────────────────────────────────────────
   const [isTranscribing, setIsTranscribing] = useState(false);
@@ -241,17 +244,21 @@ export function ConsultationScreen({
               <VideoOff className="h-10 w-10 text-neutral-400" />
             </div>
             <p className="text-sm text-neutral-300">
-              {call.state === "ended"
-                ? "You've left the consultation call."
-                : "You're not connected to the consultation call yet."}
+              {consultEnded
+                ? "The hospital has ended this consultation."
+                : call.state === "ended"
+                  ? "You've left the consultation call."
+                  : "You're not connected to the consultation call yet."}
             </p>
-            <Button
-              type="button"
-              onClick={call.openPreJoin}
-              className="bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold px-4 py-2"
-            >
-              {call.state === "ended" ? "Rejoin call" : "Join the call"}
-            </Button>
+            {!consultEnded && (
+              <Button
+                type="button"
+                onClick={onJoinCall}
+                className="bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold px-4 py-2"
+              >
+                {call.state === "ended" ? "Rejoin call" : "Join the call"}
+              </Button>
+            )}
           </section>
         ) : (
           <section className="relative overflow-hidden rounded-3xl bg-neutral-900 text-white border border-neutral-800 shadow-inner">
@@ -303,22 +310,28 @@ export function ConsultationScreen({
                 </div>
                 <div>
                   <h3 className="text-sm font-bold text-neutral-900 dark:text-white">Virtual Consultation Session</h3>
-                  <p className="text-xs text-neutral-500 dark:text-neutral-400">In-app live video room ready</p>
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                    {consultEnded ? "The hospital ended this consultation" : "In-app live video room ready"}
+                  </p>
                 </div>
               </div>
-              <Button
-                type="button"
-                onClick={() => {
-                  if (call) {
-                    call.openPreJoin();
-                  } else if (!isCamOn) {
-                    onToggleCam?.();
-                  }
-                }}
-                className="bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold px-4 py-2"
-              >
-                {call ? "Join the call" : isCamOn ? "Live Video Active" : "Start In-App Video"}
-              </Button>
+              {consultEnded ? (
+                <span className="text-xs font-bold text-neutral-500 dark:text-neutral-400">Call ended</span>
+              ) : (
+                <Button
+                  type="button"
+                  onClick={() => {
+                    if (call) {
+                      onJoinCall?.();
+                    } else if (!isCamOn) {
+                      onToggleCam?.();
+                    }
+                  }}
+                  className="bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold px-4 py-2"
+                >
+                  {call ? "Join the call" : isCamOn ? "Live Video Active" : "Start In-App Video"}
+                </Button>
+              )}
             </div>
             {shift.virtual_link && !shift.virtual_link.includes("nexuscare.com") && (
               <div className="mt-3 border-t border-brand-200/60 pt-3 dark:border-brand-900/60">
