@@ -575,6 +575,15 @@ export function HealthWorkerDashboard() {
     prevCallStateRef.current = call.state;
   }, [call.state]);
 
+  // Explicit alert the moment the hospital ends the call — the call screens
+  // already reflect it in their own copy, but a toast reaches the worker even
+  // if they're elsewhere in the app (patient intake, waiting room, etc.).
+  useEffect(() => {
+    if (call.endedByRemote) {
+      appToast.info("Call ended", "The hospital ended this consultation.");
+    }
+  }, [call.endedByRemote]);
+
   // Reconcile attendance from the room: the LiveKit webhook records the
   // virtual clock-in on connect, so trust `clock_in_recorded` if our explicit
   // call was skipped or failed.
