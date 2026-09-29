@@ -6,15 +6,15 @@ import {
   Brain,
   CalendarClock,
   ClipboardCheck,
-  ShieldCheck,
   Sparkles,
-  Stethoscope,
   TrendingDown,
   UserCheck,
   Wallet,
   Zap,
 } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
+import hero1Svg from "@/shared/assets/svgs/hero1.svg";
+import hero1WhiteSvg from "@/shared/assets/svgs/hero1-white.svg";
 import {
   waitlistAudienceCards,
   waitlistInsights,
@@ -170,33 +170,17 @@ export function WaitlistLandingStep() {
           </div>
 
           {/* Graphic */}
-          <div className="relative mx-auto flex h-[22rem] w-full max-w-md items-center justify-center sm:h-[26rem] lg:mx-0 lg:max-w-none">
-            <div className="absolute inset-0 rounded-[2.5rem] bg-onboarding-primaryBlue dark:bg-[#123a56]" />
-            <Stethoscope className="relative h-20 w-20 text-white/90 sm:h-24 sm:w-24" strokeWidth={1.25} />
-
-            <div className="absolute left-4 top-10 flex items-center gap-3 rounded-2xl border border-neutral-200 bg-white px-4 py-3 shadow-soft sm:left-8 dark:border-neutral-800 dark:bg-neutral-900">
-              <ShieldCheck className="h-5 w-5 shrink-0 text-onboarding-primaryGreen" />
-              <div>
-                <p className="text-xs font-semibold text-neutral-900 dark:text-neutral-50">
-                  Verified Clinicians
-                </p>
-                <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-                  Credentials checked
-                </p>
-              </div>
-            </div>
-
-            <div className="absolute bottom-10 right-4 flex items-center gap-3 rounded-2xl border border-neutral-200 bg-white px-4 py-3 shadow-soft sm:right-8 dark:border-neutral-800 dark:bg-neutral-900">
-              <Wallet className="h-5 w-5 shrink-0 text-onboarding-primaryGreen" />
-              <div>
-                <p className="text-xs font-semibold text-neutral-900 dark:text-neutral-50">
-                  Same-day Payouts
-                </p>
-                <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-                  Instant, secure
-                </p>
-              </div>
-            </div>
+          <div className="mx-auto w-full max-w-md lg:mx-0 lg:max-w-none">
+            <img
+              src={hero1Svg}
+              alt="Clinician attending to a patient"
+              className="block h-auto w-full dark:hidden"
+            />
+            <img
+              src={hero1WhiteSvg}
+              alt="Clinician attending to a patient"
+              className="hidden h-auto w-full dark:block"
+            />
           </div>
         </div>
       </section>
