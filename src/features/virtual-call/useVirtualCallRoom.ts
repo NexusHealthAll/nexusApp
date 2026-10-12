@@ -119,9 +119,13 @@ interface LiveKitPublication {
 }
 
 /** The subset of `Participant` needed to tell a `TrackMuted`/`TrackUnmuted`
- * event's local participant apart from the remote one. */
+ * event's local participant apart from the remote one, and (for Track/
+ * Participant events) which remote identity it belongs to — needed to tell
+ * a "continue on phone" companion device's track apart from the primary
+ * remote participant's. */
 interface LiveKitEventParticipant {
   isLocal?: boolean;
+  identity?: string;
 }
 
 interface LiveKitParticipant {
@@ -131,7 +135,14 @@ interface LiveKitParticipant {
 }
 
 interface LiveKitRemoteParticipant {
+  identity: string;
   trackPublications: Map<unknown, LiveKitPublication>;
+}
+
+/** `u:<uuid>` is a primary device; `u:<uuid>#d2` (etc.) is a "continue on
+ * phone" companion device of the same person. */
+function isCompanionIdentity(identity: string): boolean {
+  return identity.includes("#");
 }
 
 interface LiveKitRoom {
@@ -161,6 +172,15 @@ export interface VirtualCallRoom {
   /** The remote participant's microphone state. Unknown reads as `true`
    * (unmuted) so no badge flashes before the first signal arrives. */
   remoteMicOn: boolean;
+  /** True once the remote party's "continue on phone" companion device has
+   * also joined — the two devices are the same person, shown as a second
+   * tile alongside (not instead of) the primary remote tile. */
+  companionJoined: boolean;
+  companionMicOn: boolean;
+  /** From the matching ConsultParticipant's device_label, if the hospital/
+   * worker set one when issuing the handoff — null falls back to a generic
+   * "Continuing on phone" caption. */
+  companionLabel: string | null;
   consultation: ConsultSession | null;
   /** For the green room: is someone already connected, and who. */
   present: boolean;
@@ -170,9 +190,18 @@ export interface VirtualCallRoom {
   /** Callback refs — pass to the self-view / remote-view container divs. */
   setLocalVideoEl: (el: HTMLDivElement | null) => void;
   setRemoteVideoEl: (el: HTMLDivElement | null) => void;
+  /** Callback ref for the companion device's video tile — only meaningful
+   * once companionJoined is true. */
+  setCompanionVideoEl: (el: HTMLDivElement | null) => void;
   openPreJoin: () => void;
   cancelPreJoin: () => void;
   join: (opts: JoinOptions) => Promise<void>;
+  /** "Continue on phone" companion join — redeems a short-lived code instead
+   * of fetching a token for `shiftId` (this hook may have no shiftId at all
+   * on the standalone redeem page). No geofence check, no shift-scoped
+   * session polling — the doc is explicit the companion device can't call
+   * /leave or GET /consult (no JWT) and doesn't need to. */
+  joinWithCode: (code: string, opts: JoinOptions) => Promise<void>;
   toggleCamera: () => Promise<void>;
   toggleMic: () => Promise<void>;
   /** Resume remote audio playback after the browser blocked it (call from a click). */
@@ -268,6 +297,9 @@ export function useVirtualCallRoom(
   /** Unknown/not-yet-signaled reads as unmuted, so no badge flashes before
    * the first mute-state signal arrives. */
   const [remoteMicOn, setRemoteMicOn] = useState(true);
+  const [companionJoined, setCompanionJoined] = useState(false);
+  const [companionMicOn, setCompanionMicOn] = useState(true);
+  const [companionIdentity, setCompanionIdentity] = useState<string | null>(null);
   const [consultation, setConsultation] = useState<ConsultSession | null>(null);
   const [present, setPresent] = useState(false);
   const [presentName, setPresentName] = useState<string | null>(null);
@@ -277,8 +309,10 @@ export function useVirtualCallRoom(
   const roomRef = useRef<LiveKitRoom | null>(null);
   const localElRef = useRef<HTMLDivElement | null>(null);
   const remoteElRef = useRef<HTMLDivElement | null>(null);
+  const companionElRef = useRef<HTMLDivElement | null>(null);
   const localTrackRef = useRef<LiveKitTrack | null>(null);
   const remoteVideoTrackRef = useRef<LiveKitTrack | null>(null);
+  const companionVideoTrackRef = useRef<LiveKitTrack | null>(null);
   const audioHostRef = useRef<HTMLDivElement | null>(null);
   const consultationRef = useRef<ConsultSession | null>(null);
   const endedLocallyRef = useRef(false);
@@ -311,11 +345,15 @@ export function useVirtualCallRoom(
     roomRef.current = null;
     localTrackRef.current = null;
     remoteVideoTrackRef.current = null;
+    companionVideoTrackRef.current = null;
     if (audioHostRef.current) audioHostRef.current.innerHTML = "";
     if (localElRef.current) localElRef.current.innerHTML = "";
     if (remoteElRef.current) remoteElRef.current.innerHTML = "";
+    if (companionElRef.current) companionElRef.current.innerHTML = "";
     setLocalVideoAttached(false);
     setRemoteJoined(false);
+    setCompanionJoined(false);
+    setCompanionIdentity(null);
   }, []);
 
   // Report departure and disconnect if the component unmounts mid-call.
@@ -396,6 +434,13 @@ export function useVirtualCallRoom(
     }
   }, []);
 
+  const setCompanionVideoEl = useCallback((el: HTMLDivElement | null) => {
+    companionElRef.current = el;
+    if (el && companionVideoTrackRef.current) {
+      attachRemoteVideo(companionVideoTrackRef.current, el);
+    }
+  }, []);
+
   const openPreJoin = useCallback(() => {
     setError("");
     setState("prejoin");
@@ -415,6 +460,202 @@ export function useVirtualCallRoom(
 
   const hospitalLat = hospitalLocation?.latitude ?? null;
   const hospitalLng = hospitalLocation?.longitude ?? null;
+
+  // Shared by join() and joinWithCode() — everything from "we have a LiveKit
+  // url/token" through a connected room with devices set up. Acquiring that
+  // url/token is the one thing that differs between the two paths.
+  const connectToRoom = useCallback(
+    async (url: string, token: string, opts: JoinOptions) => {
+        const room = new Room({
+          adaptiveStream: true,
+          dynacast: true,
+          ...(opts.videoDeviceId
+            ? { videoCaptureDefaults: { deviceId: opts.videoDeviceId } }
+            : {}),
+          ...(opts.audioDeviceId
+            ? { audioCaptureDefaults: { deviceId: opts.audioDeviceId } }
+            : {}),
+        }) as LiveKitRoom;
+        roomRef.current = room;
+
+        room.on(
+          RoomEvent.TrackSubscribed,
+          (track: LiveKitTrack, _pub: unknown, participant?: LiveKitEventParticipant) => {
+            const isCompanion = Boolean(
+              participant?.identity && isCompanionIdentity(participant.identity),
+            );
+            if (track.kind === Track.Kind.Video) {
+              if (isCompanion) {
+                companionVideoTrackRef.current = track;
+                if (companionElRef.current) {
+                  attachRemoteVideo(track, companionElRef.current);
+                }
+              } else {
+                remoteVideoTrackRef.current = track;
+                if (remoteElRef.current) {
+                  attachRemoteVideo(track, remoteElRef.current);
+                }
+              }
+            } else if (track.kind === Track.Kind.Audio && audioHostRef.current) {
+              attachRemoteAudio(track, audioHostRef.current);
+            }
+          },
+        );
+        room.on(RoomEvent.AudioPlaybackStatusChanged, () => {
+          setAudioBlocked(!room.canPlaybackAudio);
+        });
+        room.on(
+          RoomEvent.TrackUnsubscribed,
+          (track: LiveKitTrack, _pub: unknown, participant?: LiveKitEventParticipant) => {
+            const isCompanion = Boolean(
+              participant?.identity && isCompanionIdentity(participant.identity),
+            );
+            if (track.kind === Track.Kind.Video) {
+              if (isCompanion) {
+                companionVideoTrackRef.current = null;
+                if (companionElRef.current) companionElRef.current.innerHTML = "";
+              } else {
+                remoteVideoTrackRef.current = null;
+                if (remoteElRef.current) remoteElRef.current.innerHTML = "";
+              }
+            } else {
+              track.detach().forEach((el) => el.remove());
+            }
+          },
+        );
+        room.on(
+          RoomEvent.ParticipantConnected,
+          (participant?: LiveKitEventParticipant) => {
+            if (participant?.identity && isCompanionIdentity(participant.identity)) {
+              setCompanionJoined(true);
+              setCompanionIdentity(participant.identity);
+            } else {
+              setRemoteJoined(true);
+            }
+          },
+        );
+        room.on(
+          RoomEvent.ParticipantDisconnected,
+          (participant?: LiveKitEventParticipant) => {
+            if (participant?.identity && isCompanionIdentity(participant.identity)) {
+              setCompanionJoined(false);
+              setCompanionIdentity(null);
+              setCompanionMicOn(true);
+              return;
+            }
+            if (room.remoteParticipants.size === 0) {
+              setRemoteJoined(false);
+              // Stale mute state must not survive them leaving and rejoining.
+              setRemoteMicOn(true);
+            }
+          },
+        );
+        room.on(
+          RoomEvent.TrackMuted,
+          (pub: LiveKitPublication, participant?: LiveKitEventParticipant) => {
+            if (pub.kind !== Track.Kind.Audio || participant?.isLocal) return;
+            if (participant?.identity && isCompanionIdentity(participant.identity)) {
+              setCompanionMicOn(false);
+            } else {
+              setRemoteMicOn(false);
+            }
+          },
+        );
+        room.on(
+          RoomEvent.TrackUnmuted,
+          (pub: LiveKitPublication, participant?: LiveKitEventParticipant) => {
+            if (pub.kind !== Track.Kind.Audio || participant?.isLocal) return;
+            if (participant?.identity && isCompanionIdentity(participant.identity)) {
+              setCompanionMicOn(true);
+            } else {
+              setRemoteMicOn(true);
+            }
+          },
+        );
+        room.on(
+          RoomEvent.LocalTrackPublished,
+          (publication: LiveKitPublication) => {
+            const track = publication.track;
+            if (track && track.kind === Track.Kind.Video) {
+              localTrackRef.current = track;
+              if (localElRef.current) {
+                attachLocalVideo(track, localElRef.current);
+                setLocalVideoAttached(true);
+              }
+            }
+          },
+        );
+        room.on(
+          RoomEvent.LocalTrackUnpublished,
+          (publication: LiveKitPublication) => {
+            if (publication.kind === Track.Kind.Video) {
+              localTrackRef.current = null;
+              if (localElRef.current) localElRef.current.innerHTML = "";
+              setLocalVideoAttached(false);
+            }
+          },
+        );
+        room.on(RoomEvent.Disconnected, () => {
+          if (stateRef.current !== "error") setState("ended");
+          setRemoteJoined(false);
+          setRemoteMicOn(true);
+        });
+
+        await room.connect(url, token);
+
+        // Attach audio/state for anyone who was already publishing before we
+        // joined — `TrackSubscribed`/`ParticipantConnected` are not
+        // guaranteed to re-fire for pre-existing participants in every
+        // livekit-client version, so this is the catch-up pass.
+        for (const participant of room.remoteParticipants.values()) {
+          const isCompanion = isCompanionIdentity(participant.identity);
+          if (isCompanion) {
+            setCompanionJoined(true);
+            setCompanionIdentity(participant.identity);
+          } else {
+            setRemoteJoined(true);
+          }
+          for (const pub of participant.trackPublications.values()) {
+            if (pub.kind !== Track.Kind.Audio) continue;
+            if (isCompanion) setCompanionMicOn(!pub.isMuted);
+            else setRemoteMicOn(!pub.isMuted);
+            if (pub.track && audioHostRef.current) {
+              attachRemoteAudio(pub.track, audioHostRef.current);
+            }
+          }
+        }
+        // Resume playback while we're still inside the join click's gesture.
+        try {
+          await room.startAudio();
+        } catch {
+          /* startAudio only works from a gesture; retried via resumeAudio() */
+        }
+        setAudioBlocked(!room.canPlaybackAudio);
+
+        try {
+          await room.localParticipant.setCameraEnabled(opts.camEnabled);
+          setCameraOn(opts.camEnabled);
+        } catch {
+          setCameraOn(false);
+        }
+        try {
+          await room.localParticipant.setMicrophoneEnabled(opts.micEnabled);
+          setMicOn(opts.micEnabled);
+        } catch (micErr) {
+          // A stale remembered audio device id makes the constrained capture
+          // throw — retry once with no device constraint before giving up.
+          console.warn("mic enable failed, retrying without device", micErr);
+          try {
+            await room.localParticipant.setMicrophoneEnabled(true);
+            setMicOn(true);
+          } catch {
+            setMicOn(false);
+          }
+        }
+
+    },
+    [],
+  );
 
   const join = useCallback(
     async (opts: JoinOptions) => {
@@ -466,138 +707,7 @@ export function useVirtualCallRoom(
           deviceLabel,
           coords,
         );
-
-        const room = new Room({
-          adaptiveStream: true,
-          dynacast: true,
-          ...(opts.videoDeviceId
-            ? { videoCaptureDefaults: { deviceId: opts.videoDeviceId } }
-            : {}),
-          ...(opts.audioDeviceId
-            ? { audioCaptureDefaults: { deviceId: opts.audioDeviceId } }
-            : {}),
-        }) as LiveKitRoom;
-        roomRef.current = room;
-
-        room.on(RoomEvent.TrackSubscribed, (track: LiveKitTrack) => {
-          if (track.kind === Track.Kind.Video) {
-            remoteVideoTrackRef.current = track;
-            if (remoteElRef.current) {
-              attachRemoteVideo(track, remoteElRef.current);
-            }
-          } else if (track.kind === Track.Kind.Audio && audioHostRef.current) {
-            attachRemoteAudio(track, audioHostRef.current);
-          }
-        });
-        room.on(RoomEvent.AudioPlaybackStatusChanged, () => {
-          setAudioBlocked(!room.canPlaybackAudio);
-        });
-        room.on(RoomEvent.TrackUnsubscribed, (track: LiveKitTrack) => {
-          if (track.kind === Track.Kind.Video) {
-            remoteVideoTrackRef.current = null;
-            if (remoteElRef.current) remoteElRef.current.innerHTML = "";
-          } else {
-            track.detach().forEach((el) => el.remove());
-          }
-        });
-        room.on(RoomEvent.ParticipantConnected, () => setRemoteJoined(true));
-        room.on(RoomEvent.ParticipantDisconnected, () => {
-          if (room.remoteParticipants.size === 0) {
-            setRemoteJoined(false);
-            // Stale mute state must not survive them leaving and rejoining.
-            setRemoteMicOn(true);
-          }
-        });
-        room.on(
-          RoomEvent.TrackMuted,
-          (pub: LiveKitPublication, participant?: LiveKitEventParticipant) => {
-            if (pub.kind === Track.Kind.Audio && !participant?.isLocal) {
-              setRemoteMicOn(false);
-            }
-          },
-        );
-        room.on(
-          RoomEvent.TrackUnmuted,
-          (pub: LiveKitPublication, participant?: LiveKitEventParticipant) => {
-            if (pub.kind === Track.Kind.Audio && !participant?.isLocal) {
-              setRemoteMicOn(true);
-            }
-          },
-        );
-        room.on(
-          RoomEvent.LocalTrackPublished,
-          (publication: LiveKitPublication) => {
-            const track = publication.track;
-            if (track && track.kind === Track.Kind.Video) {
-              localTrackRef.current = track;
-              if (localElRef.current) {
-                attachLocalVideo(track, localElRef.current);
-                setLocalVideoAttached(true);
-              }
-            }
-          },
-        );
-        room.on(
-          RoomEvent.LocalTrackUnpublished,
-          (publication: LiveKitPublication) => {
-            if (publication.kind === Track.Kind.Video) {
-              localTrackRef.current = null;
-              if (localElRef.current) localElRef.current.innerHTML = "";
-              setLocalVideoAttached(false);
-            }
-          },
-        );
-        room.on(RoomEvent.Disconnected, () => {
-          if (stateRef.current !== "error") setState("ended");
-          setRemoteJoined(false);
-          setRemoteMicOn(true);
-        });
-
-        await room.connect(url, token);
-        setRemoteJoined(room.remoteParticipants.size > 0);
-
-        // Attach audio for anyone who was already publishing before we joined —
-        // `TrackSubscribed` is not guaranteed to re-fire for pre-existing
-        // tracks in every livekit-client version. Their current mute state
-        // needs the same catch-up: `TrackMuted`/`TrackUnmuted` only fire on a
-        // change from here on, not for state that predates our join.
-        for (const participant of room.remoteParticipants.values()) {
-          for (const pub of participant.trackPublications.values()) {
-            if (pub.kind !== Track.Kind.Audio) continue;
-            setRemoteMicOn(!pub.isMuted);
-            if (pub.track && audioHostRef.current) {
-              attachRemoteAudio(pub.track, audioHostRef.current);
-            }
-          }
-        }
-        // Resume playback while we're still inside the join click's gesture.
-        try {
-          await room.startAudio();
-        } catch {
-          /* startAudio only works from a gesture; retried via resumeAudio() */
-        }
-        setAudioBlocked(!room.canPlaybackAudio);
-
-        try {
-          await room.localParticipant.setCameraEnabled(opts.camEnabled);
-          setCameraOn(opts.camEnabled);
-        } catch {
-          setCameraOn(false);
-        }
-        try {
-          await room.localParticipant.setMicrophoneEnabled(opts.micEnabled);
-          setMicOn(opts.micEnabled);
-        } catch (micErr) {
-          // A stale remembered audio device id makes the constrained capture
-          // throw — retry once with no device constraint before giving up.
-          console.warn("mic enable failed, retrying without device", micErr);
-          try {
-            await room.localParticipant.setMicrophoneEnabled(true);
-            setMicOn(true);
-          } catch {
-            setMicOn(false);
-          }
-        }
+        await connectToRoom(url, token, opts);
 
         VirtualCallService.getSession(shiftId)
           .then(setConsultation)
@@ -615,7 +725,32 @@ export function useVirtualCallRoom(
         teardownRoom();
       }
     },
-    [shiftId, deviceLabel, teardownRoom, viewerRole, hospitalLat, hospitalLng],
+    [shiftId, deviceLabel, teardownRoom, viewerRole, hospitalLat, hospitalLng, connectToRoom],
+  );
+
+  const joinWithCode = useCallback(
+    async (code: string, opts: JoinOptions) => {
+      setError("");
+      setState("connecting");
+      endedLocallyRef.current = false;
+      setActiveVideoId(opts.videoDeviceId);
+      setActiveAudioId(opts.audioDeviceId);
+      try {
+        const { url, token } = await VirtualCallService.redeemHandoff(code);
+        await connectToRoom(url, token, opts);
+        setState("connected");
+      } catch (err) {
+        console.error("[virtual-call] joinWithCode failed", err);
+        setError(
+          err instanceof ApiError
+            ? err.message
+            : "Couldn't connect — this code may have expired or already been used.",
+        );
+        setState("error");
+        teardownRoom();
+      }
+    },
+    [teardownRoom, connectToRoom],
   );
 
   const toggleCamera = useCallback(async () => {
@@ -679,12 +814,17 @@ export function useVirtualCallRoom(
   );
 
   const leave = useCallback(async () => {
-    if (!shiftId) return;
     endedLocallyRef.current = true;
-    try {
-      await VirtualCallService.leaveSession(shiftId);
-    } catch {
-      /* best-effort — disconnect locally regardless */
+    // The companion ("continue on phone") device has no JWT and can't call
+    // this — LiveKit's participant_left webhook is the authoritative
+    // departure signal for it instead. Only report departure when we
+    // actually have a shift-scoped session to report it against.
+    if (shiftId) {
+      try {
+        await VirtualCallService.leaveSession(shiftId);
+      } catch {
+        /* best-effort — disconnect locally regardless */
+      }
     }
     teardownRoom();
     setState("ended");
@@ -712,6 +852,11 @@ export function useVirtualCallRoom(
     setState("ended");
   }, [shiftId, teardownRoom]);
 
+  const companionLabel = companionIdentity
+    ? (consultation?.participants.find((p) => p.identity === companionIdentity)
+        ?.device_label ?? null)
+    : null;
+
   return {
     state,
     error,
@@ -721,6 +866,9 @@ export function useVirtualCallRoom(
     localVideoAttached,
     remoteJoined,
     remoteMicOn,
+    companionJoined,
+    companionMicOn,
+    companionLabel,
     consultation,
     present,
     presentName,
@@ -728,9 +876,11 @@ export function useVirtualCallRoom(
     activeAudioId,
     setLocalVideoEl,
     setRemoteVideoEl,
+    setCompanionVideoEl,
     openPreJoin,
     cancelPreJoin,
     join,
+    joinWithCode,
     toggleCamera,
     toggleMic,
     resumeAudio,

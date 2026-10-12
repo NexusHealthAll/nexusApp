@@ -222,6 +222,23 @@ export function CallStage({
         )}
       </button>
 
+      {/* Companion ("continue on phone") tile — the remote party's second
+          device, same person as the main remote tile. Always a small corner
+          tile; unlike self/remote it doesn't swap into the main stage, since
+          it's a secondary view of someone already shown there. */}
+      {call.companionJoined && (
+        <div className="absolute right-4 top-28 z-10 h-16 w-24 overflow-hidden rounded-lg border border-white/10 bg-[#3c4043] shadow-lg sm:top-40 sm:h-24 sm:w-40">
+
+          <div ref={call.setCompanionVideoEl} className="absolute inset-0" />
+          <span className="absolute bottom-1 left-1 rounded bg-black/50 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-widest text-white/70">
+            {call.companionLabel ?? "On phone"}
+          </span>
+          {!call.companionMicOn && (
+            <MutedBadge className="absolute bottom-1 right-1 h-4 w-4 sm:h-5 sm:w-5" />
+          )}
+        </div>
+      )}
+
       {/* Overall call status — independent of which tile is main */}
       <span className="pointer-events-none absolute left-4 top-4 flex items-center gap-1.5 rounded-full border border-white/20 bg-black/60 px-3 py-1 text-xs font-semibold text-white">
         <span className="h-1.5 w-1.5 rounded-full bg-success-400" />
