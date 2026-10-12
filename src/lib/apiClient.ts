@@ -16,6 +16,16 @@ import axios, { type AxiosRequestConfig, type AxiosResponse } from "axios";
 import { ApiError, parseFieldErrors } from "./apiError";
 import { useAuthStore } from "@/shared/auth/store/authStore";
 
+declare module "axios" {
+  export interface AxiosRequestConfig {
+    /** Skip the automatic Authorization injection even when a token exists
+     * in the auth store — for the rare endpoint that must be called
+     * unauthenticated by design (e.g. the "continue on phone" handoff
+     * redeem, where the code itself is the credential). */
+    skipAuth?: boolean;
+  }
+}
+
 // ── Instance ─────────────────────────────────────────────────────────────────
 
 const apiClient = axios.create({
@@ -26,6 +36,7 @@ const apiClient = axios.create({
 // ── Request interceptor – attach auth token ──────────────────────────────────
 
 apiClient.interceptors.request.use((config) => {
+  if (config.skipAuth) return config;
   const token = useAuthStore.getState().accessToken;
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
