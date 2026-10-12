@@ -13,6 +13,7 @@ import { shiftStatusDisplay } from "@/features/hospital/shifts/shiftStatusDispla
 import type { ApiShift } from "@/features/hospital/shifts/types";
 import { PreJoinScreen } from "@/features/virtual-call/components/PreJoinScreen";
 import { CallStage } from "@/features/virtual-call/components/CallStage";
+import { ContinueOnPhoneButton } from "@/features/virtual-call/components/ContinueOnPhoneButton";
 import { useVirtualCallRoom } from "@/features/virtual-call/useVirtualCallRoom";
 import { getCallWindowInfo, type CallWindowState } from "../callWindow";
 
@@ -195,14 +196,17 @@ export function VirtualSessionPage() {
                 {shift.role_title}
               </h1>
             </div>
-            <p className="text-sm text-neutral-500 dark:text-white/50">
-              {new Date(shift.scheduled_start).toLocaleString("en-US", {
-                month: "short",
-                day: "numeric",
-                hour: "numeric",
-                minute: "2-digit",
-              })}
-            </p>
+            <div className="flex items-center gap-3">
+              <p className="text-sm text-neutral-500 dark:text-white/50">
+                {new Date(shift.scheduled_start).toLocaleString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                  hour: "numeric",
+                  minute: "2-digit",
+                })}
+              </p>
+              {isConnected && shiftId && <ContinueOnPhoneButton shiftId={shiftId} />}
+            </div>
           </div>
 
           {/* Video area */}

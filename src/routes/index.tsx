@@ -8,6 +8,7 @@ import {
 } from "./roles/hospital.routes";
 import { medicalStaffPageRoutes } from "./roles/medical-staff.routes";
 import { authRoutes } from "./auth.routes";
+import { HandoffRedeemPage } from "@/features/virtual-call/components/HandoffRedeemPage";
 import { adminRoutes } from "./admin.routes";
 import {
   ProtectedRoute,
@@ -181,6 +182,14 @@ const medicalStaffOnboardingRoutes: RouteObject[] = [
 export const appRoutes: RouteObject[] = [
   ...authRoutes,
   ...adminRoutes,
+
+  // "Continue on phone" redeem — deliberately unauthenticated (the handoff
+  // code itself is the credential; this device has no app session). Must
+  // stay outside buildRoleTree, which gates its routes on login.
+  {
+    path: "/consults/:shiftId/continue",
+    element: <HandoffRedeemPage />,
+  },
 
   // Hospital-specific onboarding (new sidebar layout) — must come before buildRoleTree
   ...hospitalOnboardingRoutes,
