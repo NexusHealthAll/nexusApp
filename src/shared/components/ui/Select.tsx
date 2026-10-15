@@ -21,15 +21,10 @@ interface SelectProps {
   disabled?: boolean;
   className?: string;
   containerClassName?: string;
-  /** Adds a search input at the top of the panel to filter long option lists. */
   searchable?: boolean;
   searchPlaceholder?: string;
 }
 
-/**
- * Animated form value-picker, replacing the native `<select>` +
- * manual-chevron pattern previously duplicated across shift forms.
- */
 export function Select({
   options,
   value,
@@ -71,7 +66,8 @@ export function Select({
       const nextPos =
         currentPos === -1
           ? 0
-          : (currentPos + delta + enabledIndexes.length) % enabledIndexes.length;
+          : (currentPos + delta + enabledIndexes.length) %
+            enabledIndexes.length;
       return enabledIndexes[nextPos];
     });
   };
@@ -141,7 +137,9 @@ export function Select({
             <span
               className={cn(
                 "truncate",
-                selected ? "text-neutral-900 dark:text-neutral-100" : "text-neutral-400 dark:text-neutral-400",
+                selected
+                  ? "text-neutral-900 dark:text-neutral-100"
+                  : "text-neutral-400 dark:text-neutral-400",
               )}
             >
               {selected ? selected.label : placeholder}

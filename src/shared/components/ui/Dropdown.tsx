@@ -8,7 +8,6 @@ import {
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { cn } from "@/shared/utils/cn";
-
 interface DropdownProps {
   trigger: ReactNode;
   children: ReactNode;
@@ -28,17 +27,6 @@ interface PanelPosition {
   minWidth: number;
 }
 
-/**
- * Headless-style trigger + floating panel primitive. Handles open state,
- * click-outside, Escape-to-close, and the enter/exit animation — callers
- * supply the trigger and panel content (see `Select` for a form-value
- * picker built on top, or use `DropdownItem` directly for action menus).
- *
- * The panel is rendered through a portal into `document.body` and
- * positioned from the trigger's live bounding rect (fixed positioning),
- * so it always overlays above ancestors with `overflow: hidden`/`auto`
- * (e.g. scrollable table containers) instead of being clipped by them.
- */
 export function Dropdown({
   trigger,
   children,
@@ -100,8 +88,6 @@ export function Dropdown({
     };
 
     updatePosition();
-    // capture:true so this also fires for scroll on non-window scroll
-    // containers (e.g. the table's own overflow-y-auto), which don't bubble.
     window.addEventListener("scroll", updatePosition, true);
     window.addEventListener("resize", updatePosition);
     return () => {

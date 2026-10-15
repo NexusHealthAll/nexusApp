@@ -2,11 +2,9 @@
 export default {
   darkMode: "class",
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
-  darkMode: "class",
   theme: {
     extend: {
       colors: {
-        // Primary healthcare blues and teals
         primary: {
           50: "#f0f9ff",
           100: "#e0f2fe",
@@ -33,8 +31,6 @@ export default {
           900: "#134e4a",
           950: "#042f2e",
         },
-        // Health-worker app brand blue, matched to the Figma "Nexus Care" designs
-        // (#0041a2 primary CTA / #0257d3 active nav state).
         brand: {
           50: "#eef5ff",
           100: "#e8f5ff",
@@ -51,11 +47,10 @@ export default {
           // a distinct, slightly darker tint than the brand-100 pill background.
           input: "#d6e5ef",
         },
-        // Health-worker app text hierarchy, matched to exact Figma text fills.
         ink: {
-          900: "#0f1d25", // headings
-          700: "#424752", // body copy
-          500: "#727783", // captions / uppercase labels
+          900: "#0f1d25",
+          700: "#424752",
+          500: "#727783",
         },
         neutral: {
           50: "#f8fafc",
@@ -154,23 +149,23 @@ export default {
           "0 10px 40px -10px rgba(0, 0, 0, 0.15), 0 4px 25px -5px rgba(0, 0, 0, 0.1)",
       },
       animation: {
-        'fade-in': 'fadeIn 1s ease-in-out',
-        'fade-in-delay': 'fadeIn 1s ease-in-out 0.5s both',
-        'slide-up': 'slideUp 0.5s ease-out',
-        'bounce-gentle': 'bounceGentle 2s infinite',
+        "fade-in": "fadeIn 1s ease-in-out",
+        "fade-in-delay": "fadeIn 1s ease-in-out 0.5s both",
+        "slide-up": "slideUp 0.5s ease-out",
+        "bounce-gentle": "bounceGentle 2s infinite",
       },
       keyframes: {
         fadeIn: {
-          '0%': { opacity: '0', transform: 'translateY(10px)' },
-          '100%': { opacity: '1', transform: 'translateY(0)' },
+          "0%": { opacity: "0", transform: "translateY(10px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
         },
         slideUp: {
-          '0%': { opacity: '0', transform: 'translateY(20px)' },
-          '100%': { opacity: '1', transform: 'translateY(0)' },
+          "0%": { opacity: "0", transform: "translateY(20px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
         },
         bounceGentle: {
-          '0%, 100%': { transform: 'translateY(0)' },
-          '50%': { transform: 'translateY(-5px)' },
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-5px)" },
         },
       },
     },
