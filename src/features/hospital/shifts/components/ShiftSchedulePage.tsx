@@ -4,7 +4,6 @@ import {
   CalendarPlus,
   ChevronDown,
   Download,
-  Eye,
   MoreVertical,
   Plus,
   Users,
@@ -20,7 +19,6 @@ import { Pagination } from "@/shared/components/ui/Pagination";
 import { SearchInput } from "@/shared/components/ui/SearchInput";
 import { Select } from "@/shared/components/ui/Select";
 import { Skeleton } from "@/shared/components/ui/Skeleton";
-import { UnderlineTabs } from "@/shared/components/ui/UnderlineTabs";
 import { AvatarInitials } from "@/shared/components/ui/AvatarInitials";
 import { appToast } from "@/shared/components/feedback/toast";
 import { PATHS } from "@/routes/paths";
@@ -31,31 +29,17 @@ import { useWalletFunding } from "@/features/hospital/hooks/useWalletFunding";
 import { useHospitalApprovalStatus } from "@/features/hospital/hooks/useHospitalApprovalStatus";
 import { WalletFundingBanner } from "@/features/hospital/components/WalletFundingBanner";
 import { shiftStatusDisplay } from "@/features/hospital/shifts/shiftStatusDisplay";
+import { ShiftTypeBadge } from "@/features/hospital/shifts/components/ShiftTypeBadge";
+import { WorkerDirectoryService } from "@/features/hospital/workers/workerDirectoryService";
 import type {
   ApiShift,
   ApiShiftPriority,
   ApiShiftStatus,
 } from "@/features/hospital/shifts/types";
 
-type ShiftTab =
-  | "all"
-  | "active"
-  | "upcoming"
-  | "open"
-  | "completed"
-  | "cancelled";
-
 type SortKey = "date_desc" | "date_asc" | "rate_desc" | "rate_asc";
 
 const PAGE_SIZE = 8;
-
-const tabStatuses: Record<Exclude<ShiftTab, "all">, ApiShiftStatus[]> = {
-  active: ["in_progress"],
-  upcoming: ["upcoming", "assigned"],
-  open: ["open"],
-  completed: ["completed"],
-  cancelled: ["cancelled", "no_show"],
-};
 
 const priorityLabel: Record<ApiShiftPriority, string> = {
   stat: "STAT",
@@ -124,11 +108,13 @@ export function ShiftSchedulePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [reloadKey, setReloadKey] = useState(0);
 
-  const [activeTab, setActiveTab] = useState<ShiftTab>("all");
+  const [clinicians, setClinicians] = useState<{ id: string; name: string }[]>([]);
+
   const [search, setSearch] = useState("");
   const [department, setDepartment] = useState("all");
   const [role, setRole] = useState("all");
   const [status, setStatus] = useState("all");
+  const [clinician, setClinician] = useState("all");
   const [sortKey, setSortKey] = useState<SortKey>("date_desc");
   const [page, setPage] = useState(1);
 
@@ -174,18 +160,26 @@ export function ShiftSchedulePage() {
     };
   }, [getShifts, getInterestedClinicians, reloadKey]);
 
-  const tabCounts = useMemo(() => {
-    const count = (tab: Exclude<ShiftTab, "all">) =>
-      rows.filter((r) => tabStatuses[tab].includes(r.shift.status)).length;
-    return {
-      all: rows.length,
-      active: count("active"),
-      upcoming: count("upcoming"),
-      open: count("open"),
-      completed: count("completed"),
-      cancelled: count("cancelled"),
+  useEffect(() => {
+    let cancelled = false;
+    WorkerDirectoryService.getWorkers()
+      .then((workers) => {
+        if (!cancelled) {
+          setClinicians(workers.map((w) => ({ id: w.id, name: w.name })));
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setClinicians([]);
+      });
+    return () => {
+      cancelled = true;
     };
-  }, [rows]);
+  }, []);
+
+  const clinicianName = useMemo(() => {
+    const map = new Map(clinicians.map((c) => [c.id, c.name]));
+    return (id: string) => map.get(id) ?? "Assigned";
+  }, [clinicians]);
 
   const departments = useMemo(() => {
     const values = new Set(
@@ -201,12 +195,10 @@ export function ShiftSchedulePage() {
 
   const filteredRows = useMemo(() => {
     const result = rows.filter(({ shift }) => {
-      if (activeTab !== "all" && !tabStatuses[activeTab].includes(shift.status)) {
-        return false;
-      }
       if (department !== "all" && shift.department !== department) return false;
       if (role !== "all" && shift.role_title !== role) return false;
       if (status !== "all" && shift.status !== status) return false;
+      if (clinician !== "all" && shift.assigned_clinician_id !== clinician) return false;
       if (search.trim()) {
         const q = search.trim().toLowerCase();
         const haystack =
@@ -236,11 +228,11 @@ export function ShiftSchedulePage() {
     });
 
     return result;
-  }, [rows, activeTab, department, role, status, search, sortKey]);
+  }, [rows, department, role, status, clinician, search, sortKey]);
 
   useEffect(() => {
     setPage(1);
-  }, [activeTab, department, role, status, search]);
+  }, [department, role, status, clinician, search]);
 
   const pageCount = Math.max(1, Math.ceil(filteredRows.length / PAGE_SIZE));
   const pageRows = filteredRows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -354,19 +346,6 @@ export function ShiftSchedulePage() {
         </div>
       )}
 
-      <UnderlineTabs<ShiftTab>
-        options={[
-          { label: "All Shifts", value: "all", count: tabCounts.all },
-          { label: "Active", value: "active", count: tabCounts.active },
-          { label: "Upcoming", value: "upcoming", count: tabCounts.upcoming },
-          { label: "Open", value: "open", count: tabCounts.open },
-          { label: "Completed", value: "completed", count: tabCounts.completed },
-          { label: "Cancelled", value: "cancelled", count: tabCounts.cancelled },
-        ]}
-        value={activeTab}
-        onChange={setActiveTab}
-      />
-
       {/* Filter row */}
       <div className="mt-5 flex flex-wrap items-center gap-3">
         <SearchInput
@@ -401,6 +380,17 @@ export function ShiftSchedulePage() {
           onChange={setStatus}
           containerClassName="w-40"
           className="bg-white py-2 dark:bg-neutral-800"
+        />
+        <Select
+          options={[
+            { value: "all", label: "All Clinicians" },
+            ...clinicians.map((c) => ({ value: c.id, label: c.name })),
+          ]}
+          value={clinician}
+          onChange={setClinician}
+          containerClassName="w-44"
+          className="bg-white py-2 dark:bg-neutral-800"
+          searchable
         />
         <div className="ml-auto flex items-center gap-2">
           <span className="text-sm text-neutral-400 dark:text-neutral-500">Sort:</span>
@@ -498,6 +488,7 @@ export function ShiftSchedulePage() {
                     />
                   </th>
                   <th className="py-3 pr-4 font-semibold">Shift</th>
+                  <th className="py-3 pr-4 font-semibold">Type</th>
                   <th className="py-3 pr-4 font-semibold">Department</th>
                   <th className="py-3 pr-4 font-semibold">Date & Time</th>
                   <th className="py-3 pr-4 font-semibold">Assigned</th>
@@ -517,12 +508,13 @@ export function ShiftSchedulePage() {
                   return (
                     <tr
                       key={shift.id}
+                      onClick={() => navigate(PATHS.hospital.shiftDetail(shift.id))}
                       className={cn(
-                        "border-b border-neutral-50 transition-colors last:border-b-0 hover:bg-neutral-50/60 dark:border-neutral-800 dark:hover:bg-neutral-800/60",
+                        "cursor-pointer border-b border-neutral-50 transition-colors last:border-b-0 hover:bg-neutral-50/60 dark:border-neutral-800 dark:hover:bg-neutral-800/60",
                         isSelected && "bg-primary-50/40 dark:bg-primary-950/40",
                       )}
                     >
-                      <td className="px-4 py-4">
+                      <td className="px-4 py-4" onClick={(e) => e.stopPropagation()}>
                         <input
                           type="checkbox"
                           checked={isSelected}
@@ -531,19 +523,15 @@ export function ShiftSchedulePage() {
                         />
                       </td>
                       <td className="py-4 pr-4">
-                        <button
-                          onClick={() =>
-                            navigate(PATHS.hospital.shiftDetail(shift.id))
-                          }
-                          className="text-left"
-                        >
-                          <p className="font-semibold text-neutral-900 hover:underline dark:text-neutral-50">
-                            {shift.shift_label ?? shift.role_title}
-                          </p>
-                          <p className="mt-0.5 text-xs text-neutral-400 dark:text-neutral-500">
-                            {shift.role_title} · {priorityLabel[shift.priority]}
-                          </p>
-                        </button>
+                        <p className="font-semibold text-neutral-900 hover:underline dark:text-neutral-50">
+                          {shift.shift_label ?? shift.role_title}
+                        </p>
+                        <p className="mt-0.5 text-xs text-neutral-400 dark:text-neutral-500">
+                          {shift.role_title} · {priorityLabel[shift.priority]}
+                        </p>
+                      </td>
+                      <td className="py-4 pr-4">
+                        <ShiftTypeBadge shiftType={shift.shift_type} />
                       </td>
                       <td className="py-4 pr-4 text-neutral-600 dark:text-neutral-400">
                         {shift.department ?? "—"}
@@ -556,10 +544,12 @@ export function ShiftSchedulePage() {
                         {shift.assigned_clinician_id ? (
                           <span className="flex items-center gap-2">
                             <AvatarInitials
-                              name={shift.assigned_clinician_id}
+                              name={clinicianName(shift.assigned_clinician_id)}
                               className="bg-primary-600 text-white"
                             />
-                            <span className="text-neutral-800 dark:text-neutral-200">Assigned</span>
+                            <span className="text-neutral-800 dark:text-neutral-200">
+                              {clinicianName(shift.assigned_clinician_id)}
+                            </span>
                           </span>
                         ) : (
                           <span className="text-neutral-400 dark:text-neutral-500">Unassigned</span>
@@ -579,7 +569,7 @@ export function ShiftSchedulePage() {
                           {statusDisplay.label}
                         </Badge>
                       </td>
-                      <td className="py-4 pr-4">
+                      <td className="py-4 pr-4" onClick={(e) => e.stopPropagation()}>
                         <Dropdown
                           align="right"
                           trigger={
@@ -589,14 +579,6 @@ export function ShiftSchedulePage() {
                           }
                           panelClassName="w-52"
                         >
-                          <DropdownItem
-                            onClick={() =>
-                              navigate(PATHS.hospital.shiftDetail(shift.id))
-                            }
-                          >
-                            <Eye className="h-4 w-4" />
-                            View Details
-                          </DropdownItem>
                           {applicants > 0 && (
                             <DropdownItem
                               onClick={() =>
