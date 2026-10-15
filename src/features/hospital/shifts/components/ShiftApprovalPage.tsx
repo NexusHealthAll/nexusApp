@@ -15,12 +15,15 @@ import { Modal } from "@/shared/components/ui/Modal";
 import { LocationMapPreview } from "@/shared/components/ui/LocationMapPreview";
 import { AttachmentGallery } from "@/shared/components/AttachmentGallery";
 import { appToast } from "@/shared/components/feedback/toast";
+import { ApiError } from "@/lib/apiError";
 import { cn } from "@/shared/utils/cn";
 import { formatDateTime } from "@/shared/utils/date";
 import {
   useHospitalShift,
   type RankedInterestedClinician,
 } from "@/features/hospital/shifts/hooks/useHospitalShift";
+import { usePlatformFeeRates } from "@/features/hospital/services/platformFeeService";
+import { ShiftTypeBadge } from "@/features/hospital/shifts/components/ShiftTypeBadge";
 import {
   getWorkerPublic,
   type WorkerPublicDetail,
@@ -151,7 +154,9 @@ export function ShiftApprovalPage() {
     assignClinician,
     cancelShift,
     rescheduleShift,
+    rateWorker,
   } = useHospitalShift();
+  const { serviceFeeRate, taxRate } = usePlatformFeeRates();
 
   const [shift, setShift] = useState<ApiShiftDetail | null>(null);
   const [workers, setWorkers] = useState<WorkerUi[]>([]);
@@ -175,6 +180,12 @@ export function ShiftApprovalPage() {
   const [rescheduling, setRescheduling] = useState(false);
 
   const [hospitalLocation, setHospitalLocation] = useState<HospitalLocation | null>(null);
+
+  const [rateOpen, setRateOpen] = useState(false);
+  const [rateScore, setRateScore] = useState(0);
+  const [rateComment, setRateComment] = useState("");
+  const [rating, setRating] = useState(false);
+  const [ratingSubmitted, setRatingSubmitted] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -322,6 +333,31 @@ export function ShiftApprovalPage() {
     }
   };
 
+  const handleRate = async () => {
+    if (!shiftId || rateScore < 1) return;
+    setRating(true);
+    try {
+      await rateWorker({
+        shift_id: shiftId,
+        score: rateScore,
+        comment: rateComment.trim() || undefined,
+      });
+      appToast.success("Rating submitted", "Thanks for rating this clinician.");
+      setRatingSubmitted(true);
+      setRateOpen(false);
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 409) {
+        appToast.error("Already rated", "This clinician has already been rated for this shift.");
+        setRatingSubmitted(true);
+        setRateOpen(false);
+      } else {
+        appToast.fromError(error, "Failed to submit rating. Please try again.");
+      }
+    } finally {
+      setRating(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="space-y-6">
@@ -359,9 +395,15 @@ export function ShiftApprovalPage() {
   }
 
   const canEdit = !nonEditableStatuses.includes(shift.status);
+  const canCancel = canEdit && shift.status !== "in_progress";
+  const canRate =
+    shift.status === "completed" && !!shift.assigned_clinician_id && !ratingSubmitted;
   const { dateLabel, timeLabel } = formatDateTime(shift.scheduled_start, shift.scheduled_end);
   const status = statusBadge[shift.status];
   const priority = priorityBadge[shift.priority];
+  const basePayKobo = shift.grand_total_kobo ?? 0;
+  const platformFeeKobo = Math.round(basePayKobo * (serviceFeeRate + taxRate));
+  const estimatedTotalKobo = basePayKobo + platformFeeKobo;
 
   return (
     <div className="space-y-6">
@@ -389,26 +431,40 @@ export function ShiftApprovalPage() {
               : "Review and manage this shift."}
           </p>
         </div>
-        {canEdit && (
+        {(canEdit || canRate) && (
           <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={openReschedule}
-              className="gap-1.5 border-none bg-neutral-100 text-neutral-700 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700"
-            >
-              <CalendarClock className="h-3.5 w-3.5" />
-              Reschedule
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCancelOpen(true)}
-              className="gap-1.5 border-none bg-error-50 text-error-700 hover:bg-error-100 dark:bg-error-950 dark:text-error-300 dark:hover:bg-error-900"
-            >
-              <Ban className="h-3.5 w-3.5" />
-              Cancel Shift
-            </Button>
+            {canEdit && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={openReschedule}
+                className="gap-1.5 border-none bg-neutral-100 text-neutral-700 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700"
+              >
+                <CalendarClock className="h-3.5 w-3.5" />
+                Reschedule
+              </Button>
+            )}
+            {canCancel && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCancelOpen(true)}
+                className="gap-1.5 border-none bg-error-50 text-error-700 hover:bg-error-100 dark:bg-error-950 dark:text-error-300 dark:hover:bg-error-900"
+              >
+                <Ban className="h-3.5 w-3.5" />
+                Cancel Shift
+              </Button>
+            )}
+            {canRate && (
+              <Button
+                size="sm"
+                onClick={() => setRateOpen(true)}
+                className="gap-1.5 bg-secondary-800 text-white hover:bg-secondary-900"
+              >
+                <Star className="h-3.5 w-3.5" />
+                Rate Clinician
+              </Button>
+            )}
           </div>
         )}
       </div>
@@ -457,19 +513,41 @@ export function ShiftApprovalPage() {
               </div>
               <div>
                 <p className="mb-1 text-xs text-neutral-500 dark:text-neutral-400">Shift Type</p>
-                <p className="text-sm font-bold text-neutral-900 dark:text-neutral-50">
-                  {shift.shift_type === "in_person" ? "In-person" : "Virtual"}
+                <ShiftTypeBadge shiftType={shift.shift_type} />
+              </div>
+            </div>
+
+            {typeof shift.grand_total_kobo === "number" && (
+              <div className="mt-6 rounded-xl bg-neutral-50 p-4 dark:bg-neutral-800">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-neutral-500 dark:text-neutral-400">Base Pay + Bonus</span>
+                  <span className="font-semibold text-neutral-900 dark:text-neutral-50">
+                    ₦{Math.round(basePayKobo / 100).toLocaleString()}
+                  </span>
+                </div>
+                <div className="mt-1.5 flex items-center justify-between text-sm">
+                  <span className="text-neutral-500 dark:text-neutral-400">
+                    Platform Fee (est. {Math.round((serviceFeeRate + taxRate) * 100)}%)
+                  </span>
+                  <span className="font-semibold text-neutral-900 dark:text-neutral-50">
+                    ₦{Math.round(platformFeeKobo / 100).toLocaleString()}
+                  </span>
+                </div>
+                <div className="mt-3 flex items-center justify-between border-t border-neutral-200 pt-3 dark:border-neutral-700">
+                  <span className="text-sm font-bold text-neutral-900 dark:text-neutral-50">
+                    Grand Total
+                  </span>
+                  <span className="text-base font-bold text-secondary-700 dark:text-secondary-400">
+                    ₦{Math.round(estimatedTotalKobo / 100).toLocaleString()}
+                  </span>
+                </div>
+                <p className="mt-2 text-[11px] leading-snug text-neutral-400 dark:text-neutral-500">
+                  Estimated for transparency. The amount actually held from your wallet is the
+                  base pay shown above — the platform fee is deducted from the clinician's
+                  payout, not charged separately to your wallet.
                 </p>
               </div>
-              {typeof shift.grand_total_kobo === "number" && (
-                <div>
-                  <p className="mb-1 text-xs text-neutral-500 dark:text-neutral-400">Grand Total</p>
-                  <p className="text-sm font-bold text-neutral-900 dark:text-neutral-50">
-                    ₦{Math.round(shift.grand_total_kobo / 100).toLocaleString()}
-                  </p>
-                </div>
-              )}
-            </div>
+            )}
           </div>
 
           {/* Description & Notes */}
@@ -505,6 +583,61 @@ export function ShiftApprovalPage() {
               </div>
             )}
           </div>
+
+          {/* Tasks & Requirements */}
+          {((shift.tasks?.length ?? 0) > 0 || (shift.requirements?.length ?? 0) > 0) && (
+            <div className="rounded-2xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
+              <p className="mb-4 text-xs font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
+                Tasks &amp; Requirements
+              </p>
+              <div className="grid gap-6 md:grid-cols-2">
+                <div>
+                  <p className="mb-2 text-sm font-semibold text-neutral-900 dark:text-neutral-50">
+                    Tasks
+                  </p>
+                  {(shift.tasks?.length ?? 0) === 0 ? (
+                    <p className="text-sm text-neutral-400 dark:text-neutral-500">
+                      No specific tasks listed.
+                    </p>
+                  ) : (
+                    <ul className="space-y-2">
+                      {shift.tasks.map((task, i) => (
+                        <li
+                          key={`${task}-${i}`}
+                          className="flex items-start gap-2 text-sm text-neutral-700 dark:text-neutral-300"
+                        >
+                          <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-secondary-500" />
+                          {task}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+                <div>
+                  <p className="mb-2 text-sm font-semibold text-neutral-900 dark:text-neutral-50">
+                    Requirements
+                  </p>
+                  {(shift.requirements?.length ?? 0) === 0 ? (
+                    <p className="text-sm text-neutral-400 dark:text-neutral-500">
+                      No specific qualifications listed.
+                    </p>
+                  ) : (
+                    <ul className="space-y-2">
+                      {shift.requirements.map((req, i) => (
+                        <li
+                          key={`${req}-${i}`}
+                          className="flex items-start gap-2 text-sm text-neutral-700 dark:text-neutral-300"
+                        >
+                          <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-secondary-500" />
+                          {req}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Interested Workers */}
           <div>
@@ -601,6 +734,19 @@ export function ShiftApprovalPage() {
 
         {/* Sidebar */}
         <div className="space-y-6">
+          {/* Avg. Distance */}
+          <div className="rounded-2xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
+            <p className="mb-2 text-xs font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
+              Avg. Distance
+            </p>
+            <p className="text-3xl font-bold text-neutral-900 dark:text-neutral-50">
+              {avgDistanceKm !== null ? `${avgDistanceKm.toFixed(1)} km` : "—"}
+            </p>
+            <p className="mt-1 text-xs text-neutral-400 dark:text-neutral-500">
+              Average distance of interested clinicians
+            </p>
+          </div>
+
           {/* Applicant Insights */}
           <div className="rounded-2xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
             <p className="mb-4 text-xs font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
@@ -621,12 +767,6 @@ export function ShiftApprovalPage() {
               </div>
             </div>
             <div className="flex items-center justify-between border-t border-neutral-100 pt-3 dark:border-neutral-800">
-              <span className="text-sm text-neutral-600 dark:text-neutral-400">Avg. Distance</span>
-              <span className="text-sm font-bold text-neutral-900 dark:text-neutral-50">
-                {avgDistanceKm !== null ? `${avgDistanceKm.toFixed(1)}km` : "—"}
-              </span>
-            </div>
-            <div className="flex items-center justify-between border-t border-neutral-100 pt-3 mt-3 dark:border-neutral-800">
               <span className="text-sm text-neutral-600 dark:text-neutral-400">Interested</span>
               <span className="text-sm font-bold text-neutral-900 dark:text-neutral-50">
                 {workers.length}
@@ -957,6 +1097,69 @@ export function ShiftApprovalPage() {
             )}
           </div>
         )}
+      </Modal>
+
+      {/* Rate Clinician modal */}
+      <Modal
+        isOpen={rateOpen}
+        onClose={() => !rating && setRateOpen(false)}
+        title="Rate Clinician"
+        size="sm"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-neutral-600 dark:text-neutral-400">
+            Rate the clinician assigned to this completed shift.
+          </p>
+          <div className="flex items-center justify-center gap-1.5">
+            {[1, 2, 3, 4, 5].map((n) => (
+              <button
+                key={n}
+                type="button"
+                onClick={() => setRateScore(n)}
+                className="p-1"
+                aria-label={`${n} star${n === 1 ? "" : "s"}`}
+              >
+                <Star
+                  className={cn(
+                    "h-8 w-8",
+                    n <= rateScore
+                      ? "fill-warning-400 text-warning-400"
+                      : "text-neutral-200 dark:text-neutral-700",
+                  )}
+                />
+              </button>
+            ))}
+          </div>
+          <div>
+            <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+              Comment (optional)
+            </label>
+            <textarea
+              rows={3}
+              value={rateComment}
+              onChange={(e) => setRateComment(e.target.value)}
+              placeholder="e.g. Punctual, great bedside manner"
+              className="w-full resize-none rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-secondary-400 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 dark:placeholder-neutral-500"
+            />
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setRateOpen(false)}
+              disabled={rating}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleRate}
+              isLoading={rating}
+              disabled={rateScore < 1}
+              className="bg-secondary-800 text-white hover:bg-secondary-900"
+            >
+              Submit Rating
+            </Button>
+          </div>
+        </div>
       </Modal>
     </div>
   );
