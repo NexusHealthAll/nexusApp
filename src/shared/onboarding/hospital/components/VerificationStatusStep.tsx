@@ -131,21 +131,9 @@ export function VerificationStatusStep() {
   const navigate = useNavigate();
   const { formData, reset } = useOnboarding();
 
-  // Informational notice, shown as soon as this final page loads: the hospital
-  // cannot sign in or reach the dashboard until an admin verifies the
-  // registration. Free to dismiss — it doesn't block the "Continue" action.
   const [showApprovalNotice, setShowApprovalNotice] = useState(true);
-
-  // ── Verification status breakdown ────────────────────────────────────────
-  // Fetched once on mount via the same public/ungated hospital-detail
-  // endpoint used elsewhere (HospitalProfileService.getHospitalDetails) plus
-  // the registration-status endpoint, both of which work pre-auth using the
-  // hospitalId already sitting in the onboarding draft — there's no session
-  // yet at this point in the flow. No polling existed here before, so none
-  // is added; the breakdown reflects status as of page load.
-  const [statusBreakdown, setStatusBreakdown] = useState<StatusBreakdown | null>(
-    null,
-  );
+  const [statusBreakdown, setStatusBreakdown] =
+    useState<StatusBreakdown | null>(null);
   const [statusLoadFailed, setStatusLoadFailed] = useState(false);
 
   useEffect(() => {
@@ -186,7 +174,7 @@ export function VerificationStatusStep() {
     : "pending";
   const documentsNote = statusBreakdown
     ? {
-        verified: "Business/CAC documents verified",
+        verified: "Hospital verification documents verified",
         under_review: "Documents are currently being reviewed",
         submitted: "Documents submitted, awaiting review",
         unverified: "No documents submitted yet",
@@ -308,7 +296,7 @@ export function VerificationStatusStep() {
           <div className="space-y-3">
             <StatusRow
               icon={FileText}
-              label="Business / CAC Verification"
+              label="Hospital Verification Documents"
               note={documentsNote}
               state={documentsState}
             />
@@ -336,18 +324,21 @@ export function VerificationStatusStep() {
             </h2>
 
             <ol>
-              {/* Item 1 — done */}
+              {/* Item 1 — documents submitted, pending review */}
               <li className="flex gap-4 mb-8">
                 <div className="flex flex-col items-center">
-                  <div className="h-9 w-9 rounded-full bg-[#349C93] flex items-center justify-center shrink-0 shadow-sm">
-                    <CheckCircle2 className="h-4.5 w-4.5 text-white" />
+                  <div className="h-9 w-9 rounded-full bg-[#EBF4FF] dark:bg-neutral-800 border-2 border-[#C8DFEF] dark:border-neutral-700 flex items-center justify-center shrink-0">
+                    <Clock className="h-4.5 w-4.5 text-[#1A5888] dark:text-[#5AA6D6]" />
                   </div>
                   <div className="w-px flex-1 bg-gray-200 dark:bg-neutral-700 mt-1.5" />
                 </div>
                 <div className="pt-1">
-                  <p className="text-[13px] font-semibold text-neutral-800 dark:text-neutral-100">
-                    Documents Submitted
-                  </p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-[13px] font-semibold text-neutral-800 dark:text-neutral-100">
+                      Documents Submitted
+                    </p>
+                    <VerificationBadge state="pending" />
+                  </div>
                   <p className="text-[11px] text-neutral-400 mt-0.5">
                     {submittedAt}
                   </p>
@@ -413,11 +404,19 @@ export function VerificationStatusStep() {
                 questions about your application.
               </p>
               <div className="space-y-2">
-                <button className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg bg-[#EBF4FF] dark:bg-neutral-800 border border-[#C8DFEF] dark:border-neutral-700 text-[12px] font-semibold text-[#1A5888] dark:text-[#5AA6D6] hover:bg-[#DAE8F3] dark:hover:bg-neutral-700 transition-colors duration-150">
+                <button
+                  disabled
+                  title="Coming soon"
+                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg bg-[#EBF4FF] dark:bg-neutral-800 border border-[#C8DFEF] dark:border-neutral-700 text-[12px] font-semibold text-[#1A5888] dark:text-[#5AA6D6] opacity-50 cursor-not-allowed"
+                >
                   <MessageSquare className="h-3.5 w-3.5" />
                   Live Chat Support
                 </button>
-                <button className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg bg-gray-50 dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 text-[12px] font-semibold text-neutral-700 dark:text-neutral-200 hover:bg-gray-100 dark:hover:bg-neutral-700 transition-colors duration-150">
+                <button
+                  disabled
+                  title="Coming soon"
+                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg bg-gray-50 dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 text-[12px] font-semibold text-neutral-700 dark:text-neutral-200 opacity-50 cursor-not-allowed"
+                >
                   <Mail className="h-3.5 w-3.5" />
                   Email Support
                 </button>
