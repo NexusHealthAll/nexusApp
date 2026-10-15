@@ -6,7 +6,8 @@ export type BadgeVariant =
   | "warning"
   | "error"
   | "info"
-  | "neutral";
+  | "neutral"
+  | "purple";
 
 interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
   variant?: BadgeVariant;
@@ -18,6 +19,7 @@ const variants: Record<BadgeVariant, string> = {
   error: "bg-error-100 text-error-700 dark:bg-error-950 dark:text-error-300",
   info: "bg-primary-100 text-primary-700 dark:bg-primary-950 dark:text-primary-300",
   neutral: "bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400",
+  purple: "bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300",
 };
 
 const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
