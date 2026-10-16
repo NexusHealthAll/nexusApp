@@ -49,3 +49,19 @@ export function formatDateTime(
 
   return { dateLabel, timeLabel };
 }
+
+/** Relative time for feeds, e.g. "just now", "8 minutes ago", "Yesterday", falling back to a date. */
+export function formatRelativeTime(iso: string, now: Date = new Date()): string {
+  const then = new Date(iso);
+  if (Number.isNaN(then.getTime())) return "—";
+  const seconds = Math.max(0, Math.round((now.getTime() - then.getTime()) / 1000));
+  if (seconds < 45) return "just now";
+  const minutes = Math.round(seconds / 60);
+  if (minutes < 60) return `${minutes} minute${minutes === 1 ? "" : "s"} ago`;
+  const hours = Math.round(minutes / 60);
+  if (hours < 24) return `${hours} hour${hours === 1 ? "" : "s"} ago`;
+  const days = Math.round(hours / 24);
+  if (days === 1) return "Yesterday";
+  if (days < 7) return `${days} days ago`;
+  return formatDate(iso);
+}

@@ -8,6 +8,7 @@ import type { ApiShift } from "@/features/hospital/shifts/types";
 import { fetchHospitalLocation } from "@/shared/services/hospitalLocation";
 import { CLOCK_IN_MAX_KM, haversineKm } from "@/shared/utils/geo";
 import { Header } from "../DashboardChrome";
+import { LocationMapPreview } from "@/shared/components/ui/LocationMapPreview";
 
 type Stage = "ready" | "locating" | "out-of-range" | "awaiting-approval" | "error";
 
@@ -62,12 +63,6 @@ export function ShiftEntryScreen({
       );
     }
   }, []);
-
-  const minLon = (coords.lng - 0.008).toFixed(4);
-  const minLat = (coords.lat - 0.008).toFixed(4);
-  const maxLon = (coords.lng + 0.008).toFixed(4);
-  const maxLat = (coords.lat + 0.008).toFixed(4);
-  const mapEmbedUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${minLon}%2C${minLat}%2C${maxLon}%2C${maxLat}&layer=mapnik&marker=${coords.lat}%2C${coords.lng}`;
 
   const handleClockIn = async () => {
     setError("");
@@ -268,11 +263,11 @@ export function ShiftEntryScreen({
               </p>
             ) : (
               <div className="relative h-64 overflow-hidden rounded-3xl border border-neutral-200 shadow-sm dark:border-neutral-800">
-                <iframe
-                  title="Facility map"
-                  src={mapEmbedUrl}
-                  className="h-full w-full border-0"
-                  loading="lazy"
+                <LocationMapPreview
+                  latitude={coords.lat}
+                  longitude={coords.lng}
+                  label="facility"
+                  className="h-full w-full"
                 />
                 <div className="absolute bottom-3 left-3 flex items-center gap-2 rounded-xl bg-white/90 px-3 py-1.5 text-xs font-semibold text-neutral-800 shadow backdrop-blur dark:bg-neutral-900/90 dark:text-neutral-200">
                   <MapPin className="h-4 w-4 text-brand-600 dark:text-brand-400" />

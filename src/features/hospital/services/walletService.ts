@@ -231,6 +231,28 @@ export class WalletService {
   }
 
   /**
+   * Every ledger entry created at or after `since`. The ledger is newest-first
+   * (page size is capped at 200 server-side), so stop once a page reaches
+   * past the cutoff.
+   */
+  static async getLedgerSince(since: Date): Promise<WalletLedgerEntry[]> {
+    const pageSize = 200;
+    const out: WalletLedgerEntry[] = [];
+    for (let page = 1; page <= 20; page += 1) {
+      const entries = await this.getLedger(page, pageSize);
+      out.push(...entries);
+      const oldest = entries[entries.length - 1];
+      if (
+        entries.length < pageSize ||
+        new Date(oldest.created_at).getTime() < since.getTime()
+      ) {
+        break;
+      }
+    }
+    return out.filter((e) => new Date(e.created_at) >= since);
+  }
+
+  /**
    * Step 1 of SafeHaven sub-account provisioning. Needs no input — the
    * backend pulls the hospital admin's already-verified BVN from the
    * identity-verification record and has SafeHaven text an OTP to the

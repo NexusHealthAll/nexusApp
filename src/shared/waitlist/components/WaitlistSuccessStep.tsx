@@ -19,7 +19,7 @@ export function WaitlistSuccessStep() {
           <CheckCircle2 className="h-8 w-8" />
         </div>
 
-        <h1 className="mt-6 text-4xl font-semibold text-neutral-950 dark:text-neutral-50">
+        <h1 className="mt-6 text-4xl font-semibold text-neutral-900 dark:text-neutral-50">
           You are on the Waitlist
         </h1>
         <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-neutral-600 sm:text-base dark:text-neutral-400">

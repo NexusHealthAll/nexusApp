@@ -10,6 +10,7 @@ import {
   ShieldCheck,
   Wallet,
 } from "lucide-react";
+import { PATHS } from "@/routes/paths";
 import { Button } from "@/shared/components/ui/Button";
 import { EmptyState } from "@/shared/components/ui/EmptyState";
 import { getWorkerVerificationState } from "@/shared/auth/services/workerVerificationService";
@@ -69,7 +70,7 @@ export function HomeScreen({
         {!isProfileOrPayoutComplete && (
           <button
             type="button"
-            onClick={() => navigate("/medical-staff/onboarding/profile")}
+            onClick={() => navigate(PATHS.medicalStaff.onboarding.profile)}
             className="flex w-full items-start gap-3 rounded-lg border border-warning-200 bg-warning-50 p-3 text-left transition-colors hover:bg-warning-100 dark:border-warning-800/60 dark:bg-warning-950/40 dark:hover:bg-warning-900/40"
           >
             <ShieldCheck className="mt-0.5 h-4 w-4 flex-shrink-0 text-warning-600 dark:text-warning-400" />

@@ -1,5 +1,7 @@
 import type { ComponentType, ReactNode } from "react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { cn } from "@/shared/utils/cn";
+import { Skeleton } from "@/shared/components/ui/Skeleton";
 
 type MetricTone = "secondary" | "primary" | "success" | "warning" | "error";
 
@@ -11,6 +13,8 @@ interface MetricCardProps {
   tone?: MetricTone;
   valueTone?: MetricTone | "default";
   className?: string;
+  /** Keeps the label and icon, and swaps the value and sub line for pulsing placeholders. */
+  loading?: boolean;
 }
 
 const iconTones: Record<MetricTone, string> = {
@@ -46,9 +50,11 @@ export function MetricCard({
   tone = "secondary",
   valueTone = "default",
   className,
+  loading = false,
 }: MetricCardProps) {
   return (
     <div
+      aria-busy={loading || undefined}
       className={cn(
         "rounded-2xl border border-neutral-100 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900",
         className,
@@ -69,48 +75,62 @@ export function MetricCard({
           </span>
         )}
       </div>
-      <p
-        className={cn(
-          "mt-2 text-3xl font-bold tracking-tight",
-          valueTones[valueTone],
-        )}
-      >
-        {value}
-      </p>
-      {sub && (
-        <div className="mt-1.5 text-xs text-neutral-500 dark:text-neutral-400">
-          {sub}
-        </div>
+      {loading ? (
+        <>
+          <Skeleton className="mt-3 h-8 w-24" />
+          {sub !== undefined && <Skeleton className="mt-2.5 h-3 w-32" />}
+        </>
+      ) : (
+        <>
+          <p
+            className={cn(
+              "mt-2 text-3xl font-bold tracking-tight",
+              valueTones[valueTone],
+            )}
+          >
+            {value}
+          </p>
+          {sub && (
+            <div className="mt-1.5 text-xs text-neutral-500 dark:text-neutral-400">
+              {sub}
+            </div>
+          )}
+        </>
       )}
     </div>
   );
 }
 
-/** Small green/red delta line used inside MetricCard subs, e.g. "+12.4% vs last week". */
+/**
+ * Week-over-week delta line for MetricCard subs, e.g. "^ +12.4% vs last week".
+ * Green with an up caret for a gain, red with a down caret for a loss, and
+ * neutral grey (no caret) when nothing changed.
+ */
 export function MetricTrend({
-  direction,
-  label,
-  suffix,
+  pct,
+  suffix = "vs last week",
 }: {
-  direction: "up" | "down";
-  label: string;
+  pct: number;
   suffix?: string;
 }) {
+  const rounded = Math.round(pct * 10) / 10;
+  const direction = rounded > 0 ? "up" : rounded < 0 ? "down" : "flat";
+  const Caret = direction === "up" ? ChevronUp : ChevronDown;
+  const tone =
+    direction === "up"
+      ? "text-success-600 dark:text-success-400"
+      : direction === "down"
+        ? "text-error-600 dark:text-error-400"
+        : "text-neutral-500 dark:text-neutral-400";
+
   return (
-    <span className="flex items-center gap-1">
-      <span
-        className={cn(
-          "font-semibold",
-          direction === "up"
-            ? "text-success-600 dark:text-success-400"
-            : "text-error-600 dark:text-error-400",
-        )}
-      >
-        {direction === "up" ? "↑" : "↓"} {label}
+    <span className={cn("flex items-center gap-1", tone)}>
+      {direction !== "flat" && <Caret className="h-3.5 w-3.5" aria-hidden />}
+      <span className="font-semibold">
+        {rounded > 0 ? "+" : ""}
+        {rounded.toFixed(1)}%
       </span>
-      {suffix && (
-        <span className="text-neutral-400 dark:text-neutral-500">{suffix}</span>
-      )}
+      <span className="font-normal">{suffix}</span>
     </span>
   );
 }

@@ -263,7 +263,7 @@ export function WithdrawModal({ isOpen, onClose, wallet, onWithdrawn }: Withdraw
             </div>
             <div className="flex justify-between">
               <span className="text-neutral-500 dark:text-neutral-400">Reference</span>
-              <span className="font-mono text-xs text-neutral-700 dark:text-neutral-300">
+              <span className="text-xs text-neutral-700 dark:text-neutral-300">
                 {result.reference}
               </span>
             </div>

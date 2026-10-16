@@ -79,7 +79,7 @@ export function ConsultationRecorder() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <span className="font-mono text-lg font-semibold text-neutral-900 dark:text-neutral-50">
+            <span className="text-lg font-semibold text-neutral-900 dark:text-neutral-50">
               {formatDuration(durationSec)}
             </span>
             {isRecording && <div className="h-2 w-2 animate-pulse rounded-full bg-error-500" />}

@@ -15,7 +15,6 @@ import { Badge, type BadgeVariant } from "@/shared/components/ui/Badge";
 import { Button } from "@/shared/components/ui/Button";
 import { EmptyState, EmptyStateIcon } from "@/shared/components/ui/EmptyState";
 import { Modal } from "@/shared/components/ui/Modal";
-import { Skeleton } from "@/shared/components/ui/Skeleton";
 import { Textarea } from "@/shared/components/ui/Textarea";
 import { AvatarInitials } from "@/shared/components/ui/AvatarInitials";
 import { AttachmentGallery } from "@/shared/components/AttachmentGallery";
@@ -24,6 +23,7 @@ import { PATHS } from "@/routes/paths";
 import { formatKobo } from "@/shared/utils/currency";
 import { useHospitalProfile } from "@/features/hospital/hooks/useHospitalProfile";
 import { HandoverService } from "../handoverService";
+import { HandoverReportDetailSkeleton } from "./HandoverReportsSkeleton";
 import type { HandoverReport, HandoverStatus } from "../types";
 
 const statusDisplay: Record<
@@ -197,7 +197,7 @@ export function HandoverReportDetailPage() {
 
       <div className="mx-auto w-full max-w-3xl">
         {isLoading ? (
-          <Skeleton className="h-[560px] w-full rounded-2xl" />
+          <HandoverReportDetailSkeleton />
         ) : !report ? (
           <EmptyState
             title="Report not found"

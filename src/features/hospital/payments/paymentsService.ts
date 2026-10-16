@@ -50,6 +50,12 @@ function labelForKind(kind: string): string {
  * exposes richer billing data). An empty ledger renders as an empty state.
  */
 export const PaymentsService = {
+  /** Number of ledger entries still pending (held in escrow). */
+  async getPendingCount(): Promise<number> {
+    const entries = await WalletService.getLedger().catch(() => []);
+    return entries.filter((e) => statusForKind(e.kind) === "pending").length;
+  },
+
   async getOverview(): Promise<PaymentsOverview> {
     const [wallet, entries, payoutsPage, withdrawalsPage] = await Promise.all([
       WalletService.getWalletSummary().catch(() => null),

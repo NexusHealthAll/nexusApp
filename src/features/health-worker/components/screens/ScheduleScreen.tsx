@@ -4,6 +4,8 @@ import { EmptyState } from "@/shared/components/ui/EmptyState";
 import { Modal } from "@/shared/components/ui/Modal";
 import { cn } from "@/shared/utils/cn";
 import type { MyApplicationEntry } from "../../hooks/useHealthWorkerShifts";
+import { paginate } from "../../hooks/paginate";
+import { PagedFooter } from "../PagedFooter";
 
 export type ScheduleTab = "upcoming" | "active" | "completed";
 
@@ -222,9 +224,14 @@ export function ScheduleScreen({
   onOpenShift,
   onShiftEntry,
   onOpenHandover,
+  page,
+  onPageChange,
 }: {
   entries: MyApplicationEntry[];
   scheduleTab: ScheduleTab;
+  /** 1-based page within the active tab, driven by the URL (`?page=`). */
+  page: number;
+  onPageChange: (page: number) => void;
   isLoading: boolean;
   loadError: string | null;
   onScheduleTabChange: (tab: ScheduleTab) => void;
@@ -255,6 +262,16 @@ export function ScheduleScreen({
     .filter((e) => e.shift_status === "completed")
     .filter(matchesSelectedDate);
 
+  const activeList =
+    scheduleTab === "active" ? active : scheduleTab === "completed" ? completed : upcoming;
+  const paged = paginate(activeList, page);
+
+  // Changing the date filter changes the list, so start from page 1 again.
+  const selectDate = (date: Date | null) => {
+    setSelectedDate(date);
+    onPageChange(1);
+  };
+
   const tabs: { id: ScheduleTab; label: string; count: number }[] = [
     { id: "upcoming", label: "Upcoming", count: upcoming.length },
     { id: "active", label: "Active", count: active.length },
@@ -273,7 +290,7 @@ export function ScheduleScreen({
           {selectedDate && (
             <button
               type="button"
-              onClick={() => setSelectedDate(null)}
+              onClick={() => selectDate(null)}
               aria-label="Clear date filter"
               className="flex items-center gap-1 rounded-full bg-brand-100 px-2 py-1 text-xs font-semibold text-brand-700 dark:bg-neutral-800 dark:text-brand-300"
             >
@@ -300,8 +317,10 @@ export function ScheduleScreen({
               type="button"
               key={day.label + day.date}
               onClick={() =>
-                setSelectedDate((prev) =>
-                  prev && prev.toDateString() === day.iso ? null : new Date(day.iso),
+                selectDate(
+                  selectedDate && selectedDate.toDateString() === day.iso
+                    ? null
+                    : new Date(day.iso),
                 )
               }
               className={cn(
@@ -336,7 +355,7 @@ export function ScheduleScreen({
         isOpen={isCalendarOpen}
         onClose={() => setIsCalendarOpen(false)}
         selectedDate={selectedDate}
-        onSelectDate={setSelectedDate}
+        onSelectDate={selectDate}
         today={today}
         shiftDates={shiftDates}
       />
@@ -384,7 +403,7 @@ export function ScheduleScreen({
                 title="No active shift right now"
               />
             ) : (
-              active.map((entry) => (
+              paged.pageItems.map((entry) => (
                 <ScheduleEntryCard
                   key={entry.shift_id}
                   entry={entry}
@@ -404,7 +423,7 @@ export function ScheduleScreen({
                 title="No completed shifts yet"
               />
             ) : (
-              completed.map((entry) => (
+              paged.pageItems.map((entry) => (
                 <div key={entry.shift_id} className="space-y-2">
                   <ScheduleEntryCard
                     entry={entry}
@@ -432,7 +451,7 @@ export function ScheduleScreen({
                 description="Accepted shifts will show up here."
               />
             ) : (
-              upcoming.map((entry) => {
+              paged.pageItems.map((entry) => {
                 const isDueToday = new Date(entry.scheduled_start) <= today;
                 return (
                   <ScheduleEntryCard
@@ -448,6 +467,18 @@ export function ScheduleScreen({
                 );
               })
             ))}
+
+          {activeList.length > 0 && (
+            <PagedFooter
+              page={paged.page}
+              pageCount={paged.pageCount}
+              from={paged.from}
+              to={paged.to}
+              total={paged.total}
+              noun={scheduleTab === "upcoming" ? "upcoming shifts" : `${scheduleTab} shifts`}
+              onPageChange={onPageChange}
+            />
+          )}
         </div>
       )}
     </main>

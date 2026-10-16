@@ -328,7 +328,7 @@ export function PayoutSetup() {
                       const cleaned = e.target.value.replace(/\D/g, "").slice(0, 10);
                       setValue("accountNumber", cleaned, { shouldValidate: true });
                     }}
-                    className={`flex-1 bg-transparent text-sm text-neutral-800 outline-none placeholder:text-neutral-400 font-mono dark:text-neutral-100 ${
+                    className={`flex-1 bg-transparent text-sm text-neutral-800 outline-none placeholder:text-neutral-400 dark:text-neutral-100 ${
                       errors.accountNumber ? "text-red-600" : ""
                     }`}
                     placeholder="0123456789"

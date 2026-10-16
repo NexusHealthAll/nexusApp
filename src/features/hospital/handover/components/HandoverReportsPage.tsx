@@ -5,12 +5,13 @@ import { Badge, type BadgeVariant } from "@/shared/components/ui/Badge";
 import { Button } from "@/shared/components/ui/Button";
 import { EmptyState, EmptyStateIcon } from "@/shared/components/ui/EmptyState";
 import { MetricCard } from "@/shared/components/ui/MetricCard";
+import { Pagination } from "@/shared/components/ui/Pagination";
 import { PageHeader } from "@/shared/components/ui/PageHeader";
-import { Skeleton } from "@/shared/components/ui/Skeleton";
 import { UnderlineTabs } from "@/shared/components/ui/UnderlineTabs";
 import { AvatarInitials } from "@/shared/components/ui/AvatarInitials";
 import { PATHS } from "@/routes/paths";
 import { downloadCsv } from "@/shared/utils/downloadCsv";
+import { HandoverReportsSkeleton } from "./HandoverReportsSkeleton";
 import { HandoverService } from "../handoverService";
 import type { HandoverReport, HandoverStatus } from "../types";
 
@@ -26,11 +27,14 @@ const statusDisplay: Record<
   revision_requested: { label: "Revision Requested", variant: "error" },
 };
 
+const PAGE_SIZE = 4;
+
 /** Handover Reports list page per the Figma redesign. */
 export function HandoverReportsPage() {
   const [reports, setReports] = useState<HandoverReport[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [tab, setTab] = useState<ReportTab>("awaiting_review");
+  const [tab, setTab] = useState<ReportTab>("all");
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     let cancelled = false;
@@ -72,6 +76,18 @@ export function HandoverReportsPage() {
       ]),
     );
 
+  // Back to the first page whenever the tab changes.
+  useEffect(() => {
+    setPage(1);
+  }, [tab]);
+
+  const pageCount = Math.max(1, Math.ceil(visible.length / PAGE_SIZE));
+  const currentPage = Math.min(page, pageCount);
+  const pageRows = visible.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE,
+  );
+
   return (
     <div>
       <PageHeader
@@ -97,17 +113,24 @@ export function HandoverReportsPage() {
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <MetricCard
           label="Awaiting Review"
+          loading={isLoading}
           value={counts.awaiting}
           valueTone="warning"
         />
-        <MetricCard label="In Progress Shifts" value={counts.inProgress} />
+        <MetricCard
+          label="In Progress Shifts"
+          loading={isLoading}
+          value={counts.inProgress}
+        />
         <MetricCard
           label="Approved This Week"
+          loading={isLoading}
           value={counts.approved}
           valueTone="success"
         />
         <MetricCard
           label="Avg. Review Time"
+          loading={isLoading}
           value="—"
           sub="available once reports are reviewed"
         />
@@ -116,13 +139,15 @@ export function HandoverReportsPage() {
       <UnderlineTabs<ReportTab>
         className="mt-6"
         options={[
+          { label: "All Reports", value: "all" },
           {
-            label: `Awaiting Review (${counts.awaiting})`,
+            label: isLoading
+              ? "Awaiting Review"
+              : `Awaiting Review (${counts.awaiting})`,
             value: "awaiting_review",
           },
           { label: "Shift In Progress", value: "in_progress" },
           { label: "Approved", value: "approved" },
-          { label: "All Reports", value: "all" },
         ]}
         value={tab}
         onChange={setTab}
@@ -131,9 +156,7 @@ export function HandoverReportsPage() {
       {/* Report cards */}
       <div className="mt-6 space-y-4">
         {isLoading ? (
-          Array.from({ length: 2 }).map((_, i) => (
-            <Skeleton key={i} className="h-36 w-full rounded-2xl" />
-          ))
+          <HandoverReportsSkeleton />
         ) : visible.length === 0 ? (
           <EmptyState
             icon={<EmptyStateIcon icon={FileText} />}
@@ -141,7 +164,7 @@ export function HandoverReportsPage() {
             description="When workers complete shifts and submit their handovers, the reports show up here for review."
           />
         ) : (
-          visible.map((report) => {
+          pageRows.map((report) => {
             const display = statusDisplay[report.status];
             return (
               <Link
@@ -184,6 +207,16 @@ export function HandoverReportsPage() {
           })
         )}
       </div>
+
+      {!isLoading && visible.length > 0 && (
+        <Pagination
+          className="mt-6"
+          page={currentPage}
+          pageCount={pageCount}
+          onPageChange={setPage}
+          summary={`Showing ${pageRows.length} of ${visible.length} report${visible.length === 1 ? "" : "s"}`}
+        />
+      )}
     </div>
   );
 }

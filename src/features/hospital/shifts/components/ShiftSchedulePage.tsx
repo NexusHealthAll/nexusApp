@@ -16,9 +16,8 @@ import { EmptyState, EmptyStateIcon } from "@/shared/components/ui/EmptyState";
 import { Modal } from "@/shared/components/ui/Modal";
 import { PageHeader } from "@/shared/components/ui/PageHeader";
 import { Pagination } from "@/shared/components/ui/Pagination";
-import { SearchInput } from "@/shared/components/ui/SearchInput";
 import { Select } from "@/shared/components/ui/Select";
-import { Skeleton } from "@/shared/components/ui/Skeleton";
+import { TableSkeleton } from "@/shared/components/ui/TableSkeleton";
 import { AvatarInitials } from "@/shared/components/ui/AvatarInitials";
 import { appToast } from "@/shared/components/feedback/toast";
 import { PATHS } from "@/routes/paths";
@@ -110,7 +109,6 @@ export function ShiftSchedulePage() {
 
   const [clinicians, setClinicians] = useState<{ id: string; name: string }[]>([]);
 
-  const [search, setSearch] = useState("");
   const [department, setDepartment] = useState("all");
   const [role, setRole] = useState("all");
   const [status, setStatus] = useState("all");
@@ -199,12 +197,6 @@ export function ShiftSchedulePage() {
       if (role !== "all" && shift.role_title !== role) return false;
       if (status !== "all" && shift.status !== status) return false;
       if (clinician !== "all" && shift.assigned_clinician_id !== clinician) return false;
-      if (search.trim()) {
-        const q = search.trim().toLowerCase();
-        const haystack =
-          `${shift.shift_label ?? ""} ${shift.role_title} ${shift.department ?? ""} ${shift.specialty ?? ""}`.toLowerCase();
-        if (!haystack.includes(q)) return false;
-      }
       return true;
     });
 
@@ -228,11 +220,11 @@ export function ShiftSchedulePage() {
     });
 
     return result;
-  }, [rows, department, role, status, clinician, search, sortKey]);
+  }, [rows, department, role, status, clinician, sortKey]);
 
   useEffect(() => {
     setPage(1);
-  }, [department, role, status, clinician, search]);
+  }, [department, role, status, clinician]);
 
   const pageCount = Math.max(1, Math.ceil(filteredRows.length / PAGE_SIZE));
   const pageRows = filteredRows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -348,12 +340,6 @@ export function ShiftSchedulePage() {
 
       {/* Filter row */}
       <div className="mt-5 flex flex-wrap items-center gap-3">
-        <SearchInput
-          placeholder="Search shifts..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          containerClassName="w-full sm:w-56"
-        />
         <Select
           options={selectOptions(departments, "All Departments")}
           value={department}
@@ -448,11 +434,23 @@ export function ShiftSchedulePage() {
         )}
 
         {isLoading ? (
-          <div className="flex-1 space-y-2 p-5">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <Skeleton key={i} className="h-14 w-full rounded-lg" />
-            ))}
-          </div>
+          <TableSkeleton
+            className="flex-1"
+            minWidth={880}
+            rows={PAGE_SIZE}
+            columns={[
+              { cell: "checkbox", className: "w-12" },
+              { label: "Shift", cell: "text" },
+              { label: "Type", cell: "badge" },
+              { label: "Department", cell: "text" },
+              { label: "Date & Time", cell: "text" },
+              { label: "Assigned", cell: "avatar" },
+              { label: "Applicants", cell: "amount", align: "center" },
+              { label: "Rate", cell: "amount" },
+              { label: "Status", cell: "badge" },
+              { cell: "action", className: "w-10" },
+            ]}
+          />
         ) : pageRows.length === 0 ? (
           <div className="flex-1 p-8">
             <EmptyState
@@ -461,7 +459,7 @@ export function ShiftSchedulePage() {
               description={
                 rows.length === 0
                   ? "Broadcast your first shift and it will show up here with its applicants and status."
-                  : "Try a different filter or search term, or create a new shift."
+                  : "Try a different filter, or create a new shift."
               }
               action={
                 <button

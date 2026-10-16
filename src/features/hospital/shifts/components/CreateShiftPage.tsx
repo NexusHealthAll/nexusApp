@@ -21,31 +21,14 @@ import { useHospitalApprovalStatus } from "@/features/hospital/hooks/useHospital
 import { useWalletFunding } from "@/features/hospital/hooks/useWalletFunding";
 import { useHospitalShift } from "@/features/hospital/shifts/hooks/useHospitalShift";
 import { useShiftDraftStore } from "@/features/hospital/shifts/hooks/useShiftDraftStore";
-import { ShiftService } from "@/features/hospital/shifts/services/shiftService";
 import { usePlatformFeeRates } from "@/features/hospital/services/platformFeeService";
 import { uploadFiles } from "@/shared/services/mediaUpload";
 import { ShiftPreview } from "./ShiftPreview";
 import type { ShiftFormData } from "@/features/hospital/shifts/types";
 
+import { SHIFT_DEPARTMENT_OPTIONS, SHIFT_ROLE_OPTIONS } from "../shiftOptions";
+
 const STEPS = ["Basic Info", "Compensation", "Description", "Requirements"];
-
-const ROLE_OPTIONS = [
-  "Registered Nurse",
-  "Physician",
-  "Pharmacist",
-  "Midwife",
-  "Lab Technician",
-].map((v) => ({ value: v, label: v }));
-
-const DEPARTMENT_OPTIONS = [
-  "Emergency",
-  "ICU",
-  "Pharmacy",
-  "Laboratory",
-  "Maternity",
-  "Med-Surg",
-  "Radiology",
-].map((v) => ({ value: v, label: v }));
 
 const SHIFT_TYPE_OPTIONS = [
   { value: "in-person", label: "In-Person" },
@@ -131,7 +114,7 @@ export function CreateShiftPage() {
     wallet,
   } = useWalletFunding();
   const { createShift, previewShift } = useHospitalShift();
-  const { draft, setDraft, clearDraft } = useShiftDraftStore();
+  const { draft, clearDraft } = useShiftDraftStore();
   const { serviceFeeRate: SERVICE_FEE_RATE, taxRate: TAX_RATE } = usePlatformFeeRates();
 
   const [step, setStep] = useState(0);
@@ -236,13 +219,6 @@ export function CreateShiftPage() {
     ...data,
     duration,
   });
-
-  const handleSaveAndExit = async () => {
-    setDraft(withDuration(formData));
-    await ShiftService.saveDraft(formData);
-    appToast.success("Draft saved", "Resume from Create Shift any time.");
-    navigate(PATHS.hospital.dashboard);
-  };
 
   const handlePreview = async () => {
     setIsPreviewing(true);
@@ -352,17 +328,6 @@ export function CreateShiftPage() {
 
   return (
     <div>
-      {/* Wizard header row */}
-      <div className="-mx-4 -mt-4 mb-8 flex items-center justify-between border-b border-neutral-200 bg-white px-4 py-3 lg:-mx-8 lg:-mt-8 lg:px-8 dark:border-neutral-800 dark:bg-neutral-900">
-        <h2 className="text-base font-bold text-neutral-900 dark:text-neutral-50">Create Shift</h2>
-        <button
-          onClick={handleSaveAndExit}
-          className="text-sm font-semibold text-neutral-600 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-50"
-        >
-          Save & Exit
-        </button>
-      </div>
-
       <div className="mx-auto max-w-3xl pb-10">
         <div className="text-center">
           <h1 className="text-3xl font-bold text-neutral-900 dark:text-neutral-50">
@@ -414,7 +379,9 @@ export function CreateShiftPage() {
               <div className="grid gap-5 sm:grid-cols-2">
                 <Select
                   label="Role"
-                  options={ROLE_OPTIONS}
+                  options={SHIFT_ROLE_OPTIONS}
+                  searchable
+                  searchPlaceholder="Search roles..."
                   value={formData.roleNeeded}
                   onChange={(v) => update({ roleNeeded: v })}
                   placeholder="Select role"
@@ -422,7 +389,9 @@ export function CreateShiftPage() {
                 />
                 <Select
                   label="Department"
-                  options={DEPARTMENT_OPTIONS}
+                  options={SHIFT_DEPARTMENT_OPTIONS}
+                  searchable
+                  searchPlaceholder="Search departments..."
                   value={formData.department}
                   onChange={(v) => update({ department: v })}
                   placeholder="Select department"
