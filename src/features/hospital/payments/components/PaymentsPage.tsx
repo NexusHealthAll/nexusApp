@@ -9,7 +9,7 @@ import { PageHeader } from "@/shared/components/ui/PageHeader";
 import { Pagination } from "@/shared/components/ui/Pagination";
 import { SearchInput } from "@/shared/components/ui/SearchInput";
 import { Select } from "@/shared/components/ui/Select";
-import { Skeleton } from "@/shared/components/ui/Skeleton";
+import { TableSkeleton } from "@/shared/components/ui/TableSkeleton";
 import { UnderlineTabs } from "@/shared/components/ui/UnderlineTabs";
 import { AvatarInitials } from "@/shared/components/ui/AvatarInitials";
 import { PATHS } from "@/routes/paths";
@@ -130,6 +130,20 @@ export function PaymentsPage() {
     const cutoff = Date.now() - Number(dateRange) * 24 * 60 * 60 * 1000;
     return new Date(iso).getTime() >= cutoff;
   };
+
+  // Tab badges follow the active date range and search, but not the tab itself.
+  const statusCounts = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    const counts = { pending: 0, completed: 0 };
+    for (const t of transactions) {
+      if (t.status !== "pending" && t.status !== "completed") continue;
+      if (!isWithinDateRange(t.createdAt)) continue;
+      if (q && !`${t.worker} ${t.shift} ${t.invoice}`.toLowerCase().includes(q)) continue;
+      counts[t.status] += 1;
+    }
+    return counts;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [transactions, dateRange, search]);
 
   const filtered = useMemo(() => {
     return transactions.filter((t) => {
@@ -284,31 +298,28 @@ export function PaymentsPage() {
       />
 
       {/* Stats */}
-      {overview === null ? (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-[124px] w-full rounded-2xl" />
-          ))}
-        </div>
-      ) : (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <MetricCard
             label="Pending Payments"
-            value={formatKobo(overview.pendingKobo)}
+            value={overview && formatKobo(overview.pendingKobo)}
+            loading={overview === null}
             sub={`${transactions.filter((t) => t.status === "pending").length} invoices awaiting release`}
           />
           <MetricCard
             label="Completed This Month"
-            value={formatKobo(overview.completedThisMonthKobo)}
+            value={overview && formatKobo(overview.completedThisMonthKobo)}
+            loading={overview === null}
             sub="released to workers"
           />
           <MetricCard
             label="Refunds Issued"
-            value={formatKobo(overview.refundsThisMonthKobo)}
+            value={overview && formatKobo(overview.refundsThisMonthKobo)}
+            loading={overview === null}
             sub={`${transactions.filter((t) => t.status === "refunded").length} this month`}
           />
           <MetricCard
             label="Default Billing Method"
+            loading={overview === null}
             value={
               <span className="flex items-center gap-2 text-lg">
                 <span className="rounded bg-neutral-900 px-1.5 py-0.5 text-[10px] font-bold uppercase text-white">
@@ -321,16 +332,23 @@ export function PaymentsPage() {
             }
             sub="hospital wallet account"
           />
-        </div>
-      )}
+      </div>
 
       {/* Transactions card */}
       <div className="mt-6 rounded-2xl border border-neutral-100 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
         <UnderlineTabs<PaymentTab>
           options={[
             { label: "All Transactions", value: "all" },
-            { label: "Pending", value: "pending" },
-            { label: "Completed", value: "completed" },
+            {
+              label: "Pending",
+              value: "pending",
+              count: overview ? statusCounts.pending : undefined,
+            },
+            {
+              label: "Completed",
+              value: "completed",
+              count: overview ? statusCounts.completed : undefined,
+            },
             { label: "Payouts", value: "payouts" },
             { label: "Withdrawals", value: "withdrawals" },
           ]}
@@ -371,11 +389,28 @@ export function PaymentsPage() {
 
         <div className="mt-4">
           {overview === null ? (
-            <div className="space-y-2">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Skeleton key={i} className="h-14 w-full rounded-lg" />
-              ))}
-            </div>
+            <TableSkeleton
+              minWidth={tab === "payouts" || tab === "withdrawals" ? 680 : 760}
+              rows={PAGE_SIZE}
+              columns={
+                tab === "payouts" || tab === "withdrawals"
+                  ? [
+                      { label: "Description", cell: "text" },
+                      { label: "Reference", cell: "text" },
+                      { label: "Date", cell: "text" },
+                      { label: "Amount", cell: "amount" },
+                      { label: "Status", cell: "badge" },
+                    ]
+                  : [
+                      { label: "Worker", cell: "avatar" },
+                      { label: "Shift", cell: "text" },
+                      { label: "Invoice #", cell: "text" },
+                      { label: "Date", cell: "text" },
+                      { label: "Amount", cell: "amount" },
+                      { label: "Status", cell: "badge" },
+                    ]
+              }
+            />
           ) : tab === "payouts" ? (
             payoutPageRows.length === 0 ? (
               <div className="py-6">
