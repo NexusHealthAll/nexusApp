@@ -6,14 +6,16 @@ import {
   Camera,
   Check,
   Clock,
+  FileText,
   MapPin,
   Monitor,
   Moon,
   Plus,
   Sun,
+  Upload,
 } from "lucide-react";
 import apiClient from "@/lib/apiClient";
-import { Badge } from "@/shared/components/ui/Badge";
+import { Badge, type BadgeVariant } from "@/shared/components/ui/Badge";
 import { Button } from "@/shared/components/ui/Button";
 import { EmptyState, EmptyStateIcon } from "@/shared/components/ui/EmptyState";
 import { Input } from "@/shared/components/ui/Input";
@@ -32,10 +34,47 @@ import {
   type HospitalLocation,
 } from "@/features/hospital/services/hospitalProfileService";
 import {
+  HospitalDocumentsService,
+  type DocumentSubmissionStatus,
+  type HospitalDocument,
+  type HospitalDocumentType,
+} from "@/features/hospital/services/hospitalDocumentsService";
+import { uploadFile } from "@/shared/services/mediaUpload";
+import {
   useHospitalProfile,
   useHospitalProfileStore,
 } from "@/features/hospital/hooks/useHospitalProfile";
 import { useTheme, type ThemeMode } from "@/shared/theme/ThemeContext";
+
+const REQUIRED_DOCUMENT_TYPES: {
+  type: HospitalDocumentType;
+  label: string;
+  required: boolean;
+}[] = [
+  { type: "operational_license", label: "Operational License", required: true },
+  {
+    type: "medical_certificate_of_standards",
+    label: "Medical Certificate of Standards",
+    required: false,
+  },
+  {
+    type: "tax_compliance_certificate",
+    label: "Tax Compliance Certificate (TCC)",
+    required: false,
+  },
+  { type: "cac_certificate", label: "CAC Certificate of Incorporation", required: false },
+  { type: "director_id", label: "Director / Trustee ID", required: false },
+];
+
+const DOCUMENT_STATUS_DISPLAY: Record<
+  DocumentSubmissionStatus,
+  { label: string; variant: BadgeVariant }
+> = {
+  draft: { label: "Draft", variant: "neutral" },
+  under_review: { label: "Under Review", variant: "info" },
+  approved: { label: "Approved", variant: "success" },
+  rejected: { label: "Rejected", variant: "error" },
+};
 
 type SettingsSection =
   | "profile"
@@ -185,6 +224,11 @@ export function SettingsPage() {
   const logoInputRef = useRef<HTMLInputElement | null>(null);
   const [hospitalLocation, setHospitalLocation] = useState<HospitalLocation | null>(null);
 
+  const [documents, setDocuments] = useState<HospitalDocument[]>([]);
+  const [uploadingDocType, setUploadingDocType] = useState<HospitalDocumentType | null>(null);
+  const documentInputRef = useRef<HTMLInputElement | null>(null);
+  const pendingDocType = useRef<HospitalDocumentType | null>(null);
+
   useEffect(() => {
     let cancelled = false;
     HospitalProfileService.getHospitalDetails()
@@ -214,6 +258,50 @@ export function SettingsPage() {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    if (!details?.id) return;
+    let cancelled = false;
+    HospitalDocumentsService.listDocuments(details.id).then((docs) => {
+      if (!cancelled) setDocuments(docs);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [details?.id]);
+
+  const documentByType = (type: HospitalDocumentType) =>
+    documents.find((d) => d.documentType === type);
+
+  const handleDocumentSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    const documentType = pendingDocType.current;
+    e.target.value = "";
+    if (!file || !documentType || !details) return;
+    setUploadingDocType(documentType);
+    try {
+      const fileUrl = await uploadFile(file, "hospital_document");
+      const saved = await HospitalDocumentsService.uploadDocument(details.id, {
+        documentType,
+        fileUrl,
+        fileName: file.name,
+        fileMimeType: file.type,
+        fileSizeBytes: file.size,
+      });
+      setDocuments((prev) => [...prev.filter((d) => d.documentType !== documentType), saved]);
+      appToast.success("Document submitted", `${file.name} is now awaiting review.`);
+    } catch (err) {
+      appToast.fromError(err, "Unable to submit this document");
+    } finally {
+      setUploadingDocType(null);
+      pendingDocType.current = null;
+    }
+  };
+
+  const triggerDocumentUpload = (documentType: HospitalDocumentType) => {
+    pendingDocType.current = documentType;
+    documentInputRef.current?.click();
+  };
 
   // The backend bug this detects: newly-registering hospitals self-heal via
   // `syncAddress` right after registration (see LocationGeofencingStep), but
@@ -523,6 +611,73 @@ export function SettingsPage() {
                         Save Changes
                       </Button>
                     </div>
+                  </div>
+
+                  {/* Verification Documents */}
+                  <div className="rounded-2xl border border-neutral-100 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
+                    <h3 className="text-base font-bold text-neutral-900 dark:text-neutral-50">
+                      Verification Documents
+                    </h3>
+                    <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+                      Upload the legal documents our compliance team uses to verify your
+                      hospital. PDF, PNG, or JPG — max 10 MB.
+                    </p>
+                    <input
+                      ref={documentInputRef}
+                      type="file"
+                      accept="image/*,application/pdf"
+                      className="hidden"
+                      onChange={handleDocumentSelected}
+                    />
+                    <ul className="mt-4 space-y-2">
+                      {REQUIRED_DOCUMENT_TYPES.map(({ type, label, required }) => {
+                        const doc = documentByType(type);
+                        const statusDisplay = doc
+                          ? DOCUMENT_STATUS_DISPLAY[doc.submissionStatus]
+                          : null;
+                        const isUploading = uploadingDocType === type;
+                        return (
+                          <li
+                            key={type}
+                            className="flex items-center justify-between gap-4 rounded-xl bg-neutral-50 px-4 py-3 dark:bg-neutral-800/60"
+                          >
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-secondary-50 dark:bg-secondary-950">
+                                <FileText className="h-4 w-4 text-secondary-700 dark:text-secondary-400" />
+                              </div>
+                              <div className="min-w-0">
+                                <p className="truncate text-sm font-semibold text-neutral-800 dark:text-neutral-100">
+                                  {label}
+                                  {required && (
+                                    <span className="ml-1 text-error-500">*</span>
+                                  )}
+                                </p>
+                                <p className="truncate text-xs text-neutral-500 dark:text-neutral-400">
+                                  {doc ? doc.fileName : "Not submitted yet"}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex shrink-0 items-center gap-2">
+                              {statusDisplay && (
+                                <Badge variant={statusDisplay.variant}>
+                                  {statusDisplay.label}
+                                </Badge>
+                              )}
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                isLoading={isUploading}
+                                onClick={() => triggerDocumentUpload(type)}
+                                className="gap-1.5"
+                              >
+                                <Upload className="h-3.5 w-3.5" />
+                                {doc ? "Replace" : "Upload"}
+                              </Button>
+                            </div>
+                          </li>
+                        );
+                      })}
+                    </ul>
                   </div>
 
                   {/* Location card */}

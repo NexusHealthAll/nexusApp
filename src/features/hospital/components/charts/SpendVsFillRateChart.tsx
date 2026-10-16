@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import {
+  Area,
+  AreaChart,
   CartesianGrid,
-  Line,
-  LineChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -60,10 +60,20 @@ export function SpendVsFillRateChart() {
       ) : (
         <div className="h-[280px] w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart
+            <AreaChart
               data={points}
               margin={{ top: 4, right: 8, left: 0, bottom: 0 }}
             >
+              <defs>
+                <linearGradient id="spendGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#2563eb" stopOpacity={0.35} />
+                  <stop offset="95%" stopColor="#2563eb" stopOpacity={0} />
+                </linearGradient>
+                <linearGradient id="fillRateGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#0d9488" stopOpacity={0.35} />
+                  <stop offset="95%" stopColor="#0d9488" stopOpacity={0} />
+                </linearGradient>
+              </defs>
               <CartesianGrid vertical={false} stroke="#f1f5f9" />
               <XAxis
                 dataKey="week"
@@ -100,25 +110,27 @@ export function SpendVsFillRateChart() {
                     : [`₦${Number(value ?? 0).toLocaleString()}`, name]
                 }
               />
-              <Line
+              <Area
                 yAxisId="spending"
                 type="monotone"
                 dataKey="spending"
                 name="Spending"
                 stroke="#2563eb"
                 strokeWidth={2.5}
+                fill="url(#spendGradient)"
                 dot={{ r: 3, fill: "#2563eb", strokeWidth: 0 }}
               />
-              <Line
+              <Area
                 yAxisId="fillRate"
                 type="monotone"
                 dataKey="fillRate"
                 name="Fill Rate"
                 stroke="#0d9488"
                 strokeWidth={2.5}
+                fill="url(#fillRateGradient)"
                 dot={{ r: 3, fill: "#0d9488", strokeWidth: 0 }}
               />
-            </LineChart>
+            </AreaChart>
           </ResponsiveContainer>
         </div>
       )}

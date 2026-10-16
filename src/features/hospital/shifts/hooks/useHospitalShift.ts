@@ -154,7 +154,22 @@ export type UseHospitalShiftResult = {
     duration_hours: number;
     scheduled_start: string;
   }) => Promise<unknown>;
+  rateWorker: (params: {
+    shift_id: string;
+    score: number;
+    comment?: string;
+  }) => Promise<RatingResponse>;
 };
+
+export interface RatingResponse {
+  id: string;
+  shift_id: string;
+  ratee_id: string;
+  ratee_kind: string;
+  score: number;
+  comment?: string | null;
+  created_at: string;
+}
 
 export function useHospitalShift(): UseHospitalShiftResult {
   // Local state is kept minimal; this hook focuses on providing request
@@ -365,6 +380,23 @@ export function useHospitalShift(): UseHospitalShiftResult {
     [],
   );
 
+  const rateWorker = useCallback(
+    async (params: { shift_id: string; score: number; comment?: string }) => {
+      setLastError(null);
+      try {
+        const res = await apiClient.post<RatingResponse>(
+          `/api/v1/shifts/${encodeURIComponent(params.shift_id)}/ratings/worker`,
+          { score: params.score, comment: params.comment },
+        );
+        return res.data;
+      } catch (e) {
+        setLastError(e as ShiftApiError);
+        throw e;
+      }
+    },
+    [],
+  );
+
   return {
     createShift,
     previewShift,
@@ -376,5 +408,6 @@ export function useHospitalShift(): UseHospitalShiftResult {
     assignClinician,
     cancelShift,
     rescheduleShift,
+    rateWorker,
   };
 }

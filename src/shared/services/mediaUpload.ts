@@ -23,7 +23,12 @@ interface SignedUpload {
  * `shift` → shift-brief attachments (#5). Anything unknown lands in a default
  * folder on the backend.
  */
-export type UploadKind = "handover" | "shift" | "hospital_logo" | "worker_avatar";
+export type UploadKind =
+  | "handover"
+  | "shift"
+  | "hospital_logo"
+  | "worker_avatar"
+  | "hospital_document";
 
 const MAX_BYTES = 10 * 1024 * 1024; // 10 MB
 

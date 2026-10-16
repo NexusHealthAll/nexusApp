@@ -3,6 +3,7 @@ import { Button } from "@/shared/components/ui/Button";
 import { cn } from "@/shared/utils/cn";
 import type { ApiShift } from "@/features/hospital/shifts/types";
 import { CallStage } from "@/features/virtual-call/components/CallStage";
+import { ContinueOnPhoneButton } from "@/features/virtual-call/components/ContinueOnPhoneButton";
 import type { VirtualCallRoom } from "@/features/virtual-call/useVirtualCallRoom";
 import { Header } from "../DashboardChrome";
 
@@ -84,15 +85,18 @@ export function VirtualCallScreen({
         </div>
 
         {connected ? (
-          <CallStage
-            call={call}
-            selfLabel="You"
-            remoteLabel={hospitalName}
-            remoteFallbackName={hospitalName}
-            remoteRole="the hospital"
-            onHangup={call.leave}
-            hangupLabel="Leave"
-          />
+          <>
+            <CallStage
+              call={call}
+              selfLabel="You"
+              remoteLabel={hospitalName}
+              remoteFallbackName={hospitalName}
+              remoteRole="the hospital"
+              onHangup={call.leave}
+              hangupLabel="Leave"
+            />
+            <ContinueOnPhoneButton shiftId={shift.id} />
+          </>
         ) : (
           <section className="flex flex-col items-center gap-3 rounded-3xl border border-neutral-200 bg-white px-6 py-14 text-center dark:border-neutral-800 dark:bg-neutral-900">
             <div className="rounded-full bg-neutral-100 p-5 dark:bg-neutral-800">

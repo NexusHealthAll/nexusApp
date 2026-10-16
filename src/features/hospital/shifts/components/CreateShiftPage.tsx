@@ -22,6 +22,7 @@ import { useWalletFunding } from "@/features/hospital/hooks/useWalletFunding";
 import { useHospitalShift } from "@/features/hospital/shifts/hooks/useHospitalShift";
 import { useShiftDraftStore } from "@/features/hospital/shifts/hooks/useShiftDraftStore";
 import { ShiftService } from "@/features/hospital/shifts/services/shiftService";
+import { usePlatformFeeRates } from "@/features/hospital/services/platformFeeService";
 import { uploadFiles } from "@/shared/services/mediaUpload";
 import { ShiftPreview } from "./ShiftPreview";
 import type { ShiftFormData } from "@/features/hospital/shifts/types";
@@ -66,10 +67,6 @@ const EXPERIENCE_OPTIONS = [
 ];
 
 const DEFAULT_CERTIFICATES = ["BLS", "ACLS", "PALS", "RN License", "NRP", "CPR"];
-
-/** Platform fee/tax rates used in the live cost preview (matches design copy). */
-const SERVICE_FEE_RATE = 0.12;
-const TAX_RATE = 0.053;
 
 const defaultFormData: ShiftFormData = {
   roleNeeded: "",
@@ -135,6 +132,7 @@ export function CreateShiftPage() {
   } = useWalletFunding();
   const { createShift, previewShift } = useHospitalShift();
   const { draft, setDraft, clearDraft } = useShiftDraftStore();
+  const { serviceFeeRate: SERVICE_FEE_RATE, taxRate: TAX_RATE } = usePlatformFeeRates();
 
   const [step, setStep] = useState(0);
   const [formData, setFormData] = useState<ShiftFormData>(() => {
