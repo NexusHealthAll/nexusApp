@@ -88,7 +88,7 @@ export function Header({
               NexusCare
             </p>
             {title && (
-              <h1 className="truncate text-xl font-bold text-neutral-950 dark:text-neutral-50">
+              <h1 className="truncate text-xl font-bold text-neutral-900 dark:text-neutral-50">
                 {title}
               </h1>
             )}
