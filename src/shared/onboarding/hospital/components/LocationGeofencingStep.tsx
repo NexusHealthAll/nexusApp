@@ -10,6 +10,7 @@ import { hospitalOnboardingService } from "../services/hospitalOnboardingService
 import { ApiError } from "@/lib/apiError";
 import apiClient from "@/lib/apiClient";
 import { useLocationTracker } from "@/shared/location/useLocationTracker";
+import { LocationMapPreview } from "@/shared/components/ui/LocationMapPreview";
 
 // Address input pauses this long before re-querying nearby places.
 const ADDRESS_DEBOUNCE_MS = 500;
@@ -479,11 +480,6 @@ export function LocationGeofencingStep() {
 
   const mapLat = geocodedPosition?.lat ?? latitude ?? 6.5244;
   const mapLng = geocodedPosition?.lng ?? longitude ?? 3.3792;
-  const bboxDelta = 0.01;
-  const mapSrc =
-    `https://www.openstreetmap.org/export/embed.html?bbox=` +
-    `${mapLng - bboxDelta}%2C${mapLat - bboxDelta}%2C${mapLng + bboxDelta}%2C${mapLat + bboxDelta}` +
-    `&layer=mapnik&marker=${mapLat}%2C${mapLng}`;
 
   // The ONLY blocking conditions are the two the user actually controls:
   //   1. the browser site-permission for location ("denied")
@@ -675,13 +671,11 @@ export function LocationGeofencingStep() {
 
         {/* RIGHT — full-height OSM map */}
         <div className="relative rounded-xl overflow-hidden border border-gray-200 dark:border-neutral-800 min-h-[460px] lg:min-h-0">
-          <iframe
-            title="Facility location map"
-            src={mapSrc}
-            className="absolute inset-0 w-full h-full"
-            style={{ border: 0 }}
-            loading="lazy"
-            referrerPolicy="no-referrer"
+          <LocationMapPreview
+            latitude={mapLat}
+            longitude={mapLng}
+            label="facility location"
+            className="absolute inset-0 h-full w-full"
           />
           <div className="absolute bottom-0 left-0 right-0 flex items-center justify-between bg-white/95 dark:bg-neutral-900/95 backdrop-blur px-4 py-3 border-t border-gray-200 dark:border-neutral-800">
             <div className="flex items-center gap-6 text-[11px]">

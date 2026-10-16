@@ -7,6 +7,8 @@ import { appToast } from "@/shared/components/feedback/toast";
 import { Header, StatusBadge } from "../DashboardChrome";
 import type { MyApplicationEntry } from "../../hooks/useHealthWorkerShifts";
 import { useHealthWorkerShifts } from "../../hooks/useHealthWorkerShifts";
+import { paginate } from "../../hooks/paginate";
+import { PagedFooter } from "../PagedFooter";
 
 const statusTone: Record<string, "blue" | "green" | "red" | "amber"> = {
   open: "amber",
@@ -42,6 +44,8 @@ export function MyApplicationsScreen({
   onRefresh,
   onRespondToOffer,
   onViewShift,
+  page,
+  onPageChange,
 }: {
   entries: MyApplicationEntry[];
   isLoading: boolean;
@@ -51,7 +55,11 @@ export function MyApplicationsScreen({
   onRespondToOffer: (shiftId: string) => void;
   /** Opens the shift's Handover Status & Payout screen. */
   onViewShift: (shiftId: string) => void;
+  /** 1-based page, driven by the URL (`?page=`). */
+  page: number;
+  onPageChange: (page: number) => void;
 }) {
+  const paged = paginate(entries, page);
   const { withdrawInterest } = useHealthWorkerShifts();
   const [withdrawingId, setWithdrawingId] = useState<string | null>(null);
 
@@ -93,7 +101,7 @@ export function MyApplicationsScreen({
         )}
 
         <div className="space-y-3">
-          {entries.map((entry) => {
+          {paged.pageItems.map((entry) => {
             const hasOffer = entry.application_status === "offered";
             const isClosed = closedStatuses.has(entry.shift_status);
 
@@ -184,6 +192,18 @@ export function MyApplicationsScreen({
             );
           })}
         </div>
+
+        {!isLoading && (
+          <PagedFooter
+            page={paged.page}
+            pageCount={paged.pageCount}
+            from={paged.from}
+            to={paged.to}
+            total={paged.total}
+            noun="applications"
+            onPageChange={onPageChange}
+          />
+        )}
       </main>
     </>
   );

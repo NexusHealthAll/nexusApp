@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+@import "@fontsource/didact-gothic/400.css";
 
 @tailwind base;
 @tailwind components;
@@ -25,7 +25,7 @@
   }
 
   html.dark body {
-    @apply bg-neutral-950 text-neutral-100;
+    @apply bg-neutral-950 text-[#e6eaf2];
     background-color: #0b0f17 !important;
   }
 }
@@ -95,12 +95,11 @@ html.dark .bg-neutral-200 {
 
 html.dark .text-ink-900,
 html.dark .text-onboarding-textPrimary,
-html.dark .text-neutral-950,
 html.dark .text-neutral-900,
 html.dark .text-neutral-800,
 html.dark .text-slate-900,
 html.dark .text-slate-800 {
-  color: #f9fafb !important;
+  color: #e6eaf2 !important;
 }
 
 html.dark .text-ink-700,
@@ -109,7 +108,7 @@ html.dark .text-neutral-700,
 html.dark .text-neutral-600,
 html.dark .text-slate-700,
 html.dark .text-slate-600 {
-  color: #cbd5e1 !important;
+  color: #a8b3c4 !important;
 }
 
 html.dark .text-ink-500,
@@ -117,7 +116,7 @@ html.dark .text-neutral-500,
 html.dark .text-neutral-400,
 html.dark .text-slate-500,
 html.dark .text-slate-400 {
-  color: #94a3b8 !important;
+  color: #7b8798 !important;
 }
 
 html.dark .border-neutral-100,
@@ -130,7 +129,7 @@ html.dark .border-\[\#C8DFEF\],
 html.dark .border-\[\#D6E8F5\],
 html.dark .border-\[\#e7e9ee\],
 html.dark .border-\[rgba\(194\,198\,212\,0\.1\)\] {
-  border-color: #232f48 !important;
+  border-color: #1e2733 !important;
 }
 
 html.dark .bg-teal-50,
@@ -152,14 +151,14 @@ html.dark .text-teal-600 {
 html.dark input,
 html.dark select,
 html.dark textarea {
-  background-color: #1a2538 !important;
-  color: #f9fafb !important;
-  border-color: #232f48 !important;
+  background-color: #121824 !important;
+  color: #e6eaf2 !important;
+  border-color: #1e2733 !important;
 }
 
 html.dark input::placeholder,
 html.dark textarea::placeholder {
-  color: #94a3b8 !important;
+  color: #7b8798 !important;
 }
 
 /* Custom scrollbar styles */

@@ -59,12 +59,20 @@ function buildRoleTree(
       <ProtectedRoute requiredRole={requiredRole}>{roleLayout}</ProtectedRoute>
     ),
     children: [
-      { index: true, element: <Navigate to="dashboard" replace /> },
+      {
+        index: true,
+        element: (
+          <Navigate to={profile === "medical-staff" ? "home" : "dashboard"} replace />
+        ),
+      },
 
       ...standaloneRoutes,
       ...pageRoutes,
 
-      { path: "*", element: <Navigate to="dashboard" replace /> },
+      // Health-worker routes render their own not-found page inside the shell.
+      ...(profile === "medical-staff"
+        ? []
+        : [{ path: "*", element: <Navigate to="dashboard" replace /> }]),
     ],
   };
 

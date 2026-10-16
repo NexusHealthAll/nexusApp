@@ -18,7 +18,7 @@ export function MainLayout({ children }: MainLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="flex h-screen bg-neutral-50 dark:bg-neutral-950 dark:text-neutral-100">
+    <div className="flex h-screen bg-neutral-50 dark:bg-[#0B0F17] dark:text-[#E6EAF2]">
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div
@@ -38,7 +38,7 @@ export function MainLayout({ children }: MainLayoutProps) {
         <HospitalApprovalPendingBanner />
 
         <main className="flex-1 overflow-y-auto">
-          <div className="mx-auto h-full max-w-7xl p-4 lg:p-8">{children}</div>
+          <div className="mx-auto min-h-full max-w-7xl p-4 pb-10 lg:p-8 lg:pb-12">{children}</div>
         </main>
       </div>
     </div>

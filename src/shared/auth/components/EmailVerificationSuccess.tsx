@@ -221,7 +221,7 @@ export function EmailVerificationSuccess() {
                   : "translate-y-4 opacity-0"
               }`}
             >
-              <p className="text-sm text-gray-400 dark:text-neutral-500 font-mono tracking-wider bg-gray-50/50 dark:bg-neutral-800/50 px-4 py-2 rounded-lg border border-gray-100/50 dark:border-neutral-800">
+              <p className="text-sm text-gray-400 dark:text-neutral-500 tracking-wider bg-gray-50/50 dark:bg-neutral-800/50 px-4 py-2 rounded-lg border border-gray-100/50 dark:border-neutral-800">
                 VERIFICATION ID: NX-992-KLR
               </p>
             </div>

@@ -80,10 +80,62 @@ function buildRolePaths(base: string): RolePathGroup {
   };
 }
 
+/** Schedule tabs addressable through `?tab=`. */
+export type HealthWorkerScheduleTab = "upcoming" | "active" | "completed";
+
+/**
+ * Health-worker (medical-staff) paths. Every screen of the mobile app has its
+ * own URL, so Back/refresh/deep links work. Shift-scoped screens live under
+ * `/shifts/:shiftId/...`.
+ */
+function buildHealthWorkerPaths(base: string) {
+  const ob = `${base}/onboarding`;
+  const shift = (id: string) => `${base}/shifts/${encodeURIComponent(id)}`;
+  const patient = (id: string, patientId: string) =>
+    `${shift(id)}/patients/${encodeURIComponent(patientId)}`;
+  return {
+    root: base,
+    /** Legacy entry point (auth redirects land here) — redirects to `home`. */
+    dashboard: `${base}/dashboard`,
+    home: `${base}/home`,
+    marketplace: `${base}/marketplace`,
+    schedule: `${base}/schedule`,
+    scheduleTab: (tab: HealthWorkerScheduleTab) => `${base}/schedule?tab=${tab}`,
+    earnings: `${base}/earnings`,
+    profile: `${base}/profile`,
+    editProfile: `${base}/profile/edit`,
+    notifications: `${base}/notifications`,
+    applications: `${base}/applications`,
+    shiftDetail: shift,
+    shiftInterestSent: (id: string) => `${shift(id)}/interest-sent`,
+    shiftAlreadyApplied: (id: string) => `${shift(id)}/already-applied`,
+    shiftConfirm: (id: string) => `${shift(id)}/confirm`,
+    shiftClockIn: (id: string) => `${shift(id)}/clock-in`,
+    shiftActive: (id: string) => `${shift(id)}/active`,
+    shiftCall: (id: string) => `${shift(id)}/call`,
+    shiftWaitingRoom: (id: string) => `${shift(id)}/waiting-room`,
+    shiftNewPatient: (id: string) => `${shift(id)}/patients/new`,
+    shiftPatient: patient,
+    shiftConsultation: (id: string, patientId: string) =>
+      `${patient(id, patientId)}/consultation`,
+    shiftReview: (id: string, patientId: string) =>
+      `${patient(id, patientId)}/review`,
+    shiftHandover: (id: string) => `${shift(id)}/handover`,
+    shiftHandoverReview: (id: string) => `${shift(id)}/handover/review`,
+    onboarding: {
+      root: ob,
+      identity: `${ob}/identity`,
+      profile: `${ob}/profile`,
+      payout: `${ob}/payout`,
+      pending: `${ob}/pending`,
+    },
+  } as const;
+}
+
 export const PATHS = {
   hospital: buildRolePaths("/hospital"),
-  medicalStaff: buildRolePaths("/medical-staff"),
+  medicalStaff: buildHealthWorkerPaths("/medical-staff"),
 } as const;
 
 /** App-level default landing route. */
-export const DEFAULT_REDIRECT = PATHS.medicalStaff.onboarding.registration;
+export const DEFAULT_REDIRECT = PATHS.medicalStaff.onboarding.identity;

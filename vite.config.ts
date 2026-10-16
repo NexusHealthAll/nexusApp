@@ -27,7 +27,7 @@ export default defineConfig({
         short_name: "NexusCare",
         description:
           "Clinical shift marketplace and mobile care workflow for healthcare professionals.",
-        start_url: "/medical-staff/dashboard",
+        start_url: "/medical-staff/home",
         scope: "/medical-staff/",
         display: "standalone",
         background_color: "#eef7fb",

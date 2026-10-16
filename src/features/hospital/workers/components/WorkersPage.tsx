@@ -6,9 +6,8 @@ import { Badge } from "@/shared/components/ui/Badge";
 import { EmptyState, EmptyStateIcon } from "@/shared/components/ui/EmptyState";
 import { PageHeader } from "@/shared/components/ui/PageHeader";
 import { Pagination } from "@/shared/components/ui/Pagination";
-import { SearchInput } from "@/shared/components/ui/SearchInput";
 import { Select } from "@/shared/components/ui/Select";
-import { Skeleton } from "@/shared/components/ui/Skeleton";
+import { TableSkeleton } from "@/shared/components/ui/TableSkeleton";
 import { UnderlineTabs } from "@/shared/components/ui/UnderlineTabs";
 import { AvatarInitials } from "@/shared/components/ui/AvatarInitials";
 import { PATHS } from "@/routes/paths";
@@ -49,7 +48,6 @@ export function WorkersPage() {
   const [workers, setWorkers] = useState<DirectoryWorker[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [tab, setTab] = useState<WorkerTab>("all");
-  const [search, setSearch] = useState("");
   const [role, setRole] = useState("all");
   const [distance, setDistance] = useState("all");
   const [availability, setAvailability] = useState("all");
@@ -89,19 +87,13 @@ export function WorkersPage() {
       if (availability === "on_shift" && w.availability.kind !== "on_shift")
         return false;
       if (rating !== "all" && w.rating < Number(rating)) return false;
-      if (search.trim()) {
-        const q = search.trim().toLowerCase();
-        if (!`${w.name} ${w.credential} ${w.role}`.toLowerCase().includes(q)) {
-          return false;
-        }
-      }
       return true;
     });
-  }, [workers, tab, role, distance, availability, rating, search]);
+  }, [workers, tab, role, distance, availability, rating]);
 
   useEffect(() => {
     setPage(1);
-  }, [tab, role, distance, availability, rating, search]);
+  }, [tab, role, distance, availability, rating]);
 
   const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const pageRows = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -131,12 +123,6 @@ export function WorkersPage() {
 
       {/* Filters */}
       <div className="mt-5 flex flex-wrap items-center gap-3">
-        <SearchInput
-          placeholder="Search workers by name or license..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          containerClassName="w-full sm:w-64"
-        />
         <Select
           options={[
             { value: "all", label: "All Roles" },
@@ -173,11 +159,20 @@ export function WorkersPage() {
       {/* Table */}
       <div className="mt-5 overflow-hidden rounded-2xl border border-neutral-100 bg-white dark:border-neutral-800 dark:bg-neutral-900">
         {isLoading ? (
-          <div className="space-y-2 p-5">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Skeleton key={i} className="h-16 w-full rounded-lg" />
-            ))}
-          </div>
+          <TableSkeleton
+            minWidth={820}
+            rows={PAGE_SIZE}
+            columns={[
+              { label: "Worker", cell: "avatar" },
+              { label: "Role", cell: "text" },
+              { label: "Distance", cell: "amount" },
+              { label: "Rating", cell: "amount" },
+              { label: "Shifts", cell: "amount" },
+              { label: "License", cell: "badge" },
+              { label: "Availability", cell: "badge" },
+              { cell: "action", className: "w-24" },
+            ]}
+          />
         ) : pageRows.length === 0 ? (
           <div className="p-8">
             <EmptyState
@@ -190,7 +185,7 @@ export function WorkersPage() {
               description={
                 workers.length === 0
                   ? "Verified healthcare professionals near your hospital will appear here as they join NexusCare."
-                  : "Try a different filter or search term."
+                  : "Try a different filter."
               }
             />
           </div>

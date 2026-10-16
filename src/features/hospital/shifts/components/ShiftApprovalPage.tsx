@@ -13,6 +13,7 @@ import { Badge, type BadgeVariant } from "@/shared/components/ui/Badge";
 import { EmptyState } from "@/shared/components/ui/EmptyState";
 import { Modal } from "@/shared/components/ui/Modal";
 import { LocationMapPreview } from "@/shared/components/ui/LocationMapPreview";
+import { ShiftDetailSkeleton } from "./ShiftDetailSkeleton";
 import { AttachmentGallery } from "@/shared/components/AttachmentGallery";
 import { appToast } from "@/shared/components/feedback/toast";
 import { ApiError } from "@/lib/apiError";
@@ -144,6 +145,8 @@ function buildTimeline(shift: ApiShift): TimelineEventUi[] {
 
   return events;
 }
+
+const RATING_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
 
 export function ShiftApprovalPage() {
   const navigate = useNavigate();
@@ -359,18 +362,7 @@ export function ShiftApprovalPage() {
   };
 
   if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <div className="h-8 w-64 animate-pulse rounded-lg bg-neutral-100 dark:bg-neutral-800" />
-        <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
-          <div className="space-y-6">
-            <div className="h-32 animate-pulse rounded-2xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900" />
-            <div className="h-40 animate-pulse rounded-2xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900" />
-          </div>
-          <div className="h-64 animate-pulse rounded-2xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900" />
-        </div>
-      </div>
-    );
+    return <ShiftDetailSkeleton />;
   }
 
   if (loadError || !shift) {
@@ -396,8 +388,15 @@ export function ShiftApprovalPage() {
 
   const canEdit = !nonEditableStatuses.includes(shift.status);
   const canCancel = canEdit && shift.status !== "in_progress";
+  // The backend closes rating 7 days after the shift's completion
+  // (`updated_at + 7d`), so only offer the button inside that window.
+  const withinRatingWindow =
+    Date.now() <= new Date(shift.updated_at).getTime() + RATING_WINDOW_MS;
   const canRate =
-    shift.status === "completed" && !!shift.assigned_clinician_id && !ratingSubmitted;
+    shift.status === "completed" &&
+    !!shift.assigned_clinician_id &&
+    !ratingSubmitted &&
+    withinRatingWindow;
   const { dateLabel, timeLabel } = formatDateTime(shift.scheduled_start, shift.scheduled_end);
   const status = statusBadge[shift.status];
   const priority = priorityBadge[shift.priority];
@@ -550,29 +549,14 @@ export function ShiftApprovalPage() {
             )}
           </div>
 
-          {/* Description & Notes */}
+          {/* Description */}
           <div className="rounded-2xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
             <p className="mb-4 text-xs font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
-              Description &amp; Notes
+              Description
             </p>
-            <div className="grid gap-6 md:grid-cols-2">
-              <div>
-                <p className="mb-1.5 text-sm font-semibold text-neutral-900 dark:text-neutral-50">
-                  Job Description
-                </p>
-                <p className="text-sm leading-relaxed text-neutral-600 dark:text-neutral-400">
-                  {shift.job_description || "No description provided."}
-                </p>
-              </div>
-              <div className="rounded-xl bg-neutral-50 p-4 dark:bg-neutral-800">
-                <p className="mb-1.5 text-sm font-semibold text-neutral-900 dark:text-neutral-50">
-                  Special Notes
-                </p>
-                <p className="text-sm leading-relaxed text-neutral-600 dark:text-neutral-400">
-                  {shift.notes || "No special notes."}
-                </p>
-              </div>
-            </div>
+            <p className="text-sm leading-relaxed text-neutral-600 dark:text-neutral-400">
+              {shift.job_description || "No description provided."}
+            </p>
 
             {(shift.attachment_urls?.length ?? 0) > 0 && (
               <div className="mt-6">

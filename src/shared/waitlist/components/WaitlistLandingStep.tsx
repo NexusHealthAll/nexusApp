@@ -136,7 +136,7 @@ export function WaitlistLandingStep() {
   return (
     <div className="bg-white dark:bg-neutral-950">
       {/* 1. HERO SECTION */}
-      <section className="px-4 pb-14 pt-12 sm:px-6 lg:px-8 lg:pb-20 lg:pt-20 h-[90vh]">
+      <section className="flex items-center justify-center px-4 pb-14 pt-12 sm:px-6 lg:px-8 lg:pb-20 lg:pt-20 h-[90vh]">
         <div className="mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-2 lg:gap-16">
           {/* Copy */}
           <div>
@@ -145,7 +145,7 @@ export function WaitlistLandingStep() {
               Redefining Clinical Efficiency
             </div>
 
-            <h1 className="mt-6 text-4xl font-semibold tracking-tight text-neutral-950 sm:text-5xl lg:text-[3.25rem] lg:leading-[1.1] dark:text-neutral-50">
+            <h1 className="mt-6 text-4xl font-semibold tracking-tight text-neutral-900 sm:text-5xl lg:text-[3.25rem] lg:leading-[1.1] dark:text-neutral-50">
               The{" "}
               <span className="text-onboarding-primaryBlue dark:text-[#5AA6D6]">
                 Digital Pulse
@@ -158,17 +158,6 @@ export function WaitlistLandingStep() {
               a high-fidelity marketplace for elite clinical talent. Experience
               the future of medical workflows.
             </p>
-
-            {/* <div className="mt-8">
-              <Button
-                type="button"
-                onClick={openJoinModal}
-                className="rounded-xl bg-onboarding-primaryBlue px-6 py-3 text-base font-semibold text-white transition-colors hover:bg-onboarding-primaryBlue/90"
-              >
-                Join Waitlist
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </div> */}
           </div>
 
           {/* Graphic */}

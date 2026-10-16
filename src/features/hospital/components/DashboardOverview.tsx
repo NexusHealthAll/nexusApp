@@ -6,13 +6,13 @@ import {
   Download,
   UserRound,
 } from "lucide-react";
-import { MetricCard } from "@/shared/components/ui/MetricCard";
-import { Skeleton } from "@/shared/components/ui/Skeleton";
+import { MetricCard, MetricTrend } from "@/shared/components/ui/MetricCard";
 import { downloadCsv } from "@/shared/utils/downloadCsv";
 import { useHospitalProfile } from "@/features/hospital/hooks/useHospitalProfile";
 import {
   HospitalMetricsService,
   type DashboardHeroStats,
+  type SpendVsFillRatePoint,
 } from "@/features/hospital/services/hospitalMetricsService";
 import { WorkerDirectoryService } from "@/features/hospital/workers/workerDirectoryService";
 import { SpendVsFillRateChart } from "./charts/SpendVsFillRateChart";
@@ -27,6 +27,18 @@ function greetingForNow(): string {
   return "Good evening";
 }
 
+/** % change from the prior week; undefined when there is no baseline to compare. */
+function weekOverWeek(
+  series: SpendVsFillRatePoint[],
+  pick: (p: SpendVsFillRatePoint) => number,
+): number | undefined {
+  if (series.length < 2) return undefined;
+  const prev = pick(series[series.length - 2]);
+  const curr = pick(series[series.length - 1]);
+  if (prev <= 0) return undefined;
+  return ((curr - prev) / prev) * 100;
+}
+
 /** Hospital dashboard matching the Figma redesign. */
 export function DashboardOverview() {
   // Primes the shared hospital-profile cache as early as possible — the
@@ -36,11 +48,15 @@ export function DashboardOverview() {
 
   const [stats, setStats] = useState<DashboardHeroStats | null>(null);
   const [availableWorkers, setAvailableWorkers] = useState<number | null>(null);
+  const [series, setSeries] = useState<SpendVsFillRatePoint[]>([]);
 
   useEffect(() => {
     let cancelled = false;
     HospitalMetricsService.getDashboardHeroStats().then((data) => {
       if (!cancelled) setStats(data);
+    });
+    HospitalMetricsService.getSpendVsFillRateSeries().then((data) => {
+      if (!cancelled) setSeries(data);
     });
     WorkerDirectoryService.getAvailableCount().then((count) => {
       if (!cancelled) setAvailableWorkers(count);
@@ -59,6 +75,9 @@ export function DashboardOverview() {
     );
   };
 
+  const revenueTrend = weekOverWeek(series, (p) => p.spending);
+  const fillRateTrend = weekOverWeek(series, (p) => p.fillRate);
+
   const adminFirstName = profile?.adminName?.split(" ")[0];
   const today = new Date().toLocaleDateString("en-US", {
     weekday: "long",
@@ -70,12 +89,9 @@ export function DashboardOverview() {
   return (
     <div className="space-y-6">
       {/* Greeting header */}
-      <div className="flex flex-wrap items-end justify-between gap-4">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <p className="text-sm text-neutral-400 dark:text-neutral-500">
-            {today}
-          </p>
-          <h1 className="mt-1 text-2xl font-bold text-neutral-900 lg:text-3xl dark:text-neutral-50">
+          <h1 className="text-2xl font-bold text-neutral-900 lg:text-3xl dark:text-neutral-50">
             {greetingForNow()}
             {adminFirstName ? `, ${adminFirstName}` : ""}
           </h1>
@@ -88,45 +104,61 @@ export function DashboardOverview() {
               : ""}
           </p>
         </div>
-        <button
-          onClick={handleExportReport}
-          className="flex h-9 items-center gap-2 rounded-lg border border-neutral-200 bg-white px-3.5 text-sm font-semibold text-neutral-700 transition-colors hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800"
-        >
-          <Download className="h-4 w-4" />
-          Export Report
-        </button>
+        <div className="flex flex-col gap-3 sm:items-end">
+          <p className="text-sm text-neutral-400 dark:text-neutral-500">
+            {today}
+          </p>
+          <button
+            onClick={handleExportReport}
+            className="flex h-9 items-center gap-2 rounded-lg border border-neutral-200 bg-white px-3.5 text-sm font-semibold text-neutral-700 transition-colors hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800"
+          >
+            <Download className="h-4 w-4" />
+            Export Report
+          </button>
+        </div>
       </div>
 
       {/* Stat cards */}
-      {stats === null ? (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-[124px] w-full rounded-2xl" />
-          ))}
-        </div>
-      ) : (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <MetricCard
             label="Weekly Revenue"
-            value={stats.weeklyRevenue}
+            value={stats?.weeklyRevenue}
+            loading={stats === null}
             icon={CircleDollarSign}
-            sub="billed in the last 7 days"
+            sub={
+              revenueTrend === undefined ? (
+                "billed in the last 7 days"
+              ) : (
+                <MetricTrend pct={revenueTrend} />
+              )
+            }
           />
           <MetricCard
             label="Shift Fill Rate"
-            value={`${stats.fillRatePct}%`}
+            value={`${stats?.fillRatePct}%`}
+            loading={stats === null}
             icon={CheckCircle2}
-            sub="average over recent months"
+            sub={
+              fillRateTrend === undefined ? (
+                "average over recent months"
+              ) : (
+                <MetricTrend pct={fillRateTrend} />
+              )
+            }
           />
           <MetricCard
             label="Open Shifts"
-            value={stats.openShifts}
+            value={stats?.openShifts}
+            loading={stats === null}
             icon={Clock}
             tone="warning"
             sub={
-              stats.urgentOpenShifts > 0 ? (
+              stats && stats.urgentOpenShifts > 0 ? (
                 <span className="font-semibold text-warning-600 dark:text-warning-400">
-                  {stats.urgentOpenShifts} urgent · needs review
+                  {stats?.urgentOpenShifts} urgent ·{" "}
+                  <span className="underline underline-offset-2">
+                    needs review
+                  </span>
                 </span>
               ) : (
                 "no urgent shifts"
@@ -136,6 +168,7 @@ export function DashboardOverview() {
           <MetricCard
             label="Worker Availability"
             value={availableWorkers ?? "0"}
+            loading={stats === null}
             icon={UserRound}
             sub={
               availableWorkers === null
@@ -143,8 +176,7 @@ export function DashboardOverview() {
                 : "within 15 miles"
             }
           />
-        </div>
-      )}
+      </div>
 
       {/* Chart + activity */}
       <div className="grid gap-4 xl:grid-cols-[2fr_1fr]">

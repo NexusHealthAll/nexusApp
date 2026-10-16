@@ -9,12 +9,13 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { renderGridLineSkipTop } from "@/shared/utils/chartGrid";
 import { Star } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
 import { EmptyState, EmptyStateIcon } from "@/shared/components/ui/EmptyState";
 import { FilterTabs } from "@/shared/components/ui/FilterTabs";
 import { PageHeader } from "@/shared/components/ui/PageHeader";
-import { Skeleton } from "@/shared/components/ui/Skeleton";
+import { AnalyticsSkeleton } from "./AnalyticsSkeleton";
 import { PATHS } from "@/routes/paths";
 import { cn } from "@/shared/utils/cn";
 import { downloadCsv } from "@/shared/utils/downloadCsv";
@@ -26,26 +27,34 @@ type AnalyticsOverview = Awaited<
 
 type Period = "weekly" | "monthly" | "yearly";
 
+const PERIOD_LABEL: Record<Period, string> = {
+  weekly: "Last 8 weeks",
+  monthly: "Last 6 months",
+  yearly: "Last 12 months",
+};
+
 /** Analytics page per the Figma redesign, computed from the shifts API. */
 export function AnalyticsPage() {
   const [data, setData] = useState<AnalyticsOverview | null>(null);
   const [period, setPeriod] = useState<Period>("weekly");
 
+  // Refetch (with the skeleton) whenever the period filter changes.
   useEffect(() => {
     let cancelled = false;
-    HospitalMetricsService.getAnalyticsOverview().then((overview) => {
+    setData(null);
+    HospitalMetricsService.getAnalyticsOverview(period).then((overview) => {
       if (!cancelled) setData(overview);
     });
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [period]);
 
   const handleExport = () => {
     if (!data) return;
     downloadCsv(
       "analytics-report.csv",
-      ["Week", "Committed (NGN)", "Spending (NGN)"],
+      [period === "weekly" ? "Week" : "Month", "Committed (NGN)", "Spending (NGN)"],
       data.trend.map((p) => [p.week, p.committed, p.spending]),
     );
   };
@@ -85,14 +94,7 @@ export function AnalyticsPage() {
       />
 
       {data === null ? (
-        <div className="space-y-4">
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Skeleton key={i} className="h-[110px] w-full rounded-2xl" />
-            ))}
-          </div>
-          <Skeleton className="h-[340px] w-full rounded-2xl" />
-        </div>
+        <AnalyticsSkeleton />
       ) : (
         <>
           {/* Stat cards */}
@@ -132,7 +134,7 @@ export function AnalyticsPage() {
                 Revenue & Spending Trend
               </h2>
               <p className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
-                Last 8 weeks
+                {PERIOD_LABEL[period]}
               </p>
               <div className="mt-4 h-[260px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
@@ -146,7 +148,7 @@ export function AnalyticsPage() {
                         <stop offset="100%" stopColor="#0f766e" stopOpacity={0} />
                       </linearGradient>
                     </defs>
-                    <CartesianGrid vertical={false} stroke="#f1f5f9" />
+                    <CartesianGrid vertical={false} horizontal={renderGridLineSkipTop} stroke="#f1f5f9" />
                     <XAxis
                       dataKey="week"
                       axisLine={false}

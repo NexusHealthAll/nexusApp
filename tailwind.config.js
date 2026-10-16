@@ -48,7 +48,7 @@ export default {
           input: "#d6e5ef",
         },
         ink: {
-          900: "#0f1d25",
+          900: "#0f172a",
           700: "#424752",
           500: "#727783",
         },
@@ -105,7 +105,7 @@ export default {
           950: "#450a0a",
         },
         onboarding: {
-          textPrimary: "#071E27",
+          textPrimary: "#0F172A",
           textSecondary: "#3F4940",
           inputBackground: "#E6F6FF",
           primaryGreen: "#349C93",
@@ -118,8 +118,8 @@ export default {
         },
       },
       fontFamily: {
-        sans: ["Inter", "system-ui", "sans-serif"],
-        mono: ["JetBrains Mono", "monospace"],
+        sans: ["Didact Gothic", "sans-serif"],
+        mono: ["Didact Gothic", "sans-serif"],
       },
       fontSize: {
         xs: ["0.75rem", { lineHeight: "1rem" }],
