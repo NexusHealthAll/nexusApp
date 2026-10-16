@@ -82,7 +82,7 @@ export function Modal({
           >
             <div className="flex shrink-0 items-start justify-between gap-4 p-6 pb-5 sm:p-8 sm:pb-5">
               {title ? (
-                <h2 className="text-2xl font-semibold text-neutral-950 sm:text-3xl dark:text-neutral-100">
+                <h2 className="text-2xl font-semibold text-neutral-900 sm:text-3xl dark:text-neutral-100">
                   {title}
                 </h2>
               ) : (
