@@ -1,5 +1,6 @@
 import apiClient from "@/lib/apiClient";
 import { formatKobo } from "@/shared/utils/currency";
+import { WalletService } from "./walletService";
 import type { BadgeVariant } from "@/shared/components/ui/Badge";
 import type {
   ApiShift,
@@ -79,7 +80,12 @@ export interface UrgencyBreakdownRow {
   variant: BadgeVariant;
 }
 
-const FILLED_STATUSES = new Set(["assigned", "upcoming", "in_progress", "completed"]);
+const FILLED_STATUSES = new Set([
+  "assigned",
+  "upcoming",
+  "in_progress",
+  "completed",
+]);
 
 const roleColors: Record<string, { colorClass: string; dotClass: string }> = {
   doctor: { colorClass: "#2563eb", dotClass: "bg-blue-600" },
@@ -117,32 +123,99 @@ function recentMonths(n: number): { key: string; date: Date; label: string }[] {
   const now = new Date();
   return Array.from({ length: n }, (_, i) => {
     const d = new Date(now.getFullYear(), now.getMonth() - (n - 1 - i), 1);
-    return { key: `${d.getFullYear()}-${d.getMonth()}`, date: d, label: monthLabel(d) };
+    return {
+      key: `${d.getFullYear()}-${d.getMonth()}`,
+      date: d,
+      label: monthLabel(d),
+    };
   });
 }
 
-/**
- * Hospital operations metrics for the Dashboard and Analytics pages,
- * computed client-side from the real `GET /api/v1/shifts` endpoint (see
- * nexus-backend `src/handlers/shifts.rs`). The backend has no dedicated
- * reporting/aggregation endpoint yet, so figures like payroll and fill rate
- * are derived here from a recent page of shifts rather than fabricated.
- * Metrics with no real historical baseline (e.g. trend deltas) are simply
- * omitted rather than invented.
- */
-export class HospitalMetricsService {
-  private static async fetchRecentShifts(pageSize = 200): Promise<ApiShift[]> {
-    const res = await apiClient.get<ApiShiftListResponse>("/api/v1/shifts", {
-      params: { page: 1, page_size: pageSize },
+export type AnalyticsPeriod = "weekly" | "monthly" | "yearly";
+
+/** Chart buckets for a period: 8 rolling weeks, 6 calendar months, or 12 calendar months. */
+function analyticsBuckets(
+  period: AnalyticsPeriod,
+): { label: string; start: Date; end: Date }[] {
+  const now = new Date();
+  if (period === "weekly") {
+    const weekMs = 7 * 24 * 60 * 60 * 1000;
+    return Array.from({ length: 8 }, (_, i) => {
+      const end = new Date(now.getTime() - (7 - i) * weekMs);
+      return {
+        label: `Wk ${i + 1}`,
+        start: new Date(end.getTime() - weekMs),
+        end,
+      };
     });
-    return res.data.shifts;
+  }
+  const count = period === "monthly" ? 6 : 12;
+  return Array.from({ length: count }, (_, i) => {
+    const start = new Date(
+      now.getFullYear(),
+      now.getMonth() - (count - 1 - i),
+      1,
+    );
+    const end = new Date(start.getFullYear(), start.getMonth() + 1, 1);
+    return {
+      label: start.toLocaleDateString("en-US", { month: "short" }),
+      start,
+      end,
+    };
+  });
+}
+
+export class HospitalMetricsService {
+  private static shiftsCache: {
+    at: number;
+    promise: Promise<ApiShift[]>;
+  } | null = null;
+
+  private static async fetchRecentShifts(maxShifts = 500): Promise<ApiShift[]> {
+    const cached = this.shiftsCache;
+    if (cached && Date.now() - cached.at < 10_000) {
+      return (await cached.promise).slice(0, maxShifts);
+    }
+    const promise = (async () => {
+      const pageSize = 100;
+      const shifts: ApiShift[] = [];
+      let page = 1;
+      let totalPages = 1;
+      do {
+        const res = await apiClient.get<ApiShiftListResponse>(
+          "/api/v1/shifts",
+          {
+            params: { page, page_size: pageSize },
+          },
+        );
+        shifts.push(...res.data.shifts);
+        totalPages = res.data.pagination.total_pages;
+        page += 1;
+      } while (page <= totalPages && shifts.length < 500);
+      return shifts;
+    })();
+    this.shiftsCache = { at: Date.now(), promise };
+    promise.catch(() => {
+      if (this.shiftsCache?.promise === promise) this.shiftsCache = null;
+    });
+    return (await promise).slice(0, maxShifts);
   }
 
-  private static async countByStatus(status: string): Promise<number> {
+  static async countByStatus(status: string): Promise<number> {
     const res = await apiClient.get<ApiShiftListResponse>("/api/v1/shifts", {
       params: { status, page: 1, page_size: 1 },
     });
     return res.data.pagination.total_items;
+  }
+
+  /** Telehealth visits that are scheduled but not yet started (assigned/upcoming). */
+  static async countUpcomingVirtual(): Promise<number> {
+    const shifts = await this.fetchRecentShifts();
+    return shifts.filter(
+      (s) =>
+        s.shift_type === "virtual" &&
+        (s.status === "assigned" || s.status === "upcoming"),
+    ).length;
   }
 
   static async getOverviewStats(): Promise<OverviewStats> {
@@ -166,7 +239,8 @@ export class HospitalMetricsService {
     const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     const payrollThisWeekKobo = shifts
       .filter(
-        (s) => s.billing_triggered_at && new Date(s.billing_triggered_at) >= weekAgo,
+        (s) =>
+          s.billing_triggered_at && new Date(s.billing_triggered_at) >= weekAgo,
       )
       .reduce((sum, s) => sum + shiftAmountKobo(s), 0);
 
@@ -198,7 +272,8 @@ export class HospitalMetricsService {
 
     const urgentOpenShifts = shifts.filter(
       (s) =>
-        s.status === "open" && (s.priority === "stat" || s.priority === "urgent"),
+        s.status === "open" &&
+        (s.priority === "stat" || s.priority === "urgent"),
     ).length;
 
     const todayKey = now.toDateString();
@@ -219,31 +294,41 @@ export class HospitalMetricsService {
 
   /** Dual-series line chart data: weekly spending vs weekly fill rate. */
   static async getSpendVsFillRateSeries(): Promise<SpendVsFillRatePoint[]> {
-    const shifts = await this.fetchRecentShifts();
     const now = new Date();
     const weekMs = 7 * 24 * 60 * 60 * 1000;
+    const weeks = 7;
+    const windowStart = new Date(now.getTime() - weeks * weekMs);
 
-    return Array.from({ length: 7 }, (_, i) => {
-      const end = new Date(now.getTime() - (6 - i) * weekMs);
+    // Spending = money that actually left the wallet for shifts: `payout_debit`
+    // ledger rows (escrow released to a worker), net of `payout_reversal`
+    // re-credits. Holds, deposits and bank withdrawals are not shift spend.
+    const [shifts, ledger] = await Promise.all([
+      this.fetchRecentShifts(),
+      WalletService.getLedgerSince(windowStart).catch(() => []),
+    ]);
+
+    return Array.from({ length: weeks }, (_, i) => {
+      const end = new Date(now.getTime() - (weeks - 1 - i) * weekMs);
       const start = new Date(end.getTime() - weekMs);
-
-      const spendingKobo = shifts
-        .filter((s) => {
-          if (!s.billing_triggered_at) return false;
-          const t = new Date(s.billing_triggered_at);
-          return t >= start && t < end;
-        })
-        .reduce((sum, s) => sum + shiftAmountKobo(s), 0);
-
-      const inWeek = shifts.filter((s) => {
-        const t = new Date(s.scheduled_start);
+      const inRange = (iso: string) => {
+        const t = new Date(iso);
         return t >= start && t < end;
-      });
+      };
+
+      const spendingKobo = ledger.reduce((sum, e) => {
+        if (!inRange(e.created_at)) return sum;
+        if (e.kind === "payout_debit") return sum + Math.abs(e.delta_held_kobo);
+        if (e.kind === "payout_reversal")
+          return sum - Math.abs(e.delta_balance_kobo);
+        return sum;
+      }, 0);
+
+      const inWeek = shifts.filter((s) => inRange(s.scheduled_start));
       const filled = inWeek.filter((s) => FILLED_STATUSES.has(s.status)).length;
 
       return {
         week: `Wk ${i + 1}`,
-        spending: Math.round(spendingKobo / 100),
+        spending: Math.max(0, Math.round(spendingKobo / 100)),
         fillRate:
           inWeek.length > 0 ? Math.round((filled / inWeek.length) * 100) : 0,
       };
@@ -255,9 +340,7 @@ export class HospitalMetricsService {
     const shifts = await this.fetchRecentShifts();
     const todayKey = new Date().toDateString();
     return shifts
-      .filter(
-        (s) => new Date(s.scheduled_start).toDateString() === todayKey,
-      )
+      .filter((s) => new Date(s.scheduled_start).toDateString() === todayKey)
       .sort(
         (a, b) =>
           new Date(a.scheduled_start).getTime() -
@@ -267,7 +350,9 @@ export class HospitalMetricsService {
   }
 
   /** Aggregates for the redesigned Analytics page, from the real shifts list. */
-  static async getAnalyticsOverview(): Promise<{
+  static async getAnalyticsOverview(
+    period: AnalyticsPeriod = "weekly",
+  ): Promise<{
     totalRevenue: string;
     fillRatePct: number;
     completionRatePct: number;
@@ -276,7 +361,17 @@ export class HospitalMetricsService {
     rolesRequested: { role: string; count: number }[];
     departments: { name: string; shifts: number; fillRatePct: number }[];
   }> {
-    const shifts = await this.fetchRecentShifts();
+    const allShifts = await this.fetchRecentShifts();
+    const buckets = analyticsBuckets(period);
+    const windowStart = buckets[0].start;
+    const windowEnd = buckets[buckets.length - 1].end;
+    const inWindow = (iso: string | null | undefined) => {
+      if (!iso) return false;
+      const t = new Date(iso);
+      return t >= windowStart && t < windowEnd;
+    };
+    // Every card, chart and list on the page covers the selected period only.
+    const shifts = allShifts.filter((s) => inWindow(s.scheduled_start));
 
     const totalRevenueKobo = shifts
       .filter((s) => s.billing_triggered_at)
@@ -299,26 +394,22 @@ export class HospitalMetricsService {
       (s) => s.status === "cancelled" || s.status === "no_show",
     ).length;
 
-    const weekMs = 7 * 24 * 60 * 60 * 1000;
-    const now = new Date();
-    const trend = Array.from({ length: 8 }, (_, i) => {
-      const end = new Date(now.getTime() - (7 - i) * weekMs);
-      const start = new Date(end.getTime() - weekMs);
-      const inWeek = (iso: string | null | undefined) => {
+    const trend = buckets.map(({ label, start, end }) => {
+      const inBucket = (iso: string | null | undefined) => {
         if (!iso) return false;
         const t = new Date(iso);
         return t >= start && t < end;
       };
       return {
-        week: `Wk ${i + 1}`,
+        week: label,
         committed: Math.round(
-          shifts
-            .filter((s) => inWeek(s.scheduled_start))
+          allShifts
+            .filter((s) => inBucket(s.scheduled_start))
             .reduce((sum, s) => sum + shiftAmountKobo(s), 0) / 100,
         ),
         spending: Math.round(
-          shifts
-            .filter((s) => inWeek(s.billing_triggered_at))
+          allShifts
+            .filter((s) => inBucket(s.billing_triggered_at))
             .reduce((sum, s) => sum + shiftAmountKobo(s), 0) / 100,
         ),
       };
@@ -370,14 +461,18 @@ export class HospitalMetricsService {
 
     const points = months.map(({ key, label }) => {
       const inMonth = shifts.filter((s) => monthKey(s.scheduled_start) === key);
-      const filled = inMonth.filter((s) => FILLED_STATUSES.has(s.status)).length;
+      const filled = inMonth.filter((s) =>
+        FILLED_STATUSES.has(s.status),
+      ).length;
       return { month: label, filled };
     });
 
     const totalInRange = shifts.filter((s) =>
       months.some((m) => m.key === monthKey(s.scheduled_start)),
     );
-    const filledInRange = totalInRange.filter((s) => FILLED_STATUSES.has(s.status));
+    const filledInRange = totalInRange.filter((s) =>
+      FILLED_STATUSES.has(s.status),
+    );
     const avgFillRate =
       totalInRange.length > 0
         ? Math.round((filledInRange.length / totalInRange.length) * 100)
@@ -399,7 +494,10 @@ export class HospitalMetricsService {
     return Array.from(counts.entries())
       .sort((a, b) => b[1] - a[1])
       .map(([role, count]) => {
-        const colors = roleColors[role] ?? { colorClass: "#94a3b8", dotClass: "bg-neutral-400" };
+        const colors = roleColors[role] ?? {
+          colorClass: "#94a3b8",
+          dotClass: "bg-neutral-400",
+        };
         return {
           role: roleLabel(role),
           percentage: Math.round((count / hired.length) * 100),
@@ -419,7 +517,9 @@ export class HospitalMetricsService {
       (s) => FILLED_STATUSES.has(s.status) && s.status !== "upcoming",
     );
     const timeToFillHours = filledShifts.map(
-      (s) => (new Date(s.updated_at).getTime() - new Date(s.created_at).getTime()) / 3_600_000,
+      (s) =>
+        (new Date(s.updated_at).getTime() - new Date(s.created_at).getTime()) /
+        3_600_000,
     );
     const avgHours =
       timeToFillHours.length > 0
@@ -428,24 +528,36 @@ export class HospitalMetricsService {
 
     const statFilled = filledShifts.filter((s) => s.priority === "stat");
     const statHours = statFilled.map(
-      (s) => (new Date(s.updated_at).getTime() - new Date(s.created_at).getTime()) / 3_600_000,
+      (s) =>
+        (new Date(s.updated_at).getTime() - new Date(s.created_at).getTime()) /
+        3_600_000,
     );
     const avgStatHours =
-      statHours.length > 0 ? statHours.reduce((a, b) => a + b, 0) / statHours.length : 0;
+      statHours.length > 0
+        ? statHours.reduce((a, b) => a + b, 0) / statHours.length
+        : 0;
 
     const now = new Date();
     const monthShifts = shifts.filter((s) => {
       const d = new Date(s.scheduled_start);
-      return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+      return (
+        d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth()
+      );
     });
-    const monthPayrollKobo = monthShifts.reduce((sum, s) => sum + shiftAmountKobo(s), 0);
+    const monthPayrollKobo = monthShifts.reduce(
+      (sum, s) => sum + shiftAmountKobo(s),
+      0,
+    );
 
     return {
       shiftsThisMonth: overview.shiftsFilledTotal,
-      shiftsRemaining: overview.shiftsFilledTotal - overview.shiftsFilledThisMonth,
+      shiftsRemaining:
+        overview.shiftsFilledTotal - overview.shiftsFilledThisMonth,
       fillRate: fillRate.avgFillRate,
-      avgTimeToFill: timeToFillHours.length > 0 ? `${avgHours.toFixed(1)}h` : "—",
-      statAvgTimeToFill: statHours.length > 0 ? `${avgStatHours.toFixed(1)}h` : "—",
+      avgTimeToFill:
+        timeToFillHours.length > 0 ? `${avgHours.toFixed(1)}h` : "—",
+      statAvgTimeToFill:
+        statHours.length > 0 ? `${avgStatHours.toFixed(1)}h` : "—",
       totalPayroll: formatKobo(monthPayrollKobo),
       totalPayrollMonthLabel: now.toLocaleDateString("en-US", {
         month: "long",
@@ -481,8 +593,11 @@ export class HospitalMetricsService {
 
     return months.map(({ key, label }) => {
       const inMonth = shifts.filter((s) => monthKey(s.scheduled_start) === key);
-      const filled = inMonth.filter((s) => FILLED_STATUSES.has(s.status)).length;
-      const rate = inMonth.length > 0 ? Math.round((filled / inMonth.length) * 100) : 0;
+      const filled = inMonth.filter((s) =>
+        FILLED_STATUSES.has(s.status),
+      ).length;
+      const rate =
+        inMonth.length > 0 ? Math.round((filled / inMonth.length) * 100) : 0;
       return { month: label, rate };
     });
   }
