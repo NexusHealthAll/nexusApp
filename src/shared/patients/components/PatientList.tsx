@@ -6,6 +6,7 @@ import { Badge, type BadgeVariant } from "@/shared/components/ui/Badge";
 import { EmptyState, EmptyStateIcon } from "@/shared/components/ui/EmptyState";
 import { Mic, Plus, RefreshCcw, Users } from "lucide-react";
 import { formatDate } from "@/shared/utils/date";
+import { TableSkeleton } from "@/shared/components/ui/TableSkeleton";
 import { usePatients } from "../hooks/usePatients";
 import { AddPatientModal } from "./AddPatientModal";
 import type { PatientDetailResponse, PredictionResponse } from "../services/patientService";
@@ -83,7 +84,18 @@ export function PatientList() {
         </CardHeader>
         <CardContent className="p-0">
           {isLoading ? (
-            <div className="p-8 text-center text-sm text-neutral-500 dark:text-neutral-400">Loading patients…</div>
+            <TableSkeleton
+              minWidth={900}
+              columns={[
+                { label: "Patient", cell: "avatar" },
+                { label: "Symptoms", cell: "text" },
+                { label: "Severity", cell: "badge" },
+                { label: "AI Triage", cell: "badge" },
+                { label: "Recommendation", cell: "text" },
+                { label: "Intake", cell: "text" },
+                { label: "Consultation", cell: "badge", align: "right" },
+              ]}
+            />
           ) : patients.length === 0 ? (
             <EmptyState
               icon={<EmptyStateIcon icon={Users} />}
