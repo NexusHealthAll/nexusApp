@@ -182,6 +182,8 @@ export interface VirtualCallRoom {
    * "Continuing on phone" caption. */
   companionLabel: string | null;
   consultation: ConsultSession | null;
+  /** True once the *other* side ended/left the call — not this client. */
+  endedByRemote: boolean;
   /** For the green room: is someone already connected, and who. */
   present: boolean;
   presentName: string | null;
@@ -301,6 +303,10 @@ export function useVirtualCallRoom(
   const [companionMicOn, setCompanionMicOn] = useState(true);
   const [companionIdentity, setCompanionIdentity] = useState<string | null>(null);
   const [consultation, setConsultation] = useState<ConsultSession | null>(null);
+  /** True once the call ended because the *other* side ended/left it — not
+   * because this client called `leave()`/`end()` itself. Drives an explicit
+   * "the hospital ended this call" notification on the worker side. */
+  const [endedByRemote, setEndedByRemote] = useState(false);
   const [present, setPresent] = useState(false);
   const [presentName, setPresentName] = useState<string | null>(null);
   const [activeVideoId, setActiveVideoId] = useState<string | undefined>();
@@ -382,6 +388,20 @@ export function useVirtualCallRoom(
     return () => clearInterval(interval);
   }, [state, shiftId]);
 
+  // Safety net: ending a call deletes the LiveKit room server-side, but that
+  // call is best-effort (a LiveKit outage doesn't block the end-session
+  // request) — so the DB can say "ended" while this client's room connection
+  // is still technically alive. Tear down locally as soon as the poll above
+  // reflects it, rather than leaving the worker talking into a dead call.
+  useEffect(() => {
+    if (state !== "connected") return;
+    if (consultation?.status !== "ended") return;
+    if (endedLocallyRef.current) return;
+    setEndedByRemote(true);
+    teardownRoom();
+    setState("ended");
+  }, [state, consultation, teardownRoom]);
+
   // While the green room is open (or a join is in flight / just failed), poll
   // the session so the caller can show whether the other side is already there.
   useEffect(() => {
@@ -455,17 +475,65 @@ export function useVirtualCallRoom(
     setError("");
     setState("idle");
     setConsultation(null);
+    setEndedByRemote(false);
     endedLocallyRef.current = false;
   }, []);
 
   const hospitalLat = hospitalLocation?.latitude ?? null;
   const hospitalLng = hospitalLocation?.longitude ?? null;
 
-  // Shared by join() and joinWithCode() — everything from "we have a LiveKit
-  // url/token" through a connected room with devices set up. Acquiring that
-  // url/token is the one thing that differs between the two paths.
-  const connectToRoom = useCallback(
-    async (url: string, token: string, opts: JoinOptions) => {
+  const join = useCallback(
+    async (opts: JoinOptions) => {
+      if (!shiftId) return;
+      setError("");
+      setState("connecting");
+      endedLocallyRef.current = false;
+      setEndedByRemote(false);
+      setActiveVideoId(opts.videoDeviceId);
+      setActiveAudioId(opts.audioDeviceId);
+      try {
+        // F6 — a clinician must send GPS and be within 10 km of the hospital.
+        // Hospital observers are exempt (and hospitals with no coords on file).
+        let coords: JoinCoords | undefined;
+        if (viewerRole === "worker") {
+          let position: GeolocationPosition;
+          try {
+            position = await getCurrentPosition();
+          } catch (geoErr) {
+            setError(
+              geoErr instanceof Error
+                ? geoErr.message
+                : "Location access is required to join this consultation.",
+            );
+            setState("error");
+            return;
+          }
+          coords = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          };
+
+          if (hospitalLat != null && hospitalLng != null) {
+            const km = distanceKm(coords, {
+              lat: hospitalLat,
+              lng: hospitalLng,
+            });
+            if (km > CONSULT_GEOFENCE_KM) {
+              setError(
+                `You are ${km.toFixed(1)} km from the hospital — you must be within ${CONSULT_GEOFENCE_KM} km to join.`,
+              );
+              setState("error");
+              return;
+            }
+          }
+        }
+
+        const { url, token } = await VirtualCallService.getCallToken(
+          shiftId,
+          deviceLabel,
+          coords,
+        );
+
         const room = new Room({
           adaptiveStream: true,
           dynacast: true,
@@ -597,6 +665,18 @@ export function useVirtualCallRoom(
         );
         room.on(RoomEvent.Disconnected, () => {
           if (stateRef.current !== "error") setState("ended");
+          if (!endedLocallyRef.current) {
+            setEndedByRemote(true);
+            // The cached consultation can be up to 10s stale (the periodic
+            // refresh only runs while connected) — re-fetch so the post-call
+            // screen correctly says "the hospital ended this call" instead of
+            // the generic "you left" message.
+            if (shiftId) {
+              VirtualCallService.getSession(shiftId)
+                .then(setConsultation)
+                .catch(() => {});
+            }
+          }
           setRemoteJoined(false);
           setRemoteMicOn(true);
         });
@@ -870,6 +950,7 @@ export function useVirtualCallRoom(
     companionMicOn,
     companionLabel,
     consultation,
+    endedByRemote,
     present,
     presentName,
     activeVideoId,
