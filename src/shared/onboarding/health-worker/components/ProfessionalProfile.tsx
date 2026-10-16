@@ -13,33 +13,12 @@ import { useAuthStore } from "@/shared/auth/store/authStore";
 import apiClient from "@/lib/apiClient";
 import { ApiError } from "@/lib/apiError";
 import { InstallPromptBanner } from "@/features/health-worker/components/InstallPromptBanner";
+import {
+  ROLE_OPTIONS,
+  SPECIALTY_OPTIONS,
+  roleToApiRole,
+} from "@/features/health-worker/profileOptions";
 import { requiredText } from "@/shared/validation/fields";
-
-const ROLE_OPTIONS = [
-  { value: "doctor", label: "Doctor" },
-  { value: "nurse", label: "Nurse" },
-  { value: "lab_technician", label: "Lab Technician" },
-  { value: "pharmacist", label: "Pharmacist" },
-  { value: "radiographer", label: "Radiographer" },
-  { value: "physiotherapist", label: "Physiotherapist" },
-  { value: "other", label: "Other" },
-];
-
-const SPECIALTY_OPTIONS = [
-  { value: "emergency_medicine", label: "Emergency Medicine" },
-  { value: "pediatrics", label: "Pediatrics" },
-  { value: "icu_specialist", label: "ICU Specialist" },
-  { value: "general_nursing", label: "General Nursing" },
-  { value: "pharmacy", label: "Pharmacy" },
-  { value: "lab_technician", label: "Lab Technician" },
-  { value: "surgery", label: "Surgery" },
-  { value: "radiology", label: "Radiology" },
-  { value: "anesthesiology", label: "Anesthesiology" },
-  { value: "cardiology", label: "Cardiology" },
-  { value: "obstetrics", label: "Obstetrics" },
-  { value: "psychiatry", label: "Psychiatry" },
-  { value: "other", label: "Other" },
-];
 
 const professionalProfileSchema = z.object({
   firstName: requiredText("First name"),
@@ -135,7 +114,7 @@ export function ProfessionalProfile() {
         {
           first_name: values.firstName.trim(),
           last_name: values.lastName.trim(),
-          role: values.role,
+          role: roleToApiRole(values.role),
           license_number: values.licenseNumber.trim(),
           specialty: values.specialty,
         },
@@ -285,6 +264,8 @@ export function ProfessionalProfile() {
                       value={field.value}
                       onChange={field.onChange}
                       placeholder="Select your role"
+                      searchable
+                      searchPlaceholder="Search roles..."
                       className="bg-onboarding-inputBackground dark:bg-neutral-800"
                       options={ROLE_OPTIONS}
                       error={errors.role?.message}
@@ -303,7 +284,7 @@ export function ProfessionalProfile() {
                   <input
                     type="text"
                     {...register("licenseNumber")}
-                    className={`flex-1 bg-transparent text-sm text-neutral-800 outline-none placeholder:text-neutral-400 font-mono dark:text-neutral-100 ${
+                    className={`flex-1 bg-transparent text-sm text-neutral-800 outline-none placeholder:text-neutral-400 dark:text-neutral-100 ${
                       errors.licenseNumber ? "text-red-600" : ""
                     }`}
                     placeholder="e.g., MDC/NGR/12345"
@@ -323,22 +304,15 @@ export function ProfessionalProfile() {
                   name="specialty"
                   control={control}
                   render={({ field }) => (
-                    <div className="flex flex-wrap gap-3">
-                      {SPECIALTY_OPTIONS.map((opt) => (
-                        <button
-                          key={opt.value}
-                          type="button"
-                          onClick={() => field.onChange(opt.value)}
-                          className={`px-4 py-2 rounded-full border transition-all text-sm font-medium ${
-                            field.value === opt.value
-                              ? "bg-teal-500 text-white border-teal-500"
-                              : "bg-slate-100 text-slate-700 border-slate-200 hover:border-slate-300 dark:bg-neutral-800 dark:text-neutral-300 dark:border-neutral-700 dark:hover:border-neutral-600"
-                          }`}
-                        >
-                          {opt.label}
-                        </button>
-                      ))}
-                    </div>
+                    <Select
+                      value={field.value}
+                      onChange={field.onChange}
+                      placeholder="Select your specialty"
+                      className="bg-onboarding-inputBackground dark:bg-neutral-800"
+                      options={SPECIALTY_OPTIONS}
+                      searchable
+                      searchPlaceholder="Search specialties..."
+                    />
                   )}
                 />
                 {errors.specialty && (

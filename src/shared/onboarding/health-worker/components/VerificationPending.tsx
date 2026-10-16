@@ -63,7 +63,7 @@ export function VerificationPending() {
                 <p className="text-sm font-bold text-neutral-900 dark:text-neutral-50">
                   {payout.bankName ?? "Bank account"}
                 </p>
-                <p className="text-xs text-neutral-500 font-mono dark:text-neutral-400">
+                <p className="text-xs text-neutral-500 dark:text-neutral-400">
                   {payout.accountNumberMasked}
                 </p>
               </div>

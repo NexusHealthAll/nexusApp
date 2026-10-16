@@ -443,7 +443,7 @@ export function IdentityVerification() {
                         setIdNumberValue("idNumber", cleaned, { shouldValidate: true });
                         if (error) setError("");
                       }}
-                      className="flex-1 bg-transparent text-sm text-neutral-800 outline-none placeholder:text-neutral-400 font-mono dark:text-neutral-100"
+                      className="flex-1 bg-transparent text-sm text-neutral-800 outline-none placeholder:text-neutral-400 dark:text-neutral-100"
                       placeholder={`Enter 11-digit ${idType}`}
                     />
                   </div>
@@ -488,7 +488,7 @@ export function IdentityVerification() {
                           onValidate();
                         }
                       }}
-                      className="flex-1 bg-transparent text-sm text-neutral-800 outline-none placeholder:text-neutral-400 font-mono tracking-widest dark:text-neutral-100"
+                      className="flex-1 bg-transparent text-sm text-neutral-800 outline-none placeholder:text-neutral-400 tracking-widest dark:text-neutral-100"
                       placeholder="123456"
                     />
                   </div>
