@@ -1,17 +1,21 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { ChevronRight, Plus, Video } from "lucide-react";
-import { Badge } from "@/shared/components/ui/Badge";
+import { useNavigate } from "react-router-dom";
+import { Plus, Video } from "lucide-react";
 import { EmptyState, EmptyStateIcon } from "@/shared/components/ui/EmptyState";
 import { MetricCard } from "@/shared/components/ui/MetricCard";
 import { PageHeader } from "@/shared/components/ui/PageHeader";
-import { Skeleton } from "@/shared/components/ui/Skeleton";
+import { Pagination } from "@/shared/components/ui/Pagination";
 import { UnderlineTabs } from "@/shared/components/ui/UnderlineTabs";
 import { PATHS } from "@/routes/paths";
 import { useHospitalShift } from "@/features/hospital/shifts/hooks/useHospitalShift";
-import { shiftStatusDisplay } from "@/features/hospital/shifts/shiftStatusDisplay";
 import type { ApiShift } from "@/features/hospital/shifts/types";
 import { getCallWindowInfo } from "../callWindow";
+import { VirtualSessionCard } from "./VirtualSessionCard";
+import {
+  VirtualSessionsSkeleton,
+} from "./VirtualShiftsSkeleton";
+
+const PAGE_SIZE = 5;
 
 type SessionTab = "all" | "upcoming" | "in_progress" | "completed";
 
@@ -67,6 +71,7 @@ export function VirtualShiftsPage() {
   const { getShifts } = useHospitalShift();
   const [shifts, setShifts] = useState<ApiShift[] | null>(null);
   const [tab, setTab] = useState<SessionTab>("all");
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     let cancelled = false;
@@ -97,15 +102,17 @@ export function VirtualShiftsPage() {
   }, [shifts]);
 
   const visible = (shifts ?? []).filter((s) => tabMatches(tab, s.status));
+  const pageCount = Math.max(1, Math.ceil(visible.length / PAGE_SIZE));
+  const pageItems = visible.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   return (
     <div>
       <PageHeader
-        title="Virtual Shifts"
+        title="Telehealth Visits"
         subtitle="Telehealth visits — patients check in on-site and connect via hospital device to a remote doctor."
         breadcrumbs={[
           { label: "Dashboard", href: PATHS.hospital.dashboard },
-          { label: "Virtual Shifts" },
+          { label: "Telehealth Visits" },
         ]}
         actions={
           <>
@@ -118,32 +125,24 @@ export function VirtualShiftsPage() {
               className="flex h-9 items-center gap-1.5 rounded-lg bg-neutral-900 px-3.5 text-sm font-semibold text-white transition-colors hover:bg-neutral-800 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-200"
             >
               <Plus className="h-4 w-4" />
-              Create Virtual Shift
+              Create Telehealth Visit
             </button>
           </>
         }
       />
 
       {/* Live stats */}
-      {shifts === null ? (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-[100px] w-full rounded-2xl" />
-          ))}
-        </div>
-      ) : (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <MetricCard label="Ready to Join" value={stats.readyToJoin} valueTone="success" />
-          <MetricCard label="In Progress" value={stats.inProgress} valueTone="success" />
-          <MetricCard label="Completed Today" value={stats.completedToday} />
-          <MetricCard label="Upcoming" value={stats.upcoming} valueTone="warning" />
-        </div>
-      )}
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <MetricCard label="Ready to Join" loading={shifts === null} value={stats.readyToJoin} valueTone="success" />
+        <MetricCard label="In Progress" loading={shifts === null} value={stats.inProgress} valueTone="success" />
+        <MetricCard label="Completed Today" loading={shifts === null} value={stats.completedToday} />
+        <MetricCard label="Upcoming" loading={shifts === null} value={stats.upcoming} valueTone="warning" />
+      </div>
 
       {/* How it works */}
       <div className="mt-6 rounded-2xl border border-neutral-100 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
         <h2 className="text-base font-bold text-neutral-900 dark:text-neutral-50">
-          How Virtual Shifts Work
+          How Telehealth Visits Work
         </h2>
         <div className="mt-5 grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
           {HOW_IT_WORKS.map((item) => (
@@ -171,77 +170,53 @@ export function VirtualShiftsPage() {
           { label: "Completed", value: "completed" },
         ]}
         value={tab}
-        onChange={setTab}
+        onChange={(v) => {
+          setTab(v);
+          setPage(1);
+        }}
       />
 
       {/* Shift cards */}
       <div className="mt-6 space-y-4">
         {shifts === null ? (
-          <div className="space-y-4">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <Skeleton key={i} className="h-28 w-full rounded-2xl" />
-            ))}
-          </div>
+          <VirtualSessionsSkeleton />
         ) : visible.length === 0 ? (
           <EmptyState
             icon={<EmptyStateIcon icon={Video} />}
-            title="No virtual shifts yet"
-            description="Virtual shifts you create will appear here, with a call session gated to open around the scheduled time."
+            title="No telehealth visits yet"
+            description="Telehealth visits you create will appear here, with a call session gated to open around the scheduled time."
             action={
               <button
                 onClick={() => navigate(`${PATHS.hospital.createShift}?type=virtual`)}
                 className="mt-2 flex items-center gap-1.5 rounded-lg bg-neutral-900 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-neutral-800 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-200"
               >
                 <Plus className="h-3.5 w-3.5" />
-                Create Virtual Shift
+                Create Telehealth Visit
               </button>
             }
           />
         ) : (
-          visible.map((shift) => {
-            const status = shiftStatusDisplay[shift.status];
-            const callWindow = getCallWindowInfo(shift);
-            const scheduledLabel = new Date(shift.scheduled_start).toLocaleString("en-US", {
-              month: "short",
-              day: "numeric",
-              hour: "numeric",
-              minute: "2-digit",
-            });
-            return (
-              <Link
+          <>
+            {pageItems.map((shift) => (
+              <VirtualSessionCard
                 key={shift.id}
-                to={`${PATHS.hospital.virtualShifts}/${shift.id}`}
-                className="block rounded-2xl border border-neutral-100 bg-white p-5 transition-shadow hover:shadow-soft dark:border-neutral-800 dark:bg-neutral-900"
-              >
-                <div className="flex items-start gap-4">
-                  <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-secondary-50 text-secondary-600 dark:bg-secondary-950 dark:text-secondary-400">
-                    <Video className="h-5 w-5" />
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-bold text-neutral-900 dark:text-neutral-50">
-                      {shift.role_title}
-                      {shift.specialty ? ` · ${shift.specialty}` : ""}
-                    </p>
-                    <p className="mt-0.5 text-xs text-neutral-400 dark:text-neutral-500">
-                      {shift.department ?? "Virtual Visit"} · {scheduledLabel}
-                    </p>
-                  </div>
-                  <div className="flex flex-shrink-0 flex-col items-end gap-1.5">
-                    <Badge variant={status.variant}>{status.label}</Badge>
-                    {callWindow.state === "open" && (
-                      <Badge variant="success" className="uppercase tracking-wide">
-                        Ready to Join
-                      </Badge>
-                    )}
-                  </div>
-                  <ChevronRight className="mt-0.5 h-5 w-5 flex-shrink-0 text-neutral-300 dark:text-neutral-600" />
-                </div>
-                <p className="mt-3 text-xs text-neutral-400 dark:text-neutral-500">
-                  {callWindow.message}
-                </p>
-              </Link>
-            );
-          })
+                shift={shift}
+                href={`${PATHS.hospital.virtualShifts}/${shift.id}`}
+              />
+            ))}
+            {visible.length > PAGE_SIZE && (
+              <Pagination
+                className="pt-2"
+                page={page}
+                pageCount={pageCount}
+                onPageChange={setPage}
+                summary={`Showing ${(page - 1) * PAGE_SIZE + 1}-${Math.min(
+                  page * PAGE_SIZE,
+                  visible.length,
+                )} of ${visible.length} visits`}
+              />
+            )}
+          </>
         )}
       </div>
     </div>

@@ -96,7 +96,7 @@ export function VirtualSessionPage() {
           onClick={() => navigate(PATHS.hospital.virtualShifts)}
           className="rounded-lg border border-neutral-200 px-4 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
         >
-          Back to Virtual Shifts
+          Back to Telehealth Visits
         </button>
       </div>
     );
@@ -157,7 +157,7 @@ export function VirtualSessionPage() {
           className="flex items-center gap-2 text-sm font-semibold text-neutral-600 transition-colors hover:text-neutral-900 dark:text-white/80 dark:hover:text-white"
         >
           <ArrowLeft className="h-4 w-4" />
-          Back to Virtual Shifts
+          Back to Telehealth Visits
         </button>
         <span
           className={cn(
@@ -351,7 +351,7 @@ export function VirtualSessionPage() {
               View Shift Details
             </button>
             <button
-              onClick={() => navigate(PATHS.hospital.handoverReports)}
+              onClick={() => navigate(PATHS.hospital.handoverReportDetail(shift.id))}
               className="h-12 rounded-xl bg-[#2563eb] text-sm font-bold text-white transition-colors hover:bg-[#1d4ed8]"
             >
               View Handover Report
